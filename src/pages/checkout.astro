@@ -1,0 +1,60 @@
+---
+// dont prerender as this page will be unique.
+export const prerender = false;
+
+import Layout from "../layouts/Layout.astro";
+import Stripe from "stripe";
+
+const PUBLIC_STRIPE_KEY = import.meta.env.PUBLIC_STRIPE_KEY;
+const stripe = new Stripe(import.meta.env.STRIPE_KEY);
+const { origin } = Astro.url;
+const session = await stripe.checkout.sessions.create({
+  ui_mode: "embedded",
+  mode: "subscription",
+  line_items: [
+    {
+      price: "price_1POI8sA2ZZlG8pMYSRc4Yf8a",
+      quantity: 1,
+    },
+    {
+      price: "price_1POIX6A2ZZlG8pMYA98oiMGd",
+      quantity: 1,
+    },
+  ],
+  return_url: `${origin}/return?session_id={CHECKOUT_SESSION_ID}`,
+  automatic_tax: { enabled: true },
+  custom_text: {
+    submit: {
+      message:
+        "Yearly price will change in accordance to how PCO works, find out more.",
+    },
+  },
+});
+---
+
+<Layout title="Checkout ☁️ Fairclouds">
+  <div class="p-4">
+    <h1>Checkout</h1>
+
+    <div
+      id="checkout"
+      data-stripe-key={PUBLIC_STRIPE_KEY}
+      data-client-secret={session.client_secret}
+    >
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { loadStripe } from "@stripe/stripe-js";
+  const checkoutDiv = document.querySelector("#checkout");
+  const { clientSecret, stripeKey } = checkoutDiv.dataset;
+
+  const stripe = await loadStripe(stripeKey);
+  const checkout = await stripe.initEmbeddedCheckout({
+    fetchClientSecret: () => clientSecret,
+  });
+
+  // Mount Checkout
+  checkout.mount("#checkout");
+</script>
