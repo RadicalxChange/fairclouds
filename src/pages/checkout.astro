@@ -47,14 +47,23 @@ const session = await stripe.checkout.sessions.create({
 
 <script>
   import { loadStripe } from "@stripe/stripe-js";
-  const checkoutDiv = document.querySelector("#checkout");
+  const checkoutDiv = document.querySelector("#checkout") as HTMLElement;
   const { clientSecret, stripeKey } = checkoutDiv.dataset;
 
-  const stripe = await loadStripe(stripeKey);
-  const checkout = await stripe.initEmbeddedCheckout({
-    fetchClientSecret: () => clientSecret,
-  });
-
-  // Mount Checkout
-  checkout.mount("#checkout");
+  if (typeof clientSecret === "string" && typeof stripeKey === "string") {
+    const stripe = await loadStripe(stripeKey);
+    if (stripe !== null) {
+      const checkout = await stripe.initEmbeddedCheckout({
+        fetchClientSecret: () => Promise.resolve(clientSecret),
+      });
+      // Mount Checkout
+      checkout.mount("#checkout");
+    } else {
+      // Handle the case where stripe is null
+      console.error("Stripe failed to initialize");
+    }
+  } else {
+    // Handle the case where clientSecret or stripeKey is undefined
+    console.error("clientSecret or stripeKey is undefined");
+  }
 </script>

@@ -9,16 +9,23 @@ export const prenender = false;
 const stripe = new Stripe(import.meta.env.STRIPE_KEY);
 const sessionID = Astro.url.searchParams.get("session_id");
 
-console.log(sessionID);
-
-let session;
-try {
-  session = await stripe.checkout.sessions.retrieve(sessionID);
-} catch (e) {
-  return Astro.redirect("/checkout");
+let name, email;
+if (sessionID !== null) {
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionID);
+    if (session.customer_details !== null) {
+      ({ name, email } = session.customer_details);
+    } else {
+      // Handle the case where customer_details is null
+      console.error("customer_details is null");
+    }
+  } catch (e) {
+    return Astro.redirect("/checkout");
+  }
+} else {
+  // Handle the case where sessionID is null
+  console.error("sessionID is null");
 }
-
-const { name, email } = session.customer_details;
 ---
 
 <Layout title="Thank you ☁️ Fairclouds">
