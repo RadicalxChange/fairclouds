@@ -12,5 +12,7 @@ export default defineConfig({
     defaultLocale: "en",
     locales: ["es", "en"]
   },
-  adapter: cloudflare()
+  adapter: cloudflare({
+    functionPerRoute: true,
+  }),
 });
