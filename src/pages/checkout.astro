@@ -8,6 +8,30 @@ import Stripe from "stripe";
 const PUBLIC_STRIPE_KEY = import.meta.env.PUBLIC_STRIPE_KEY;
 const stripe = new Stripe(import.meta.env.STRIPE_KEY);
 const { origin } = Astro.url;
+
+// if new polygon then create new product on stripe
+// const product = await stripe.products.create({
+//   name: "New license",
+//   default_price_data: {
+//     currency: "eur",
+//     recurring: {
+//       interval: "year",
+//     },
+//     unit_amount: 1000,
+//   },
+// });
+
+// if new polygon then create a new price
+// const price = await stripe.prices.create({
+//   currency: "eur",
+//   unit_amount: 1000,
+//   recurring: {
+//     interval: "year",
+//   },
+//   product: "prod_QEm5EvrtJ2VQ7M",
+// });
+
+// create checkout session
 const session = await stripe.checkout.sessions.create({
   ui_mode: "embedded",
   mode: "subscription",
@@ -20,6 +44,10 @@ const session = await stripe.checkout.sessions.create({
       price: "price_1POIX6A2ZZlG8pMYA98oiMGd",
       quantity: 1,
     },
+    // {
+    //   price: price.id,
+    //   quantity: 1,
+    // },
   ],
   return_url: `${origin}/return?session_id={CHECKOUT_SESSION_ID}`,
   automatic_tax: { enabled: true },
