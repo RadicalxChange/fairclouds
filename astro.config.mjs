@@ -6,11 +6,11 @@ import cloudflare from "@astrojs/cloudflare";
 // https://astro.build/config
 export default defineConfig({
   output: 'hybrid',
-  site: 'https://fairclouds.life',
+  // site: 'https://fairclouds.life',
   integrations: [tailwind()],
-  i18n: {
-    defaultLocale: "en",
-    locales: ["es", "en"]
-  },
-  adapter: cloudflare({mode: 'directory'}),
+  // i18n: {
+  //   defaultLocale: "en",
+  //   locales: ["es", "en"]
+  // },
+  // adapter: cloudflare({mode: 'directory'}),
 });
