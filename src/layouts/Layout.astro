@@ -2,6 +2,8 @@
 import { getLangFromUrl } from "../i18n/utils";
 import Weather from "../components/Weather.astro";
 import LoadingFallback from "../components/LoadingFallback.astro";
+import LanguagePicker from "../components/LanguagePicker.astro";
+
 interface Props {
 	title: string;
 }
@@ -35,7 +37,9 @@ console.log(lang);
 				</LoadingFallback>
 			</div>
 			<button class="bg-grey rounded-full w-11 h-11"></button>
+			<LanguagePicker />
 		</header>
+
 		<slot />
 	</body>
 </html>
