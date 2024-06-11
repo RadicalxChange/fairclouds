@@ -1,4 +1,5 @@
 ---
+import { getLangFromUrl } from "../i18n/utils";
 import Weather from "../components/Weather.astro";
 import LoadingFallback from "../components/LoadingFallback.astro";
 interface Props {
@@ -6,10 +7,14 @@ interface Props {
 }
 
 const { title } = Astro.props;
+
+const lang = getLangFromUrl(Astro.url);
+
+console.log(lang);
 ---
 
 <!doctype html>
-<html lang="en">
+<html>
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="description" content="Astro description" />

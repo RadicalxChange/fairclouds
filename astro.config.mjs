@@ -8,10 +8,11 @@ export default defineConfig({
   output: 'hybrid',
   site: 'https://fairclouds.life',
   integrations: [tailwind()],
-  // i18n: {
-  //   defaultLocale: "en",
-  //   locales: ["es", "en"]
-  // },
+  i18n: {
+    defaultLocale: "en",
+    locales: ["en", "es"],
+    prefixDefaultLocale: false
+  },
   adapter: cloudflare({}),
   vite: {
     define: {
