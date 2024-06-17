@@ -10,6 +10,52 @@ const polygons = await directus.request(
 		fields: ["id", "location", "price", { licenses: ["id"] }],
 	}),
 );
+
+// intersection of a point with drawing polygons
+// const intersects = await directus.request(
+// 	readItems("drawings", {
+// 		fields: ["*"],
+// 		filter: {
+// 			area: {
+// 				_intersects: {
+// 					type: "Feature",
+// 					properties: {},
+// 					geometry: {
+// 						coordinates: [-66.09679179594478, -23.722487874932185],
+// 						type: "Point",
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}),
+// );
+// console.log("INTERSECTION");
+// console.log(intersects);
+
+// intersection of a polygon with drawing polygons
+// const response = await directus.items("Land").readByQuery({
+// 	limit: 100,
+// 	fields: ["id", "name", "center", "geometry"],
+// 	filter: {
+// 		center: {
+// 			_intersects: {
+// 				type: "Feature",
+// 				geometry: {
+// 					coordinates: [
+// 						[
+// 							[168.2947501099543, -17.723682144590242],
+// 							[168.2947501099543, -17.727328428851507],
+// 							[168.29840874403044, -17.727328428851507],
+// 							[168.29840874403044, -17.723682144590242],
+// 							[168.2947501099543, -17.723682144590242],
+// 						],
+// 					],
+// 					type: "Polygon",
+// 				},
+// 			},
+// 		},
+// 	},
+// });
 ---
 
 <div
