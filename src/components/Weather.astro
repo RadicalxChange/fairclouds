@@ -11,7 +11,7 @@ const data = await response.json();
 let weather = data.weather[0].description;
 weather = weather.charAt(0).toUpperCase() + weather.slice(1);
 const temp = data.main.temp;
-const icon = data.weather[0].icon;
+// const icon = data.weather[0].icon;
 //
 
 // use headers to cache for 4hrs
