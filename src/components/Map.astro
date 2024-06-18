@@ -103,7 +103,24 @@ const polygons = await directus.request(
 		const url = URL.createObjectURL(svgBlob);
 
 		img.onload = function () {
-			canvas.getContext("2d").drawImage(img, 0, 0);
+			const ctx = canvas.getContext("2d");
+			if (!ctx) {
+				throw new Error("Unable to get canvas context");
+			}
+
+			// Get the device pixel ratio, falling back to 1.
+			const dpr = window.devicePixelRatio || 1;
+
+			// Adjust the canvas size for Retina displays
+			canvas.width = canvas.offsetWidth * dpr;
+			canvas.height = canvas.offsetHeight * dpr;
+
+			// Scale the context to ensure correct drawing dimensions.
+			ctx.scale(dpr, dpr);
+
+			// Now, draw the image at the "normal" size despite the canvas being larger.
+			ctx.drawImage(img, 0, 0, canvas.offsetWidth, canvas.offsetHeight);
+
 			URL.revokeObjectURL(url);
 		};
 
