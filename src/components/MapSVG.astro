@@ -1,0 +1,102 @@
+---
+// dont prerender this component as we need to get fresh data from the api.
+export const prerender = false;
+
+import directus from "../lib/directus";
+import { readItems } from "@directus/sdk";
+
+const polygons = await directus.request(
+	readItems("polygons", {
+		fields: ["id", "location", "price", { licenses: ["id"] }],
+	}),
+);
+
+// intersection of a point with drawing polygons
+// const intersects = await directus.request(
+// 	readItems("drawings", {
+// 		fields: ["*"],
+// 		filter: {
+// 			area: {
+// 				_intersects: {
+// 					type: "Feature",
+// 					properties: {},
+// 					geometry: {
+// 						coordinates: [-66.09679179594478, -23.722487874932185],
+// 						type: "Point",
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}),
+// );
+// console.log("INTERSECTION");
+// console.log(intersects);
+
+// intersection of a polygon with drawing polygons
+// const response = await directus.items("Land").readByQuery({
+// 	limit: 100,
+// 	fields: ["id", "name", "center", "geometry"],
+// 	filter: {
+// 		center: {
+// 			_intersects: {
+// 				type: "Feature",
+// 				geometry: {
+// 					coordinates: [
+// 						[
+// 							[168.2947501099543, -17.723682144590242],
+// 							[168.2947501099543, -17.727328428851507],
+// 							[168.29840874403044, -17.727328428851507],
+// 							[168.29840874403044, -17.723682144590242],
+// 							[168.2947501099543, -17.723682144590242],
+// 						],
+// 					],
+// 					type: "Polygon",
+// 				},
+// 			},
+// 		},
+// 	},
+// });
+---
+
+<div
+	class="w-full h-screen flex flex-col bg-blue-100 items-center justify-center"
+>
+	<!-- <canvas id="chart"></canvas> -->
+	<div
+		class="border border-black w-[800px] h-[600px] overflow-hidden"
+		id="svg-container"
+	>
+	</div>
+
+	<!-- <a class="bg-grey rounded-full px-6 py-2" href="/checkout">Checkout</a> -->
+</div>
+
+<script>
+	import * as d3 from "d3";
+
+	const svgUrl = "/zoom-depth-test.svg"; // Replace with the actual path to your SVG file
+
+	// Function to load and apply zoom to an SVG from an external URL
+	async function loadAndZoomSVG(svgUrl) {
+		const response = await fetch(svgUrl);
+		const svgText = await response.text();
+
+		const container = document.getElementById("svg-container");
+		container.innerHTML = svgText;
+
+		const svgElement = d3.select(container).select("svg");
+		applyZoom(svgElement);
+	}
+
+	// Function to apply zoom functionality
+	function applyZoom(svg) {
+		const zoom = d3.zoom().on("zoom", (event) => {
+			svg.attr("transform", event.transform);
+		});
+
+		svg.call(zoom);
+	}
+
+	// Load and apply zoom on component mount
+	loadAndZoomSVG(svgUrl);
+</script>
