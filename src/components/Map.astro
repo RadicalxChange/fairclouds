@@ -71,11 +71,11 @@ const polygons = await directus.request(
 	// create map
 	import * as d3 from "d3";
 
-	const canvas = document.getElementById("chart");
-	const svgUrl: string = "/zoom-depth-test-small.svg"; // Replace with the actual path to your SVG file
+	const canvas = document.getElementById("chart") as HTMLCanvasElement;
+	const svgUrl = "/zoom-depth-test-small.svg"; // Replace with the actual path to your SVG file
 
-	const context: CanvasRenderingContext2D | null = canvas.getContext("2d");
-	const img: HTMLImageElement = new Image();
+	const context = canvas.getContext("2d");
+	const img = new Image();
 	canvas.width = canvas.offsetWidth; // Set canvas width
 	canvas.height = canvas.offsetHeight; // Set canvas height
 
@@ -93,7 +93,7 @@ const polygons = await directus.request(
 	]);
 
 	// Function to convert SVG to Canvas
-	async function loadSvgToCanvas(svgUrl, canvas) {
+	async function loadSvgToCanvas(svgUrl: string, canvas: HTMLCanvasElement) {
 		const response = await fetch(svgUrl);
 		const svgText = await response.text();
 
