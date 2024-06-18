@@ -59,9 +59,12 @@ const polygons = await directus.request(
 ---
 
 <div
-	class="w-full h-screen flex flex-col bg-blue-100 items-center justify-center"
+	class="w-full h-screen flex flex-col bg-blue-100 items-center justify-center relative"
 >
 	<canvas class="w-screen h-screen" id="chart"></canvas>
+	<canvas
+		class="bg-white border border-black absolute bottom-2 left-2 hidden"
+		id="minimap"></canvas>
 	<!-- <a class="bg-grey rounded-full px-6 py-2" href="/checkout">Checkout</a> -->
 </div>
 
@@ -71,13 +74,22 @@ const polygons = await directus.request(
 	// create map
 	import * as d3 from "d3";
 
+	// Get the device pixel ratio, falling back to 1.
+	const dpr = window.devicePixelRatio || 1;
+
 	const canvas = document.getElementById("chart") as HTMLCanvasElement;
-	const svgUrl = "/zoom-depth-test-small.svg"; // Replace with the actual path to your SVG file
+	const minimap = document.getElementById("minimap") as HTMLCanvasElement;
+
+	const svgUrl = "/fairclouds-zoom-test.svg"; // Replace with the actual path to your SVG file
 
 	const context = canvas.getContext("2d");
 	const img = new Image();
 	canvas.width = canvas.offsetWidth; // Set canvas width
 	canvas.height = canvas.offsetHeight; // Set canvas height
+
+	const miniCtx = minimap.getContext("2d");
+	let viewportWidth = (minimap.width / 6) * dpr;
+	let viewportHeight = (minimap.height / 6) * dpr;
 
 	const points = [
 		[100, 100],
@@ -108,9 +120,6 @@ const polygons = await directus.request(
 				throw new Error("Unable to get canvas context");
 			}
 
-			// Get the device pixel ratio, falling back to 1.
-			const dpr = window.devicePixelRatio || 1;
-
 			// Adjust the canvas size for Retina displays
 			canvas.width = canvas.offsetWidth * dpr;
 			canvas.height = canvas.offsetHeight * dpr;
@@ -120,6 +129,15 @@ const polygons = await directus.request(
 
 			// Now, draw the image at the "normal" size despite the canvas being larger.
 			ctx.drawImage(img, 0, 0, canvas.offsetWidth, canvas.offsetHeight);
+
+			// Minimap
+			minimap.width = canvas.offsetWidth / 4;
+			minimap.height = canvas.offsetHeight / 4;
+
+			// miniCtx.drawImage(img, 0, 0, minimap.width, minimap.height);
+
+			miniCtx.strokeStyle = "red";
+			miniCtx.strokeRect(0, 0, minimap.width, minimap.height);
 
 			URL.revokeObjectURL(url);
 		};
@@ -132,7 +150,7 @@ const polygons = await directus.request(
 	// Setup zoom behavior
 	const zoom = d3
 		.zoom()
-		.scaleExtent([1, 800]) // Zoom limits
+		.scaleExtent([0.5, 800]) // Zoom limits
 		.on("zoom", (event) => {
 			const transform = event.transform;
 
@@ -145,13 +163,34 @@ const polygons = await directus.request(
 			context.scale(transform.k, transform.k); // Apply scale
 
 			// Draw the image at (0, 0) since the transformation is already applied
-			context.drawImage(img, 0, 0, canvas.width, canvas.height);
+			context.drawImage(img, 0, 0, canvas.width / dpr, canvas.height / dpr);
 
 			// Draw Voronoi cells
-			context.beginPath();
-			voronoi.render(context);
-			context.strokeStyle = "rgba(255, 0, 0, 0.5)"; // Example: red lines for Voronoi edges
-			context.stroke();
+			// context.beginPath();
+			// voronoi.render(context);
+			// context.strokeStyle = "rgba(255, 0, 0, 0.5)"; // Example: red lines for Voronoi edges
+			// context.stroke();
+
+			// Calculate the new size of the viewportRect based on the zoom scale
+			const newViewportWidth = (viewportWidth / event.transform.k) * dpr;
+			const newViewportHeight = (viewportHeight / event.transform.k) * dpr;
+
+			// Calculate the new position of the viewportRect
+			// This assumes the top-left of the main canvas corresponds to (0,0) in minimap coordinates
+			const newX =
+				(-event.transform.x * minimap.width) / canvas.width / event.transform.k;
+			const newY =
+				(-event.transform.y * minimap.height) /
+				canvas.height /
+				event.transform.k;
+
+			// Redraw the minimap and viewportRect
+			miniCtx.clearRect(0, 0, minimap.width, minimap.height); // Clear the minimap
+			// miniCtx.drawImage(img, 0, 0, minimap.width, minimap.height); // Redraw the minimap image
+
+			// Draw the new viewportRect
+			miniCtx.strokeStyle = "red";
+			miniCtx.strokeRect(newX, newY, newViewportWidth, newViewportHeight);
 
 			context.restore(); // Restore the context to its original state
 		});
