@@ -72,10 +72,10 @@ const polygons = await directus.request(
 	import * as d3 from "d3";
 
 	const canvas = document.getElementById("chart");
-	const svgUrl = "/zoom-depth-test-small.svg"; // Replace with the actual path to your SVG file
+	const svgUrl: string = "/zoom-depth-test-small.svg"; // Replace with the actual path to your SVG file
 
-	const context = canvas.getContext("2d");
-	const img = new Image();
+	const context: CanvasRenderingContext2D | null = canvas.getContext("2d");
+	const img: HTMLImageElement = new Image();
 	canvas.width = canvas.offsetWidth; // Set canvas width
 	canvas.height = canvas.offsetHeight; // Set canvas height
 
