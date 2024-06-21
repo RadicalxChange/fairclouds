@@ -2,6 +2,15 @@
 // import directus from "../../../lib/directus";
 // import { readItems } from "@directus/sdk";
 
+export async function getStaticPaths() {
+  const paths = [
+    { params: { lang: "en", slug: "wiki" } },
+    { params: { lang: "es", slug: "wiki" } },
+  ];
+
+  return paths;
+}
+
 // export async function getStaticPaths() {
 //   // en pages
 //   const pages = await directus.request(
