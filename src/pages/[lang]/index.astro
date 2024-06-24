@@ -40,9 +40,9 @@ const lang = getLangFromUrl(Astro.url);
 				</h2>
 				<a
 					href="https://mailchi.mp/serpentinegalleries.org/fairclouds-subscriptions"
-					class="mb-12">Mailing List</a
+					class="mb-12 button">{lang == "en" ? "Newsletter" : "Boletín"}</a
 				>
-				<h2 class="whitespace-break-spaces opacity-60">
+				<h2 class="whitespace-break-spaces opacity-60 mb-5">
 					<span class="text-small">{lang == "en" ? "ES " : "EN "}</span>
 					{
 						lang == "en"
@@ -50,6 +50,11 @@ const lang = getLangFromUrl(Astro.url);
 							: home.translations[0].intro
 					}
 				</h2>
+				<a
+					href="https://mailchi.mp/serpentinegalleries.org/fairclouds-subscriptions"
+					class="mb-12 button opacity-60"
+					>{lang == "en" ? "Boletín" : "Newsletter"}</a
+				>
 			</div>
 			<div
 				class="grid grid-cols-2 sm:grid-cols-4 gap-12 justify-between items-center mx-6"
