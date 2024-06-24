@@ -31,14 +31,15 @@
 
   window.localStorage.setItem("theme", theme);
 
-  const handleToggleClick = (e) => {
+  const handleToggleClick = () => {
     const element = document.documentElement;
     element.classList.toggle("accessible");
 
     const isAccessible = element.classList.contains("accessible");
-    localStorage.setItem("theme", isAccessible ? "normal" : "accessible");
-    console.log(e);
+    localStorage.setItem("theme", isAccessible ? "accessible" : "normal");
+
     console.log(isAccessible);
+    console.log(localStorage.getItem("theme"));
   };
 
   document

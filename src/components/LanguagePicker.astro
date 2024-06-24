@@ -8,7 +8,7 @@ const currentLang = getLangFromUrl(Astro.url);
 <ul class="flex gap-2">
   {
     Object.entries(languages).map(([lang, label]) => (
-      <li class={currentLang != lang ? "text-grey" : ""}>
+      <li class={currentLang != lang ? "opacity-60" : ""}>
         <a href={`/${lang}/`}>{label}</a>
       </li>
     ))
