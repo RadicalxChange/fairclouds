@@ -1,9 +1,15 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import Map from "../../components/Map.astro";
+// import Map from "../../components/Map.astro";
 import { getLangFromUrl } from "../../i18n/utils";
 import directus from "../../lib/directus";
 import { readSingleton } from "@directus/sdk";
+import { Image } from "astro:assets";
+
+import serpentine from "../../images/serpentine.png";
+import aerocene from "../../images/aerocene.png";
+import salinas from "../../images/salinas.svg";
+import radicalxchange from "../../images/radicalxchange.svg";
 
 export async function getStaticPaths() {
 	const paths = [{ params: { lang: "en" } }, { params: { lang: "es" } }];
@@ -22,17 +28,39 @@ const lang = getLangFromUrl(Astro.url);
 
 <Layout title="Fairclouds">
 	<main>
-		<div class="max-w-5xl p-4 min-h-screen">
-			<h2>
-				<span class="text-base">{lang == "en" ? "EN" : "ES"}</span>
-				{lang == "en" ? home.translations[0].intro : home.translations[1].intro}
-			</h2>
-			<button class="rounded-full bg-grey py-2 px-5">Enter</button>
-			<h2 class="text-grey">
-				<span class="text-base">{lang == "en" ? "ES" : "EN"}</span>
-				{lang == "en" ? home.translations[1].intro : home.translations[0].intro}
-			</h2>
+		<div class="p-4">
+			<div class="max-w-[800px] mb-12">
+				<h2 class="whitespace-break-spaces mb-5">
+					<span class="text-small">{lang == "en" ? "EN " : "ES "}</span>
+					{
+						lang == "en"
+							? home.translations[0].intro
+							: home.translations[1].intro
+					}
+				</h2>
+				<a
+					href="https://mailchi.mp/serpentinegalleries.org/fairclouds-subscriptions"
+					class="mb-12">Mailing List</a
+				>
+				<h2 class="whitespace-break-spaces opacity-60">
+					<span class="text-small">{lang == "en" ? "ES " : "EN "}</span>
+					{
+						lang == "en"
+							? home.translations[1].intro
+							: home.translations[0].intro
+					}
+				</h2>
+			</div>
+			<div
+				class="grid grid-cols-2 sm:grid-cols-4 gap-12 justify-between items-center mx-6"
+			>
+				<Image src={serpentine} alt="" width="200" height="44" />
+				<Image src={aerocene} alt="" width="185" height="58" />
+				<Image src={salinas} alt="" width="179" height="52" />
+				<Image src={radicalxchange} alt="" width="364" height="45" />
+			</div>
 		</div>
-		<Map />
+
+		<!-- <Map /> -->
 	</main>
 </Layout>

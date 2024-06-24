@@ -3,6 +3,11 @@ import { getLangFromUrl } from "../i18n/utils";
 import Weather from "../components/Weather.astro";
 import LoadingFallback from "../components/LoadingFallback.astro";
 import LanguagePicker from "../components/LanguagePicker.astro";
+import ModeToggle from "../components/ModeToggle.astro";
+import { Image } from "astro:assets";
+
+import logoEn from "../images/Fairclouds-Logo_EN.svg";
+import logoEs from "../images/Fairclouds-Logo_ES.svg";
 
 interface Props {
 	title: string;
@@ -14,7 +19,7 @@ const lang = getLangFromUrl(Astro.url);
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={lang} class="bg-primary text-white">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="description" content="Astro description" />
@@ -25,44 +30,99 @@ const lang = getLangFromUrl(Astro.url);
 	</head>
 	<body>
 		<header
-			class="fixed bottom-0 left-0 p-4 w-full flex justify-between items-end"
+			class="sticky top-0 left-0 p-4 w-full flex justify-between items-center"
 		>
 			<div>
-				<h1>Fairclouds</h1>
+				{
+					lang === "es" ? (
+						<Image src={logoEs} alt="Fairclouds logo" width="400" height="50" />
+					) : (
+						<Image src={logoEn} alt="Fairclouds logo" width="400" height="50" />
+					)
+				}
 				<LoadingFallback>
 					<p slot="fallback" class="opacity-0" aria-hidden>...</p>
 					<Weather slot="content" />
 				</LoadingFallback>
 			</div>
-			<button class="bg-grey rounded-full w-11 h-11"></button>
-			<LanguagePicker />
+			<div class="flex gap-4 items-center">
+				<LanguagePicker />
+				<ModeToggle />
+			</div>
+			<!-- <button class="bg-grey rounded-full w-11 h-11"></button> -->
 		</header>
 
 		<slot />
 	</body>
 </html>
 <style is:global>
+	/* Register your custom font family and tell the browser where to find it. */
+	@font-face {
+		font-family: "Rene";
+		src: url("/fonts/Rene Regular.woff2") format("woff");
+		font-weight: normal;
+		font-style: normal;
+		font-display: swap;
+	}
 	html {
-		font-family: system-ui, sans-serif;
+		font-family: "Rene", sans-serif;
 		background: #ffffff;
 	}
-	code {
-		font-family:
-			Menlo,
-			Monaco,
-			Lucida Console,
-			Liberation Mono,
-			DejaVu Sans Mono,
-			Bitstream Vera Sans Mono,
-			Courier New,
-			monospace;
+
+	h1,
+	h2,
+	h3 {
+		font-size: 1.125rem;
+		line-height: 22px;
+		letter-spacing: -0.07em;
+		line-height: auto;
 	}
 
-	h1 {
-		font-size: 2.75rem;
+	p,
+	.text-copy {
+		font-size: 1.125rem;
+		line-height: 22px;
+		letter-spacing: 0em;
 	}
 
-	h2 {
-		font-size: 2rem;
+	button {
+		font-size: 2.125rem;
+	}
+
+	.text-small {
+		font-size: 0.75rem;
+	}
+
+	.logo {
+		font-size: 3rem;
+	}
+
+	button {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		padding: 1.5px 15px;
+		gap: 10px;
+		background: rgba(255, 255, 255, 0.02);
+		box-shadow: inset 0px 0px 10px 3px #ffffff;
+		border-radius: 5px;
+	}
+
+	html.accessible {
+		font-family: "Arial", sans-serif;
+	}
+
+	html.accessible.bg-primary {
+		background: #2078cf;
+	}
+
+	html.accessible h1,
+	html.accessible h2,
+	html.accessible h3,
+	html.accessible p,
+	html.accessible .text-copy,
+	html.accessible button {
+		letter-spacing: 0em !important;
 	}
 </style>
