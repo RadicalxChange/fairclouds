@@ -10,6 +10,7 @@ import serpentine from "../../images/serpentine.png";
 import aerocene from "../../images/aerocene.png";
 import salinas from "../../images/salinas.svg";
 import radicalxchange from "../../images/radicalxchange.svg";
+import animation from "../../images/animation-sprite.png";
 
 import About from "../../components/About.astro";
 
@@ -30,33 +31,38 @@ const lang = getLangFromUrl(Astro.url);
 
 <Layout title="Fairclouds">
 	<main>
-		<div class="px-4 py-2.5">
-			<div class="max-w-[800px] mb-12">
-				<h2 class="whitespace-break-spaces mb-5">
-					<span class="text-small">{lang == "en" ? "EN " : "ES "}</span>
-					{
-						lang == "en"
-							? home.translations[0].intro
-							: home.translations[1].intro
-					}
-				</h2>
-				<a
-					href="https://mailchi.mp/serpentinegalleries.org/fairclouds-subscriptions"
-					class="mb-12 button">{lang == "en" ? "Newsletter" : "Boletín"}</a
-				>
-				<h2 class="whitespace-break-spaces opacity-60 mb-5">
-					<span class="text-small">{lang == "en" ? "ES " : "EN "}</span>
-					{
-						lang == "en"
-							? home.translations[1].intro
-							: home.translations[0].intro
-					}
-				</h2>
-				<a
-					href="https://mailchi.mp/serpentinegalleries.org/fairclouds-subscriptions"
-					class="mb-12 button opacity-60"
-					>{lang == "en" ? "Boletín" : "Newsletter"}</a
-				>
+		<div class="">
+			<div class="flex justify-between">
+				<div class="px-4 py-2.5 max-w-[800px] mb-12 col-span-6 flex-grow">
+					<h2 class="whitespace-break-spaces mb-5">
+						<span class="text-small">{lang == "en" ? "EN " : "ES "}</span>
+						{
+							lang == "en"
+								? home.translations[0].intro
+								: home.translations[1].intro
+						}
+					</h2>
+					<a
+						href="https://mailchi.mp/serpentinegalleries.org/fairclouds-subscriptions"
+						class="mb-12 button">{lang == "en" ? "Newsletter" : "Boletín"}</a
+					>
+					<h2 class="whitespace-break-spaces opacity-60 mb-5">
+						<span class="text-small">{lang == "en" ? "ES " : "EN "}</span>
+						{
+							lang == "en"
+								? home.translations[1].intro
+								: home.translations[0].intro
+						}
+					</h2>
+					<a
+						href="https://mailchi.mp/serpentinegalleries.org/fairclouds-subscriptions"
+						class="mb-12 button opacity-60"
+						>{lang == "en" ? "Boletín" : "Newsletter"}</a
+					>
+				</div>
+				<div class="anim-parent flex-shrink-0">
+					<div class="sprite-anim"></div>
+				</div>
 			</div>
 			<div
 				class="grid grid-cols-2 sm:grid-cols-4 gap-12 justify-between items-center"
@@ -70,4 +76,42 @@ const lang = getLangFromUrl(Astro.url);
 
 		<!-- <Map /> -->
 	</main>
+
+	<style>
+		.anim-parent {
+			position: relative;
+			width: 500px;
+			height: 370px;
+			align-self: start;
+			/* margin: -10% auto 0 auto; */
+		}
+		.anim-parent:before {
+			content: "";
+			display: block;
+			/* padding-top: 69%; */
+			width: 500px;
+			height: 369.9px;
+		}
+		.sprite-anim {
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: 0;
+			background: url("/animation-sprite.png") no-repeat 0 0%;
+			background-size: auto 100%;
+			animation: playall 3s steps(13);
+			animation-iteration-count: infinite;
+			animation-direction: alternate-reverse;
+		}
+
+		@keyframes playall {
+			0% {
+				background-position: -0px 0;
+			}
+			100% {
+				background-position: -6500px 0;
+			}
+		}
+	</style>
 </Layout>
