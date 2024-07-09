@@ -1,0 +1,30 @@
+---
+const { content } = Astro.props;
+---
+
+<div class="space-y-8">
+  {
+    content.map((block) => {
+      switch (block.type) {
+        case "paragraph":
+          return <p>{block.data.text}</p>;
+        case "heading":
+          return <h2>{block.data.text}</h2>;
+        case "quote":
+          return (
+            <blockquote>
+              <p>{block.data.text}</p>
+              <footer>
+                —<cite>{block.data.caption}</cite>
+              </footer>
+            </blockquote>
+          );
+        case "image":
+          return <img src={block.url} alt={block.alt} />;
+        // Add more cases as needed for different types of content
+        default:
+          return null; // Return null or an appropriate fallback for unknown types
+      }
+    })
+  }
+</div>

@@ -1,11 +1,13 @@
 ---
 import { getLangFromUrl } from "../i18n/utils";
+import directus from "../lib/directus";
+import { readSingleton } from "@directus/sdk";
 import Weather from "../components/Weather.astro";
 import LoadingFallback from "../components/LoadingFallback.astro";
 import LanguagePicker from "../components/LanguagePicker.astro";
 import ModeToggle from "../components/ModeToggle.astro";
 import { Image } from "astro:assets";
-
+import MenuContainer from "../components/MenuContainer.astro";
 import logoEn from "../images/Fairclouds-Logo_EN.svg";
 import logoEs from "../images/Fairclouds-Logo_ES.svg";
 
@@ -30,6 +32,14 @@ const lang = getLangFromUrl(Astro.url);
 		<link rel="icon" type="image/svg+xml" href="/favicon.png" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
+		<script
+			type="module"
+			src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/components/tab-group/tab-group.js"
+		></script>
+		<script
+			type="module"
+			src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/components/drawer/drawer.js"
+		></script>
 	</head>
 	<body>
 		<header
@@ -52,7 +62,7 @@ const lang = getLangFromUrl(Astro.url);
 				<LanguagePicker />
 				<ModeToggle />
 			</div>
-			<!-- <button class="bg-grey rounded-full w-11 h-11"></button> -->
+			<MenuContainer />
 		</header>
 
 		<slot />
@@ -70,6 +80,20 @@ const lang = getLangFromUrl(Astro.url);
 	html {
 		font-family: "Rene", sans-serif;
 		background: #ffffff;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar {
+		width: 0.6875em;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-thumb {
+		background: #72aee9;
+		box-shadow: inset 0px 0px 6.8px 3px #ffffff;
+		border-radius: 100px;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-track {
+		background-color: transparent;
 	}
 
 	h1,
@@ -92,11 +116,14 @@ const lang = getLangFromUrl(Astro.url);
 		font-size: 0.75rem;
 	}
 
+	.text-menu-languages {
+		font-size: 1.625rem;
+		letter-spacing: -0.07em;
+	}
+
 	.logo {
 		font-size: 3rem;
 	}
-
-	button,
 	.button {
 		display: inline-block;
 		padding: 1.5px 15px;
@@ -109,9 +136,14 @@ const lang = getLangFromUrl(Astro.url);
 	}
 
 	button:hover,
-	.button:hover {
+	a:hover {
 		filter: blur(2px);
 		transition: 0.75s ease;
+	}
+
+	button,
+	a {
+		transition: 0.5s ease;
 	}
 
 	html.accessible {

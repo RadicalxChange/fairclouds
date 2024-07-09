@@ -1,0 +1,32 @@
+---
+import About from "./About.astro";
+import Info from "./Info.astro";
+---
+
+<sl-drawer
+  label="Drawer"
+  placement="bottom"
+  class="drawer-placement-bottom fixed rounded bottom-4 right-4 z-50 h-[80vh] max-h-[800px] w-full max-w-[610px] bg-primary shadow-cloud p-5 focus:outline-none"
+>
+  <sl-tab-group>
+    <sl-tab slot="nav" panel="about">About</sl-tab>
+    <sl-tab slot="nav" panel="info">Info</sl-tab>
+    <a href="/blog">Blog</a>
+
+    <sl-tab-panel name="general"><About /></sl-tab-panel>
+    <sl-tab-panel name="custom"><Info /></sl-tab-panel>
+  </sl-tab-group>
+</sl-drawer>
+
+<sl-button class="fixed bottom-4 right-4 bg-grey rounded-full w-11 h-11"
+  >Open Drawer</sl-button
+>
+
+<script>
+  const drawer = document.querySelector(".drawer-placement-bottom");
+  const openButton = drawer.nextElementSibling;
+  const closeButton = drawer.querySelector('sl-button[variant="primary"]');
+
+  openButton.addEventListener("click", () => drawer.show());
+  closeButton.addEventListener("click", () => drawer.hide());
+</script>

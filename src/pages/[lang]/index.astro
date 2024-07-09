@@ -1,6 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-// import Map from "../../components/Map.astro";
+import Map from "../../components/Map.astro";
 import { getLangFromUrl } from "../../i18n/utils";
 import directus from "../../lib/directus";
 import { readSingleton } from "@directus/sdk";
@@ -10,6 +10,8 @@ import serpentine from "../../images/serpentine.png";
 import aerocene from "../../images/aerocene.png";
 import salinas from "../../images/salinas.svg";
 import radicalxchange from "../../images/radicalxchange.svg";
+
+import About from "../../components/About.astro";
 
 export async function getStaticPaths() {
 	const paths = [{ params: { lang: "en" } }, { params: { lang: "es" } }];
