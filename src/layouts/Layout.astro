@@ -10,18 +10,24 @@ import { Image } from "astro:assets";
 import MenuContainer from "../components/MenuContainer.astro";
 import logoEn from "../images/Fairclouds-Logo_EN.svg";
 import logoEs from "../images/Fairclouds-Logo_ES.svg";
+import logoEnBlack from "../images/Fairclouds-Logo_EN-black.svg";
+import logoEsBlack from "../images/Fairclouds-Logo_ES-black.svg";
 
 interface Props {
 	title: string;
+	theme?: string;
 }
 
-const { title } = Astro.props;
+const { title, theme = "blue" } = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
 ---
 
 <!doctype html>
-<html lang={lang} class="bg-primary text-white">
+<html
+	lang={lang}
+	class=`${theme == "blue" ? 'bg-primary text-white' : 'bg-white text-black'}`
+>
 	<head>
 		<meta charset="UTF-8" />
 		<meta
@@ -40,9 +46,19 @@ const lang = getLangFromUrl(Astro.url);
 			<div>
 				{
 					lang === "es" ? (
-						<Image src={logoEs} alt="Fairclouds logo" width="400" height="50" />
+						<Image
+							src={theme == "blue" ? logoEs : logoEsBlack}
+							alt="Fairclouds logo"
+							width="400"
+							height="50"
+						/>
 					) : (
-						<Image src={logoEn} alt="Fairclouds logo" width="400" height="50" />
+						<Image
+							src={theme == "blue" ? logoEn : logoEnBlack}
+							alt="Fairclouds logo"
+							width="400"
+							height="50"
+						/>
 					)
 				}
 				<LoadingFallback>
@@ -115,6 +131,13 @@ const lang = getLangFromUrl(Astro.url);
 
 	.logo {
 		font-size: 3rem;
+	}
+
+	.prose h1,
+	.prose h2,
+	.prose h3 {
+		font-size: 2.125rem;
+		margin-bottom: 28px;
 	}
 	.button {
 		display: inline-block;

@@ -1,5 +1,5 @@
 import { createDirectus, rest, } from '@directus/sdk';
 
-const directus = createDirectus('https://directus--fairclouds-u18160.vm.elestio.app/').with(rest());
+const directus = createDirectus('https://cms.fairclouds.life').with(rest());
 
 export default directus;

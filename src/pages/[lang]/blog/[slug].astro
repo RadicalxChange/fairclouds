@@ -1,0 +1,104 @@
+---
+import directus from "../../../lib/directus";
+import { readItems } from "@directus/sdk";
+import { getLangFromUrl } from "../../../i18n/utils";
+import Blocks from "../../../components/Blocks.astro";
+import Layout from "../../../layouts/Layout.astro";
+import { Image } from "astro:assets";
+import { format } from "date-fns";
+
+const directusBaseURL = import.meta.env.DIRECTUS_CMS_URL;
+
+export async function getStaticPaths() {
+  const articles = await directus.request(
+    readItems("articles", {
+      fields: ["*", { translations: ["*"] }],
+    }),
+  );
+
+  let paths = [];
+
+  articles.forEach((article) => {
+    article.translations.forEach((translation) => {
+      if (["en", "es"].includes(translation.languages_code)) {
+        const path = {
+          params: { lang: translation.languages_code, slug: article.slug },
+          props: {
+            image: article.image,
+            date: article.date_created,
+            translation,
+          },
+        };
+        paths.push(path);
+      }
+    });
+  });
+
+  return paths;
+}
+
+const { lang, slug } = Astro.params;
+const page = Astro.props;
+const articles = await directus.request(
+  readItems("articles", {
+    deep: {
+      translations: {
+        _filter: {
+          _and: [
+            {
+              languages_code: { _eq: lang },
+            },
+          ],
+        },
+      },
+    },
+    fields: ["*", { translations: ["*"] }],
+  }),
+);
+---
+
+<Layout title="Fairclouds" theme="white">
+  <div class="flex gap-28 justify-between px-4 py-2.5">
+    <aside class="hidden xl:block max-w-[441px]">
+      {
+        articles.map((article) => (
+          <a class="flex gap-2" href={`/${lang}/blog/${article.slug}`}>
+            <Image
+              src="https://cdn.shopify.com/static/sample-images/bath_grande_crop_center.jpeg"
+              alt=""
+              width={106}
+              height={67}
+            />
+            <div>
+              <p> {article.translations[0].title}</p>
+            </div>
+          </a>
+        ))
+      }
+    </aside>
+    <main class="w-full max-w-4xl prose">
+      <Image
+        src="https://cdn.shopify.com/static/sample-images/bath_grande_crop_center.jpeg"
+        alt=""
+        width={896}
+        height={548.36}
+        class="mb-5"
+      />
+      <!-- <Image
+        src=`https://cms.fairclouds.life/assets/${page.image}`
+        alt=""
+        width={896}
+        height={548.36}
+      /> -->
+      <time datetime={page.date} class="mb-3 block opacity-60"
+        >{format(page.date, "EEEE, dd.MM.yyyy")}</time
+      >
+      <h1>
+        {page.translation.title}
+      </h1>
+      <h2>{page.translation.subheading}</h2>
+      <!-- {page.translation.content} -->
+      <Blocks content={page.translation.content.blocks} />
+    </main>
+  </div>
+</Layout>

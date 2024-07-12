@@ -1,0 +1,26 @@
+---
+import directus from "../../../lib/directus";
+import { readItems } from "@directus/sdk";
+import { getLangFromUrl } from "../../../i18n/utils";
+
+export async function getStaticPaths() {
+  return [{ params: { lang: "en" } }, { params: { lang: "es" } }];
+}
+
+const lang = getLangFromUrl(Astro.url);
+// get lastest article and redirect to it
+
+const page = Astro.props;
+
+const articles = await directus.request(
+  readItems("articles", {
+    sort: ["sort", "date_created"],
+    fields: ["slug"],
+    limit: 1,
+  }),
+);
+
+console.log(articles[0].slug);
+
+return Astro.redirect(`${lang}/blog/${articles[0].slug}`);
+---

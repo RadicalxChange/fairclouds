@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
 import cloudflare from "@astrojs/cloudflare";
 import svelte from '@astrojs/svelte';
+import { imageService } from "@unpic/astro/service";
 
 
 // https://astro.build/config
@@ -13,6 +14,11 @@ export default defineConfig({
     defaultLocale: "en",
     locales: ["en", "es"],
     prefixDefaultLocale: false
+  },
+  image: {
+    domains: ["cms.fairclouds.life"],
+    service: imageService(),
+    placeholder: "blurhash",
   },
   adapter: cloudflare({}),
   vite: {
