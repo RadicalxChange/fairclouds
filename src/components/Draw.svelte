@@ -48,6 +48,18 @@
     };
   }
 
+  function handleFileChange(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        cloud = e.target.result;
+        setCloudBg();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   function clearCanvas() {
     if (context) {
       context.clearRect(0, 0, width, height);
@@ -317,8 +329,17 @@
       </defs>
     </svg>
   </button>
-  <button class="bg-white/5 shadow-cloud rounded-full w-11 h-11"
-    ><span class="sr-only">Upload</span>
+  <label
+    for="file-upload"
+    class="bg-white/5 shadow-cloud rounded-full w-11 h-11 cursor-pointer flex items-center hover-blur"
+  >
+    <input
+      type="file"
+      id="file-upload"
+      accept="image/*"
+      on:change={handleFileChange}
+      class="bg-white/5 shadow-cloud rounded-full w-11 h-11 sr-only"
+    /><span class="sr-only">Upload</span>
     <svg
       width="24"
       height="23"
@@ -347,7 +368,7 @@
         </clipPath>
       </defs>
     </svg>
-  </button>
+  </label>
   <input type="range" min="1" max="6" step="1" bind:value={strokeSize} />
 </div>
 
