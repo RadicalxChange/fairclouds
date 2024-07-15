@@ -4,6 +4,7 @@ import Map from "../../components/Map.astro";
 import { getLangFromUrl } from "../../i18n/utils";
 import directus from "../../lib/directus";
 import { readSingleton } from "@directus/sdk";
+import Login from "../../components/Login.svelte";
 
 export async function getStaticPaths() {
 	const paths = [{ params: { lang: "en" } }, { params: { lang: "es" } }];
@@ -33,6 +34,7 @@ const lang = getLangFromUrl(Astro.url);
 				{lang == "en" ? home.translations[1].intro : home.translations[0].intro}
 			</h2>
 		</div>
+		<Login client:load />
 		<Map />
 	</main>
 </Layout>
