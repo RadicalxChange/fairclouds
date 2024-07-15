@@ -6,6 +6,7 @@ import Weather from "../components/Weather.astro";
 import LoadingFallback from "../components/LoadingFallback.astro";
 import LanguagePicker from "../components/LanguagePicker.astro";
 import ModeToggle from "../components/ModeToggle.astro";
+import Draw from "../components/DrawModal.svelte";
 import { Image } from "astro:assets";
 import MenuContainer from "../components/MenuContainer.astro";
 import logoEn from "../images/Fairclouds-Logo_EN.svg";
@@ -69,6 +70,7 @@ const lang = getLangFromUrl(Astro.url);
 			<div class="flex gap-4 items-center">
 				<LanguagePicker />
 				<ModeToggle />
+				<Draw client:load />
 			</div>
 			<MenuContainer />
 		</header>
