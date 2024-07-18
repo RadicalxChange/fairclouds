@@ -14,6 +14,8 @@ import animation from "../../images/animation-sprite.png";
 
 import About from "../../components/About.astro";
 
+import AddToCart from "../../components/AddToCart.svelte";
+
 export async function getStaticPaths() {
 	const paths = [{ params: { lang: "en" } }, { params: { lang: "es" } }];
 
@@ -60,9 +62,9 @@ const lang = getLangFromUrl(Astro.url);
 						>{lang == "en" ? "Boletín" : "Newsletter"}</a
 					>
 				</div>
-				<div class="anim-parent flex-shrink-0">
+				<!-- <div class="anim-parent flex-shrink-0">
 					<div class="sprite-anim"></div>
-				</div>
+				</div> -->
 			</div>
 			<div
 				class="px-4 py-2.5 grid grid-cols-2 sm:grid-cols-4 gap-12 justify-between items-center"
@@ -75,43 +77,45 @@ const lang = getLangFromUrl(Astro.url);
 		</div>
 
 		<!-- <Map /> -->
+		<AddToCart client:load />
 	</main>
-
-	<style>
-		.anim-parent {
-			position: relative;
-			width: 500px;
-			height: 370px;
-			align-self: start;
-			/* margin: -10% auto 0 auto; */
-		}
-		.anim-parent:before {
-			content: "";
-			display: block;
-			/* padding-top: 69%; */
-			width: 500px;
-			height: 369.375px;
-		}
-		.sprite-anim {
-			position: absolute;
-			left: 0;
-			right: 0;
-			top: 0;
-			bottom: 0;
-			background: url("/animation-sprite.png") no-repeat 0 0%;
-			background-size: auto 100%;
-			animation: playall 2s steps(13);
-			animation-iteration-count: infinite;
-			animation-direction: alternate-reverse;
-		}
-
-		@keyframes playall {
-			0% {
-				background-position: -0px 0;
-			}
-			100% {
-				background-position: -6500px 0;
-			}
-		}
-	</style>
 </Layout>
+
+<style>
+	.anim-parent {
+		position: relative;
+		width: 500px;
+		height: 370px;
+		align-self: start;
+		/* margin: -10% auto 0 auto; */
+	}
+	.anim-parent:before {
+		content: "";
+		display: block;
+		/* padding-top: 69%; */
+		width: 500px;
+		height: 369.375px;
+	}
+	.sprite-anim {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		background: url("/animation-sprite.png") no-repeat 0 0%;
+		background-size: auto 100%;
+		animation: playall 2s steps(13);
+		animation-iteration-count: infinite;
+		animation-direction: alternate-reverse;
+		z-index: -10;
+	}
+
+	@keyframes playall {
+		0% {
+			background-position: -0px 0;
+		}
+		100% {
+			background-position: -6500px 0;
+		}
+	}
+</style>

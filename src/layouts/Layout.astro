@@ -7,6 +7,7 @@ import LoadingFallback from "../components/LoadingFallback.astro";
 import LanguagePicker from "../components/LanguagePicker.astro";
 import ModeToggle from "../components/ModeToggle.astro";
 import Draw from "../components/DrawModal.svelte";
+import Cart from "../components/Cart.svelte";
 import { Image } from "astro:assets";
 import MenuContainer from "../components/MenuContainer.astro";
 import logoEn from "../images/Fairclouds-Logo_EN.svg";
@@ -67,9 +68,10 @@ const lang = getLangFromUrl(Astro.url);
 					<Weather slot="content" />
 				</LoadingFallback>
 			</div>
-			<div class="flex gap-4 items-center">
+			<div class="flex gap-4 items-center relative">
 				<LanguagePicker />
 				<ModeToggle />
+				<Cart client:load />
 				<Draw client:load />
 			</div>
 			<MenuContainer />
@@ -183,5 +185,20 @@ const lang = getLangFromUrl(Astro.url);
 	html.accessible .text-copy,
 	html.accessible button {
 		letter-spacing: 0em !important;
+	}
+
+	input {
+		background: #72aee9;
+		box-shadow: inset 0px 0px 6.8px 3px #ffffff;
+		border-radius: 100px;
+		width: 100%;
+		padding: 10px 20px;
+		font-size: 1.625rem;
+		letter-spacing: -0.07em;
+	}
+
+	input::placeholder {
+		color: #ffffff;
+		opacity: 60%;
 	}
 </style>

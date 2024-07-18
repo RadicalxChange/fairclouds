@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createDialog, melt } from "@melt-ui/svelte";
-
+  import Login from "./Login.svelte";
   import Blocks from "./BlocksSvelte.svelte";
 
   const {
@@ -38,11 +38,11 @@
     <div {...$portalled} use:portalled>
       <div {...$overlay} use:overlay />
       <div
-        class="fixed flex flex-col rounded-default bottom-4 right-4 z-50 h-[80vh] max-h-[800px] w-full max-w-[610px] bg-primary shadow-cloud p-5 pb-1 focus:outline-none"
+        class="fixed flex flex-col rounded-default bottom-4 right-4 z-50 max-h-[800px] w-full max-w-[610px] bg-primary shadow-cloud p-5 pb-1 focus:outline-none"
         {...$content}
         use:content
       >
-        <div class="overflow-auto flex-grow custom-scrollbar">
+        <div class="overflow-auto custom-scrollbar">
           {#if tab === "about"}
             <Blocks content={about} />
           {/if}
@@ -50,7 +50,7 @@
             <Blocks content={info} />
           {/if}
           {#if tab === "login"}
-            <p>Login</p>
+            <Login />
           {/if}
         </div>
         <ul class="flex justify-between items-center pt-5 text-menu-languages">
@@ -72,8 +72,10 @@
             <a class="hover-blur" href="/blog">Blog</a>
           </li>
           <li>
-            <button class="hover-blur" on:click={() => (tab = "login")}
-              >Login</button
+            <button
+              class="hover-blur"
+              class:active={tab == "info"}
+              on:click={() => (tab = "login")}>Login</button
             >
           </li>
           <li>

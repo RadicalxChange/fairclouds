@@ -64,20 +64,3 @@
     {/if}
   </div>
 {/if}
-
-<style>
-  input {
-    background: #72aee9;
-    box-shadow: inset 0px 0px 6.8px 3px #ffffff;
-    border-radius: 100px;
-    width: 100%;
-    padding: 10px 20px;
-    font-size: 1.625rem;
-    letter-spacing: -0.07em;
-  }
-
-  input::placeholder {
-    color: #ffffff;
-    opacity: 60%;
-  }
-</style>
