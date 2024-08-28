@@ -1,0 +1,233 @@
+---
+// dont prerender this component as we need to get fresh data from the api.
+export const prerender = false;
+
+// Map settings
+
+// const polygons = await directus.request(
+// 	readItems("polygons", {
+// 		fields: ["id", "location", "price", { licenses: ["id"] }],
+// 	}),
+// );
+
+// const drawings = await directus.request(
+// 	readItems("drawings", {
+// 		fields: ["id", "name", "location", "artist_credit", "image"],
+// 	}),
+// );
+
+// intersection of a point with drawing polygons
+// const intersects = await directus.request(
+// 	readItems("drawings", {
+// 		fields: ["*"],
+// 		filter: {
+// 			area: {
+// 				_intersects: {
+// 					type: "Feature",
+// 					properties: {},
+// 					geometry: {
+// 						coordinates: [-66.09679179594478, -23.722487874932185],
+// 						type: "Point",
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}),
+// );
+// console.log("INTERSECTION");
+// console.log(intersects);
+
+// intersection of a polygon with drawing polygons
+// const response = await directus.items("Land").readByQuery({
+// 	limit: 100,
+// 	fields: ["id", "name", "center", "geometry"],
+// 	filter: {
+// 		center: {
+// 			_intersects: {
+// 				type: "Feature",
+// 				geometry: {
+// 					coordinates: [
+// 						[
+// 							[168.2947501099543, -17.723682144590242],
+// 							[168.2947501099543, -17.727328428851507],
+// 							[168.29840874403044, -17.727328428851507],
+// 							[168.29840874403044, -17.723682144590242],
+// 							[168.2947501099543, -17.723682144590242],
+// 						],
+// 					],
+// 					type: "Polygon",
+// 				},
+// 			},
+// 		},
+// 	},
+// });
+---
+
+<div
+	class="w-full h-screen flex flex-col bg-blue-100 items-center justify-center relative"
+>
+	<div class="w-full h-full" id="map"></div>
+</div>
+
+<script>
+	// import "./style.css";
+	import "ol/ol.css"; // Import OpenLayers CSS
+	import { Map, View } from "ol";
+	import TileLayer from "ol/layer/Tile";
+	import VectorLayer from "ol/layer/Vector";
+	import VectorSource from "ol/source/Vector";
+	import XYZ from "ol/source/XYZ";
+	import { fromLonLat } from "ol/proj";
+	import * as d3 from "d3";
+
+	// Define the map with the XYZ tile source
+	const map = new Map({
+		target: "map",
+		layers: [
+			new TileLayer({
+				source: new XYZ({
+					url: "https://storage.googleapis.com/fairclouds_tiles/tiles/{z}/{x}_{y}.png", // Path to your tiles
+					maxZoom: 12, // Adjust based on the max zoom level available in your tiles
+					minZoom: 2,
+					tileSize: [256, 256], // Size of your tiles, typically 256x256 or 512x512
+					// Optionally define the extent and projection if necessary
+					wrapX: false,
+				}),
+			}),
+		],
+		view: new View({
+			center: [0, 0], // Adjust based on your map's center
+			zoom: 2, // Initial zoom level
+			maxZoom: 12, // Maximum zoom level, should match maxZoom in XYZ source
+			minZoom: 2,
+			extent: [-20037508.34, -20037508.34, 20037508.34, 20037508.34],
+		}),
+	});
+
+	// Generate 100 random geographic points
+	const points = Array.from({ length: 3000 }, () => [
+		-165 + Math.random() * 333, // Longitude between -120 and -60
+		-28 + Math.random() * 82, // Latitude between 20 and 50
+	]);
+
+	// 2. Create an overlay canvas for Voronoi
+	const overlayCanvas = document.createElement("canvas");
+	const overlayContext = overlayCanvas.getContext("2d");
+	overlayCanvas.style.position = "absolute";
+	overlayCanvas.style.top = "0";
+	overlayCanvas.style.left = "0";
+	overlayCanvas.style.pointerEvents = "none";
+	document.getElementById("map").appendChild(overlayCanvas);
+
+	function resizeCanvas() {
+		const size = map.getSize();
+		overlayCanvas.width = size[0];
+		overlayCanvas.height = size[1];
+	}
+
+	function drawVoronoi(highlightedCellIndex = null) {
+		if (!overlayContext) return;
+
+		// Clear the canvas
+		overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+		// Convert points to map coordinates and pixel positions
+		const projectedPoints = points.map((point) => {
+			const coord = fromLonLat(point);
+			return map.getPixelFromCoordinate(coord);
+		});
+
+		// Create Voronoi diagram using d3.Delaunay
+		const delaunay = d3.Delaunay.from(projectedPoints);
+		const voronoi = delaunay.voronoi([
+			0,
+			0,
+			overlayCanvas.width,
+			overlayCanvas.height,
+		]);
+
+		// Calculate the convex hull of the points
+		const hullPoints = d3.polygonHull(projectedPoints);
+		if (!hullPoints) return;
+
+		// Clip the Voronoi diagram to the convex hull
+		overlayContext.beginPath();
+		overlayContext.moveTo(hullPoints[0][0], hullPoints[0][1]);
+		for (let i = 1; i < hullPoints.length; i++) {
+			overlayContext.lineTo(hullPoints[i][0], hullPoints[i][1]);
+		}
+		overlayContext.closePath();
+		overlayContext.clip();
+
+		// Draw the outline of the convex hull
+		overlayContext.beginPath();
+		overlayContext.moveTo(hullPoints[0][0], hullPoints[0][1]);
+		for (let i = 1; i < hullPoints.length; i++) {
+			overlayContext.lineTo(hullPoints[i][0], hullPoints[i][1]);
+		}
+		overlayContext.closePath();
+		overlayContext.strokeStyle = "rgba(256, 256, 256, 0.4)";
+		overlayContext.lineWidth = 1; // Set the outline width
+		overlayContext.stroke();
+
+		// Draw Voronoi polygons on the overlay canvas
+		overlayContext.beginPath();
+		for (let i = 0; i < projectedPoints.length; i++) {
+			const polygon = voronoi.cellPolygon(i);
+			if (polygon) {
+				overlayContext.moveTo(polygon[0][0], polygon[0][1]);
+				for (let j = 1; j < polygon.length; j++) {
+					overlayContext.lineTo(polygon[j][0], polygon[j][1]);
+				}
+				overlayContext.closePath();
+			}
+		}
+		// overlayContext.strokeStyle = "white";
+		overlayContext.strokeStyle = "rgba(256, 256, 256, 0.4)";
+		overlayContext.lineWidth = 1;
+		overlayContext.stroke();
+
+		// Highlight a cell if it's hovered
+		if (highlightedCellIndex !== null) {
+			const polygon = voronoi.cellPolygon(highlightedCellIndex);
+			if (polygon && polygon.length > 0) {
+				overlayContext.beginPath();
+				overlayContext.moveTo(polygon[0][0], polygon[0][1]);
+				for (let j = 1; j < polygon.length; j++) {
+					overlayContext.lineTo(polygon[j][0], polygon[j][1]);
+				}
+				overlayContext.closePath();
+				overlayContext.fillStyle = "rgba(255, 255, 255, 0.8)";
+				overlayContext.fill();
+			}
+		}
+	}
+
+	// Add mousemove event listener to the overlay canvas for Voronoi interaction
+	map.on("pointermove", (event) => {
+		const mousePos = event.pixel;
+		const projectedPoints = points.map((point) => {
+			const coord = fromLonLat(point);
+			return map.getPixelFromCoordinate(coord);
+		});
+
+		// Find the closest Voronoi cell to the mouse position
+		const delaunay = d3.Delaunay.from(projectedPoints);
+		const index = delaunay.find(mousePos[0], mousePos[1]);
+
+		// Redraw the Voronoi diagram with the highlighted cell
+		drawVoronoi(index);
+	});
+
+	// 3. Handle map events to redraw the Voronoi diagram
+	map.on("postrender", function () {
+		resizeCanvas();
+		drawVoronoi();
+	});
+
+	// Initial render
+	resizeCanvas();
+	drawVoronoi();
+</script>
+
+<!-- /tiles/${tileZ}/${tileX / tileSize}_${tileY / tileSize}.png -->

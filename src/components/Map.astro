@@ -5,18 +5,23 @@ export const prerender = false;
 import directus from "../lib/directus";
 import { readItems } from "@directus/sdk";
 import Treemap from "./Treemap.svelte";
+import { Image } from "astro:assets";
 
-const polygons = await directus.request(
-	readItems("polygons", {
-		fields: ["id", "location", "price", { licenses: ["id"] }],
-	}),
-);
+import horizon from "../images/horizon.png";
 
-const drawings = await directus.request(
-	readItems("drawings", {
-		fields: ["id", "name", "location", "artist_credit", "image"],
-	}),
-);
+// Map settings
+
+// const polygons = await directus.request(
+// 	readItems("polygons", {
+// 		fields: ["id", "location", "price", { licenses: ["id"] }],
+// 	}),
+// );
+
+// const drawings = await directus.request(
+// 	readItems("drawings", {
+// 		fields: ["id", "name", "location", "artist_credit", "image"],
+// 	}),
+// );
 
 // intersection of a point with drawing polygons
 // const intersects = await directus.request(
@@ -68,15 +73,97 @@ const drawings = await directus.request(
 <div
 	class="w-full h-screen flex flex-col bg-blue-100 items-center justify-center relative"
 >
-	<canvas class="w-screen h-screen" id="chart"></canvas>
-	<canvas
+	<canvas class="w-[800px] h-[800px]" id="map"></canvas>
+	<!-- <canvas
 		class="bg-white border border-black absolute bottom-2 left-2 hidden"
-		id="minimap"></canvas>
-	<Treemap drawings={drawings} client:load />
+		id="minimap"></canvas> -->
+	<!-- <Image
+		src={horizon}
+		alt=""
+		class="absolute bottom-2 right-2 w-screen pointer-events-none h-[25vh] object-fill object-top"
+		id="horizon"
+	/> -->
+	<!-- <Treemap drawings={drawings} client:load /> -->
 	<!-- <a class="bg-grey rounded-full px-6 py-2" href="/checkout">Checkout</a> -->
 </div>
 
 <script>
+	import * as d3 from "d3";
+	import * as d3Tile from "d3-tile";
+
+	const tileSize = 256;
+	const initialZoom = 3; // Set your desired initial zoom level
+	const maxZoom = 9; // Set your maximum zoom level
+	const minZoom = 1; // Set your minimum zoom level
+
+	// Set up the canvas element
+	const canvas = document.getElementById("map") as HTMLCanvasElement;
+	const width = 800;
+	const height = 800;
+	const context = canvas.getContext("2d");
+
+	// Set up the projection and zoom
+	const projection = d3
+		.geoMercator()
+		.scale(((1 << initialZoom) * tileSize) / (2 * Math.PI));
+	// .translate([width / 2, height / 2]);
+
+	const tiler = d3Tile.tile().extent([
+		[0, 0],
+		[width, height],
+	]);
+
+	const zoom = d3
+		.zoom()
+		.scaleExtent([1 << 8, 1 << 22])
+		.extent([
+			[0, 0],
+			[width, height],
+		])
+		.on("zoom", (event) => zoomed(event.transform));
+
+	d3.select(canvas)
+		.call(zoom)
+		.call(
+			zoom.transform,
+			d3.zoomIdentity.translate(width >> 1, height >> 1).scale(1 << 10),
+		);
+
+	function zoomed(transform) {
+		// console.log(event.transform);
+		const tiles = tiler(transform);
+
+		console.log(tiles);
+
+		// projection
+		// 	.scale(transform.k / (2 * Math.PI))
+		// 	.translate([transform.x, transform.y]);
+
+		context.clearRect(0, 0, width, height);
+		context.save();
+		context.scale(tiles.scale, tiles.scale);
+		context.translate(...tiles.translate);
+
+		tiles.forEach((d) => {
+			const [x, y, z] = d;
+			const tileX = x * tileSize;
+			const tileY = y * tileSize;
+			const tileZ = z;
+			const imgSrc = `/tiles/${tileZ}/${tileX / tileSize}_${tileY / tileSize}.png`;
+
+			const img = new Image();
+			img.onload = () => {
+				context.drawImage(img, tileX, tileY, tileSize, tileSize);
+			};
+			img.src = imgSrc;
+		});
+	}
+
+	// Debugging output for initial values
+	// console.log("Initial transform:", initialTransform);
+	// console.log("Tile generator scale:", tileGenerator.scale());
+	// console.log("Tile generator translate:", tileGenerator.translate());
+
 	// // fetch data from api
 
 	// // create map
@@ -87,8 +174,10 @@ const drawings = await directus.request(
 
 	// const canvas = document.getElementById("chart") as HTMLCanvasElement;
 	// const minimap = document.getElementById("minimap") as HTMLCanvasElement;
+	// const horizon = document.getElementById("horizon") as HTMLImageElement;
 
-	// const svgUrl = "/fairclouds-proto-map-islands.svg"; // Replace with the actual path to your SVG file
+	// const svgUrl = "/drawings.svg"; // Replace with the actual path to your SVG file
+	// const horizonUrl = "/horizon.png";
 
 	// const context = canvas.getContext("2d");
 	// const img = new Image();
@@ -105,12 +194,12 @@ const drawings = await directus.request(
 	// 	[300, 300],
 	// ]; // Example points
 
-	// const voronoi = d3.Delaunay.from(points).voronoi([
-	// 	0,
-	// 	0,
-	// 	canvas.width,
-	// 	canvas.height,
-	// ]);
+	// // const voronoi = d3.Delaunay.from(points).voronoi([
+	// // 	0,
+	// // 	0,
+	// // 	canvas.width,
+	// // 	canvas.height,
+	// // ]);
 
 	// // Function to convert SVG to Canvas
 	// async function loadSvgToCanvas(svgUrl: string, canvas: HTMLCanvasElement) {
@@ -153,7 +242,21 @@ const drawings = await directus.request(
 	// 	img.src = url;
 	// }
 
+	// async function loadHorizonToCanvas(horizonUrl, canvas) {
+	// 	const context = canvas.getContext("2d");
+	// 	const img = new Image();
+
+	// 	img.onload = () => {
+	// 		const x = 0; // X-coordinate to start drawing the image
+	// 		const y = canvas.height - img.height; // Y-coordinate to position the image at the bottom
+	// 		context.drawImage(img, x, y);
+	// 	};
+
+	// 	img.src = horizonUrl;
+	// }
+
 	// loadSvgToCanvas(svgUrl, canvas);
+	// loadHorizonToCanvas(horizonUrl, canvas);
 
 	// // Setup zoom behavior
 	// const zoom = d3

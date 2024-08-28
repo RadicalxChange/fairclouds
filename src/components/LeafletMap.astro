@@ -1,0 +1,183 @@
+---
+// dont prerender this component as we need to get fresh data from the api.
+export const prerender = false;
+
+import directus from "../lib/directus";
+import { readItems } from "@directus/sdk";
+import Treemap from "./Treemap.svelte";
+import { Image } from "astro:assets";
+
+import horizon from "../images/horizon.png";
+
+// Map settings
+
+// const polygons = await directus.request(
+// 	readItems("polygons", {
+// 		fields: ["id", "location", "price", { licenses: ["id"] }],
+// 	}),
+// );
+
+// const drawings = await directus.request(
+// 	readItems("drawings", {
+// 		fields: ["id", "name", "location", "artist_credit", "image"],
+// 	}),
+// );
+
+// intersection of a point with drawing polygons
+// const intersects = await directus.request(
+// 	readItems("drawings", {
+// 		fields: ["*"],
+// 		filter: {
+// 			area: {
+// 				_intersects: {
+// 					type: "Feature",
+// 					properties: {},
+// 					geometry: {
+// 						coordinates: [-66.09679179594478, -23.722487874932185],
+// 						type: "Point",
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}),
+// );
+// console.log("INTERSECTION");
+// console.log(intersects);
+
+// intersection of a polygon with drawing polygons
+// const response = await directus.items("Land").readByQuery({
+// 	limit: 100,
+// 	fields: ["id", "name", "center", "geometry"],
+// 	filter: {
+// 		center: {
+// 			_intersects: {
+// 				type: "Feature",
+// 				geometry: {
+// 					coordinates: [
+// 						[
+// 							[168.2947501099543, -17.723682144590242],
+// 							[168.2947501099543, -17.727328428851507],
+// 							[168.29840874403044, -17.727328428851507],
+// 							[168.29840874403044, -17.723682144590242],
+// 							[168.2947501099543, -17.723682144590242],
+// 						],
+// 					],
+// 					type: "Polygon",
+// 				},
+// 			},
+// 		},
+// 	},
+// });
+---
+
+<div
+	class="w-full h-screen flex flex-col bg-blue-100 items-center justify-center relative"
+>
+	<div class="w-full h-full" id="map"></div>
+</div>
+
+<script>
+	import L from "leaflet";
+	import "leaflet/dist/leaflet.css";
+	import * as d3 from "d3";
+
+	// Initialize the Leaflet map
+	const map = L.map("map", {
+		minZoom: 2,
+		maxZoom: 9, // Adjust according to your zoom levels
+		center: [0, 0],
+		zoom: 2,
+		crs: L.CRS.Simple,
+	});
+
+	// Size of the image
+	const imageWidth = 130816; // Replace with your image width
+	const imageHeight = 130816; // Replace with your image height
+
+	// Calculate the bounds of the image
+	const southWest = map.unproject([0, imageHeight], map.getMaxZoom());
+	const northEast = map.unproject([imageWidth, 0], map.getMaxZoom());
+	const bounds = new L.LatLngBounds(southWest, northEast);
+	const maxZoom = 9;
+
+	// Add image overlay
+	L.tileLayer("/tiles/{z}/{x}_{y}.png", {
+		bounds: bounds,
+		// noWrap: true,
+		minZoom: 1,
+		maxZoom: maxZoom,
+		tileSize: 256,
+		// continuousWorld: false,
+		// edgeBufferTiles: 1,
+	}).addTo(map);
+
+	// Set map bounds to the image
+	map.fitBounds(bounds);
+
+	const VoronoiLayer = L.Layer.extend({
+		onAdd: function () {
+			this._canvas = L.DomUtil.create("canvas", "leaflet-zoom-animated");
+			this._canvas.width = map.getSize().x;
+			this._canvas.height = map.getSize().y;
+			this._context = this._canvas.getContext("2d");
+			map.getPanes().overlayPane.appendChild(this._canvas);
+			map.on("moveend", this._redraw, this);
+			this._redraw();
+		},
+		onRemove: function () {
+			L.DomUtil.remove(this._canvas);
+			map.off("moveend", this._redraw, this);
+		},
+		_redraw: function () {
+			const bounds = map.getBounds();
+			const topLeft = map.latLngToLayerPoint(bounds.getNorthWest());
+			const size = map.getSize();
+			L.DomUtil.setPosition(this._canvas, topLeft);
+			this._canvas.width = size.x;
+			this._canvas.height = size.y;
+			this._context.clearRect(0, 0, size.x, size.y);
+
+			const points = [
+				[65536, 65536],
+				[25536, 25536],
+				[35536, 65536],
+				[35536, 95536],
+			];
+
+			const projectedPoints = points.map((p) => {
+				const latLng = map.unproject(p, map.getMaxZoom());
+				const point = map.latLngToLayerPoint(latLng);
+				return [point.x, point.y];
+			});
+
+			console.log("Projected Points:", projectedPoints);
+
+			const delaunay = d3.Delaunay.from(projectedPoints);
+			const voronoi = delaunay.voronoi([0, 0, size.x, size.y]);
+
+			this._context.strokeStyle = "red";
+			this._context.lineWidth = 4;
+
+			for (let i = 0; i < projectedPoints.length; i++) {
+				this._context.beginPath();
+				voronoi.renderCell(i, this._context);
+				this._context.stroke();
+			}
+		},
+	});
+
+	map.addLayer(new VoronoiLayer());
+
+	const markerData = [
+		{ name: "Marker 1", coords: [65536, 65536] },
+		{ name: "Marker 2", coords: [25536, 25536] },
+		{ name: "Marker 3", coords: [35536, 65536] },
+	];
+
+	markerData.forEach((marker) => {
+		const latLng = map.unproject(marker.coords, maxZoom); // Convert pixel coords to LatLng
+		L.marker(latLng).addTo(map).bindPopup(marker.name); // Add a popup to each marker
+	});
+</script>
+
+<!-- /tiles/${tileZ}/${tileX / tileSize}_${tileY / tileSize}.png -->
