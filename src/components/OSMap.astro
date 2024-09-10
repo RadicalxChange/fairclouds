@@ -77,24 +77,28 @@ export const prerender = false;
 	import VectorLayer from "ol/layer/Vector";
 	import VectorSource from "ol/source/Vector";
 	import XYZ from "ol/source/XYZ";
+	import OverviewMap from "ol/control/OverviewMap";
 	import { fromLonLat } from "ol/proj";
 	import * as d3 from "d3";
+
+	// tile url
+	// /tiles/${tileZ}/${tileX / tileSize}_${tileY / tileSize}.png
+
+	const tileLayer = new TileLayer({
+		source: new XYZ({
+			url: "https://storage.googleapis.com/fairclouds_tiles/tiles/{z}/{x}_{y}.png", // Path to your tiles
+			maxZoom: 12, // Adjust based on the max zoom level available in your tiles
+			minZoom: 2,
+			tileSize: [256, 256], // Size of your tiles, typically 256x256 or 512x512
+			// Optionally define the extent and projection if necessary
+			wrapX: false,
+		}),
+	});
 
 	// Define the map with the XYZ tile source
 	const map = new Map({
 		target: "map",
-		layers: [
-			new TileLayer({
-				source: new XYZ({
-					url: "https://storage.googleapis.com/fairclouds_tiles/tiles/{z}/{x}_{y}.png", // Path to your tiles
-					maxZoom: 12, // Adjust based on the max zoom level available in your tiles
-					minZoom: 2,
-					tileSize: [256, 256], // Size of your tiles, typically 256x256 or 512x512
-					// Optionally define the extent and projection if necessary
-					wrapX: false,
-				}),
-			}),
-		],
+		layers: [tileLayer],
 		view: new View({
 			center: [0, 0], // Adjust based on your map's center
 			zoom: 2, // Initial zoom level
@@ -108,6 +112,7 @@ export const prerender = false;
 	const points = Array.from({ length: 3000 }, () => [
 		-165 + Math.random() * 333, // Longitude between -120 and -60
 		-28 + Math.random() * 82, // Latitude between 20 and 50
+		Math.random() * 0.5 + 0.1,
 	]);
 
 	// 2. Create an overlay canvas for Voronoi
@@ -175,6 +180,18 @@ export const prerender = false;
 		for (let i = 0; i < projectedPoints.length; i++) {
 			const polygon = voronoi.cellPolygon(i);
 			if (polygon) {
+				// Fill the cell with a white opaque background
+				overlayContext.beginPath();
+				overlayContext.moveTo(polygon[0][0], polygon[0][1]);
+				for (let j = 1; j < polygon.length; j++) {
+					overlayContext.lineTo(polygon[j][0], polygon[j][1]);
+				}
+				overlayContext.closePath();
+				overlayContext.fillStyle = `rgba(255, 255, 255, ${points[i][2]})`;
+				overlayContext.fill();
+
+				// Draw the cell border
+				overlayContext.beginPath();
 				overlayContext.moveTo(polygon[0][0], polygon[0][1]);
 				for (let j = 1; j < polygon.length; j++) {
 					overlayContext.lineTo(polygon[j][0], polygon[j][1]);
@@ -228,6 +245,27 @@ export const prerender = false;
 	// Initial render
 	resizeCanvas();
 	drawVoronoi();
+
+	// Add a minimap (OverviewMap control)
+	const overviewMapControl = new OverviewMap({
+		className: "ol-overviewmap ol-custom-overviewmap",
+		layers: [tileLayer],
+		view: new View({
+			center: [0, 0],
+			zoom: 2,
+			maxZoom: 2,
+			extent: [-20037508.34, -20037508.34, 20037508.34, 20037508.34],
+		}),
+		collapsed: false,
+	});
+	map.addControl(overviewMapControl);
 </script>
 
-<!-- /tiles/${tileZ}/${tileX / tileSize}_${tileY / tileSize}.png -->
+<style>
+	.ol-custom-overviewmap {
+		bottom: 10px !important;
+		left: 10px !important;
+		width: 150px !important;
+		height: 150px !important;
+	}
+</style>
