@@ -294,7 +294,7 @@ export const prerender = false;
 	import TileLayer from "ol/layer/Tile";
 	import XYZ from "ol/source/XYZ";
 	import OverviewMap from "ol/control/OverviewMap";
-	import { fromLonLat } from "ol/proj";
+	import { toLonLat, fromLonLat } from "ol/proj";
 	import * as d3 from "d3";
 	import { defaults as defaultControls } from "ol/control";
 
@@ -364,8 +364,8 @@ export const prerender = false;
 
 	// Generate 100 random geographic points
 	const points = Array.from({ length: 3000 }, () => [
-		-165 + Math.random() * 333, // Longitude between -120 and -60
-		-28 + Math.random() * 82, // Latitude between 20 and 50
+		-165 + Math.random() * 336, // Longitude between -120 and -60
+		-28 + Math.random() * 83, // Latitude between 20 and 50
 		Math.random() * 0.3 + 0.2,
 	]);
 
@@ -476,6 +476,8 @@ export const prerender = false;
 	// Add mousemove event listener to the overlay canvas for Voronoi interaction
 	map.on("pointermove", (event) => {
 		const mousePos = event.pixel;
+		const coord = toLonLat(map.getCoordinateFromPixel(mousePos));
+		points[points.length - 1] = coord; // Update the last point with the mouse position
 		const projectedPoints = points.map((point) => {
 			const coord = fromLonLat(point);
 			return map.getPixelFromCoordinate(coord);
