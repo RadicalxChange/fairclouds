@@ -4,10 +4,7 @@ import directus from "../lib/directus";
 import { readSingleton } from "@directus/sdk";
 import Weather from "../components/Weather.astro";
 import LoadingFallback from "../components/LoadingFallback.astro";
-import LanguagePicker from "../components/LanguagePicker.astro";
 import ModeToggle from "../components/ModeToggle.astro";
-import Draw from "../components/DrawModal.svelte";
-import Cart from "../components/Cart.svelte";
 import { Image } from "astro:assets";
 import MenuContainer from "../components/MenuContainer.astro";
 import logoEn from "../images/Fairclouds-Logo_EN.svg";
@@ -43,7 +40,7 @@ const lang = getLangFromUrl(Astro.url);
 	</head>
 	<body>
 		<header
-			class="sticky top-0 left-0 p-4 w-full flex gap-4 justify-between items-start"
+			class="sticky top-0 left-0 p-4 w-full flex gap-4 justify-between items-start z-20"
 		>
 			<div>
 				{
@@ -69,12 +66,10 @@ const lang = getLangFromUrl(Astro.url);
 				</LoadingFallback>
 			</div>
 			<div class="flex gap-4 items-center relative">
-				<LanguagePicker />
 				<ModeToggle />
-				<Cart client:load />
-				<Draw client:load />
+				<MenuContainer />
+				<!-- <Cart client:load /> -->
 			</div>
-			<MenuContainer />
 		</header>
 
 		<slot />
@@ -152,6 +147,7 @@ const lang = getLangFromUrl(Astro.url);
 		border-radius: 5px;
 		font-size: 2.125rem;
 		transition: 0.5s ease;
+		line-height: 0;
 	}
 
 	button:hover,
@@ -204,5 +200,29 @@ const lang = getLangFromUrl(Astro.url);
 
 	hr {
 		border-top: 1px dotted #fff;
+	}
+
+	.ol-overviewmap.ol-custom-overviewmap {
+		left: 15px !important;
+		bottom: 15px !important;
+	}
+
+	.ol-custom-overviewmap canvas {
+		border-radius: 10px !important;
+	}
+	.ol-custom-overviewmap .ol-overviewmap-map {
+		border: 0px !important;
+		background: rgba(255, 255, 255, 0.02) !important;
+		box-shadow: inset 0px 0px 10px 3px #ffffff !important;
+		border-radius: 10px !important;
+		width: 270px !important;
+		height: 175px !important;
+	}
+
+	.ol-overviewmap-box {
+		background: rgba(255, 255, 255, 0.02) !important;
+		box-shadow: inset 0px 0px 10px 3px #ffffff !important;
+		border-radius: 5px !important;
+		border: 0px !important;
 	}
 </style>

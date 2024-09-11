@@ -4,7 +4,7 @@ import os
 
 
 
-def create_tiles(image_path, output_dir, tile_size=256, min_zoom=0, max_zoom=12):
+def create_tiles(image_path, output_dir, tile_size=256, min_zoom=0, max_zoom=4):
     img = Image.open(image_path)
     img_width, img_height = img.size
 
@@ -23,8 +23,8 @@ def create_tiles(image_path, output_dir, tile_size=256, min_zoom=0, max_zoom=12)
             for y in range(0, scaled_height, tile_size):
                 box = (x, y, min(x + tile_size, scaled_width), min(y + tile_size, scaled_height))
                 tile = scaled_img.crop(box)
-                tile.save(os.path.join(zoom_dir, f'{x // tile_size}_{y // tile_size}.png'))
+                tile.save(os.path.join(zoom_dir, f'{x // tile_size}_{y // tile_size}.png'), format='PNG', optimize=True)
 
 
 # Usage
-create_tiles("map-big.jpg", "output_tiles_new")
+create_tiles("map.png", "output_tiles_opt")

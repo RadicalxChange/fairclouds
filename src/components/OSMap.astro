@@ -1,4 +1,6 @@
 ---
+import Draw from "./Draw.svelte";
+
 // dont prerender this component as we need to get fresh data from the api.
 export const prerender = false;
 
@@ -67,6 +69,53 @@ export const prerender = false;
 	class="w-full h-screen flex flex-col bg-blue-100 items-center justify-center relative"
 >
 	<div class="w-full h-full" id="map"></div>
+	<div class="flex absolute right-0 bottom-0 w-full gap-4 p-4">
+		<div class="w-[270px]"></div>
+		<div
+			class="bg-primary rounded-full grow shadow-cloud flex justify-center items-center relative"
+		>
+			<span class="opacity-50">Timeline</span>
+			<div
+				class="absolute left-1/4 flex justify-center items-center bg-white rounded-full border-primary border text-primary text-serif text-small h-7 w-7"
+			>
+				<span>C1</span>
+			</div>
+			<div class="absolute bg-white border-l border-white h-full left-24"></div>
+
+			<div
+				class="absolute left-6 flex justify-center items-center bg-white rounded-full border-primary border text-primary text-serif text-small h-7 w-7"
+			>
+				<span>C3</span>
+			</div>
+			<div
+				class="absolute left-8 flex justify-center items-center bg-white rounded-full border-primary border text-primary text-serif text-small h-7 w-7"
+			>
+				<span>C2</span>
+			</div>
+		</div>
+		<button class="button">Draw</button>
+		<div class="shadow-cloud
+			rounded-full
+			w-11
+			h-11"></div>
+		<div class="shadow-cloud rounded-full w-11 h-11"></div>
+		<label class="flex items-center cursor-pointer">
+			<input
+				id="themeToggle"
+				type="checkbox"
+				value="generate"
+				class="sr-only peer"
+			/>
+			<div
+				class="relative w-[46px] h-6 sm:w-[81px] sm:h-[45px] bg-primary shadow-cloud rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-[2px] after:start-[3px] sm:after:top-[5px] sm:after:start-[6px] after:bg-white after:rounded-full after:w-5 after:h-5 sm:after:h-[35px] sm:after:w-[35px] after:transition-all"
+			>
+			</div>
+			<span
+				class="sr-only ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"
+				>Generate new cells mode toggle</span
+			>
+		</label>
+	</div>
 </div>
 
 <script>
@@ -74,12 +123,11 @@ export const prerender = false;
 	import "ol/ol.css"; // Import OpenLayers CSS
 	import { Map, View } from "ol";
 	import TileLayer from "ol/layer/Tile";
-	import VectorLayer from "ol/layer/Vector";
-	import VectorSource from "ol/source/Vector";
 	import XYZ from "ol/source/XYZ";
 	import OverviewMap from "ol/control/OverviewMap";
 	import { fromLonLat } from "ol/proj";
 	import * as d3 from "d3";
+	import { defaults as defaultControls } from "ol/control";
 
 	// tile url
 	// /tiles/${tileZ}/${tileX / tileSize}_${tileY / tileSize}.png
@@ -98,15 +146,52 @@ export const prerender = false;
 	// Define the map with the XYZ tile source
 	const map = new Map({
 		target: "map",
-		layers: [tileLayer],
+		layers: [
+			new TileLayer({
+				source: new XYZ({
+					url: "https://storage.googleapis.com/fairclouds_tiles/tiles_v2/{z}/{x}_{y}.png", // Path to your tiles
+					maxZoom: 12, // Adjust based on the max zoom level available in your tiles
+					minZoom: 2,
+					tileSize: [256, 256], // Size of your tiles, typically 256x256 or 512x512
+					// Optionally define the extent and projection if necessary
+					wrapX: false,
+				}),
+			}),
+		],
 		view: new View({
 			center: [0, 0], // Adjust based on your map's center
 			zoom: 2, // Initial zoom level
 			maxZoom: 12, // Maximum zoom level, should match maxZoom in XYZ source
 			minZoom: 2,
+			extent: [-20037508.34, -15037508.34, 20037508.34, 12037508.34],
+		}),
+		controls: defaultControls({ zoom: false }), // Disable zoom controls
+	});
+
+	// Add a minimap (OverviewMap control)
+	const overviewMapControl = new OverviewMap({
+		className: "ol-overviewmap ol-custom-overviewmap",
+		layers: [
+			new TileLayer({
+				source: new XYZ({
+					url: "https://storage.googleapis.com/fairclouds_tiles/tiles_v2/{z}/{x}_{y}.png", // Path to your tiles
+					maxZoom: 12, // Adjust based on the max zoom level available in your tiles
+					minZoom: 2,
+					tileSize: [256, 256], // Size of your tiles, typically 256x256 or 512x512
+					// Optionally define the extent and projection if necessary
+					wrapX: false,
+				}),
+			}),
+		],
+		view: new View({
+			center: [0, 0],
+			zoom: 2,
+			maxZoom: 2,
 			extent: [-20037508.34, -20037508.34, 20037508.34, 20037508.34],
 		}),
+		collapsible: false,
 	});
+	map.addControl(overviewMapControl);
 
 	// Generate 100 random geographic points
 	const points = Array.from({ length: 3000 }, () => [
@@ -116,6 +201,7 @@ export const prerender = false;
 	]);
 
 	// 2. Create an overlay canvas for Voronoi
+	// 2. Create an overlay canvas for Voronoi
 	const overlayCanvas = document.createElement("canvas");
 	const overlayContext = overlayCanvas.getContext("2d");
 	overlayCanvas.style.position = "absolute";
@@ -124,32 +210,36 @@ export const prerender = false;
 	overlayCanvas.style.pointerEvents = "none";
 	document.getElementById("map").appendChild(overlayCanvas);
 
-	function resizeCanvas() {
-		const size = map.getSize();
-		overlayCanvas.width = size[0];
-		overlayCanvas.height = size[1];
-	}
+	let voronoiDiagram;
+	let delaunay;
+	let projectedPoints;
 
-	function drawVoronoi(highlightedCellIndex = null) {
-		if (!overlayContext) return;
+	function calculateVoronoi() {
+		projectedPoints = points
+			.map((point) => {
+				const coord = fromLonLat(point);
+				return map.getPixelFromCoordinate(coord);
+			})
+			.filter((pixel) => pixel !== null);
 
-		// Clear the canvas
-		overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+		if (projectedPoints.length < 3) {
+			console.error("Not enough points to calculate Voronoi diagram");
+			return;
+		}
 
-		// Convert points to map coordinates and pixel positions
-		const projectedPoints = points.map((point) => {
-			const coord = fromLonLat(point);
-			return map.getPixelFromCoordinate(coord);
-		});
-
-		// Create Voronoi diagram using d3.Delaunay
-		const delaunay = d3.Delaunay.from(projectedPoints);
-		const voronoi = delaunay.voronoi([
+		delaunay = d3.Delaunay.from(projectedPoints);
+		voronoiDiagram = delaunay.voronoi([
 			0,
 			0,
 			overlayCanvas.width,
 			overlayCanvas.height,
 		]);
+	}
+
+	function drawVoronoi(highlightedCellIndex = null) {
+		if (!overlayContext || !voronoiDiagram) return;
+
+		overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
 		// Calculate the convex hull of the points
 		const hullPoints = d3.polygonHull(projectedPoints);
@@ -164,23 +254,16 @@ export const prerender = false;
 		overlayContext.closePath();
 		overlayContext.clip();
 
-		// Draw the outline of the convex hull
+		// Draw the Voronoi diagram
 		overlayContext.beginPath();
-		overlayContext.moveTo(hullPoints[0][0], hullPoints[0][1]);
-		for (let i = 1; i < hullPoints.length; i++) {
-			overlayContext.lineTo(hullPoints[i][0], hullPoints[i][1]);
-		}
-		overlayContext.closePath();
-		overlayContext.strokeStyle = "rgba(256, 256, 256, 0.4)";
-		overlayContext.lineWidth = 1; // Set the outline width
+		voronoiDiagram.render(overlayContext);
+		overlayContext.strokeStyle = "black";
 		overlayContext.stroke();
 
-		// Draw Voronoi polygons on the overlay canvas
-		overlayContext.beginPath();
+		// Fill each cell with a white opaque background
 		for (let i = 0; i < projectedPoints.length; i++) {
-			const polygon = voronoi.cellPolygon(i);
+			const polygon = voronoiDiagram.cellPolygon(i);
 			if (polygon) {
-				// Fill the cell with a white opaque background
 				overlayContext.beginPath();
 				overlayContext.moveTo(polygon[0][0], polygon[0][1]);
 				for (let j = 1; j < polygon.length; j++) {
@@ -199,15 +282,11 @@ export const prerender = false;
 				overlayContext.closePath();
 			}
 		}
-		// overlayContext.strokeStyle = "white";
-		overlayContext.strokeStyle = "rgba(256, 256, 256, 0.4)";
-		overlayContext.lineWidth = 1;
-		overlayContext.stroke();
 
-		// Highlight a cell if it's hovered
+		// Highlight the hovered cell
 		if (highlightedCellIndex !== null) {
-			const polygon = voronoi.cellPolygon(highlightedCellIndex);
-			if (polygon && polygon.length > 0) {
+			const polygon = voronoiDiagram.cellPolygon(highlightedCellIndex);
+			if (polygon) {
 				overlayContext.beginPath();
 				overlayContext.moveTo(polygon[0][0], polygon[0][1]);
 				for (let j = 1; j < polygon.length; j++) {
@@ -220,52 +299,56 @@ export const prerender = false;
 		}
 	}
 
-	// Add mousemove event listener to the overlay canvas for Voronoi interaction
-	map.on("pointermove", (event) => {
-		const mousePos = event.pixel;
-		const projectedPoints = points.map((point) => {
-			const coord = fromLonLat(point);
-			return map.getPixelFromCoordinate(coord);
-		});
+	function resizeCanvas() {
+		overlayCanvas.width = map.getSize()[0];
+		overlayCanvas.height = map.getSize()[1];
+	}
 
-		// Find the closest Voronoi cell to the mouse position
-		const delaunay = d3.Delaunay.from(projectedPoints);
-		const index = delaunay.find(mousePos[0], mousePos[1]);
-
-		// Redraw the Voronoi diagram with the highlighted cell
-		drawVoronoi(index);
-	});
-
-	// 3. Handle map events to redraw the Voronoi diagram
-	map.on("postrender", function () {
+	// Initial render once map is rendered
+	map.once("postrender", function () {
+		calculateVoronoi();
 		resizeCanvas();
 		drawVoronoi();
 	});
 
-	// Initial render
-	resizeCanvas();
-	drawVoronoi();
-
-	// Add a minimap (OverviewMap control)
-	const overviewMapControl = new OverviewMap({
-		className: "ol-overviewmap ol-custom-overviewmap",
-		layers: [tileLayer],
-		view: new View({
-			center: [0, 0],
-			zoom: 2,
-			maxZoom: 2,
-			extent: [-20037508.34, -20037508.34, 20037508.34, 20037508.34],
-		}),
-		collapsed: false,
+	// Redraw Voronoi on moveend events
+	map.on("moveend", function () {
+		resizeCanvas();
+		drawVoronoi();
 	});
-	map.addControl(overviewMapControl);
-</script>
 
-<style>
-	.ol-custom-overviewmap {
-		bottom: 10px !important;
-		left: 10px !important;
-		width: 150px !important;
-		height: 150px !important;
+	// Throttle function to limit the rate of function execution
+	function throttle(func, limit) {
+		let lastFunc;
+		let lastRan;
+		return function () {
+			const context = this;
+			const args = arguments;
+			if (!lastRan) {
+				func.apply(context, args);
+				lastRan = Date.now();
+			} else {
+				clearTimeout(lastFunc);
+				lastFunc = setTimeout(
+					function () {
+						if (Date.now() - lastRan >= limit) {
+							func.apply(context, args);
+							lastRan = Date.now();
+						}
+					},
+					limit - (Date.now() - lastRan),
+				);
+			}
+		};
 	}
-</style>
+
+	// Add mousemove event listener to the overlay canvas for Voronoi interaction
+	map.on(
+		"pointermove",
+		throttle((event) => {
+			const mousePos = event.pixel;
+			const index = delaunay.find(mousePos[0], mousePos[1]);
+			drawVoronoi(index);
+		}, 100),
+	); // Adjust the throttle limit as needed
+</script>
