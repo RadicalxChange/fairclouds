@@ -197,10 +197,9 @@ export const prerender = false;
 	const points = Array.from({ length: 3000 }, () => [
 		-165 + Math.random() * 333, // Longitude between -120 and -60
 		-28 + Math.random() * 82, // Latitude between 20 and 50
-		Math.random() * 0.5 + 0.1,
+		Math.random() * 0.3 + 0.2,
 	]);
 
-	// 2. Create an overlay canvas for Voronoi
 	// 2. Create an overlay canvas for Voronoi
 	const overlayCanvas = document.createElement("canvas");
 	const overlayContext = overlayCanvas.getContext("2d");
@@ -210,36 +209,32 @@ export const prerender = false;
 	overlayCanvas.style.pointerEvents = "none";
 	document.getElementById("map").appendChild(overlayCanvas);
 
-	let voronoiDiagram;
-	let delaunay;
-	let projectedPoints;
+	function resizeCanvas() {
+		const size = map.getSize();
+		overlayCanvas.width = size[0];
+		overlayCanvas.height = size[1];
+	}
 
-	function calculateVoronoi() {
-		projectedPoints = points
-			.map((point) => {
-				const coord = fromLonLat(point);
-				return map.getPixelFromCoordinate(coord);
-			})
-			.filter((pixel) => pixel !== null);
+	function drawVoronoi(highlightedCellIndex = null) {
+		if (!overlayContext) return;
 
-		if (projectedPoints.length < 3) {
-			console.error("Not enough points to calculate Voronoi diagram");
-			return;
-		}
+		// Clear the canvas
+		overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-		delaunay = d3.Delaunay.from(projectedPoints);
-		voronoiDiagram = delaunay.voronoi([
+		// Convert points to map coordinates and pixel positions
+		const projectedPoints = points.map((point) => {
+			const coord = fromLonLat(point);
+			return map.getPixelFromCoordinate(coord);
+		});
+
+		// Create Voronoi diagram using d3.Delaunay
+		const delaunay = d3.Delaunay.from(projectedPoints);
+		const voronoi = delaunay.voronoi([
 			0,
 			0,
 			overlayCanvas.width,
 			overlayCanvas.height,
 		]);
-	}
-
-	function drawVoronoi(highlightedCellIndex = null) {
-		if (!overlayContext || !voronoiDiagram) return;
-
-		overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
 		// Calculate the convex hull of the points
 		const hullPoints = d3.polygonHull(projectedPoints);
@@ -254,16 +249,23 @@ export const prerender = false;
 		overlayContext.closePath();
 		overlayContext.clip();
 
-		// Draw the Voronoi diagram
+		// Draw the outline of the convex hull
 		overlayContext.beginPath();
-		voronoiDiagram.render(overlayContext);
-		overlayContext.strokeStyle = "black";
+		overlayContext.moveTo(hullPoints[0][0], hullPoints[0][1]);
+		for (let i = 1; i < hullPoints.length; i++) {
+			overlayContext.lineTo(hullPoints[i][0], hullPoints[i][1]);
+		}
+		overlayContext.closePath();
+		overlayContext.strokeStyle = "rgba(256, 256, 256, 0.4)";
+		overlayContext.lineWidth = 1; // Set the outline width
 		overlayContext.stroke();
 
-		// Fill each cell with a white opaque background
+		// Draw Voronoi polygons on the overlay canvas
+		overlayContext.beginPath();
 		for (let i = 0; i < projectedPoints.length; i++) {
-			const polygon = voronoiDiagram.cellPolygon(i);
+			const polygon = voronoi.cellPolygon(i);
 			if (polygon) {
+				// Fill the cell with a white opaque background
 				overlayContext.beginPath();
 				overlayContext.moveTo(polygon[0][0], polygon[0][1]);
 				for (let j = 1; j < polygon.length; j++) {
@@ -280,75 +282,51 @@ export const prerender = false;
 					overlayContext.lineTo(polygon[j][0], polygon[j][1]);
 				}
 				overlayContext.closePath();
+				// overlayContext.strokeStyle = "rgba(256, 256, 256, 0.2)";
+				// overlayContext.lineWidth = 1; // Set the outline width
+				// overlayContext.stroke();
 			}
 		}
 
-		// Highlight the hovered cell
+		// Highlight a cell if it's hovered
 		if (highlightedCellIndex !== null) {
-			const polygon = voronoiDiagram.cellPolygon(highlightedCellIndex);
-			if (polygon) {
+			const polygon = voronoi.cellPolygon(highlightedCellIndex);
+			if (polygon && polygon.length > 0) {
 				overlayContext.beginPath();
 				overlayContext.moveTo(polygon[0][0], polygon[0][1]);
 				for (let j = 1; j < polygon.length; j++) {
 					overlayContext.lineTo(polygon[j][0], polygon[j][1]);
 				}
 				overlayContext.closePath();
-				overlayContext.fillStyle = "rgba(255, 255, 255, 0.8)";
+				overlayContext.fillStyle = "rgba(255, 255, 255, 0.9)";
 				overlayContext.fill();
 			}
 		}
 	}
 
-	function resizeCanvas() {
-		overlayCanvas.width = map.getSize()[0];
-		overlayCanvas.height = map.getSize()[1];
-	}
-
-	// Initial render once map is rendered
-	map.once("postrender", function () {
-		calculateVoronoi();
-		resizeCanvas();
-		drawVoronoi();
-	});
-
-	// Redraw Voronoi on moveend events
-	map.on("moveend", function () {
-		resizeCanvas();
-		drawVoronoi();
-	});
-
-	// Throttle function to limit the rate of function execution
-	function throttle(func, limit) {
-		let lastFunc;
-		let lastRan;
-		return function () {
-			const context = this;
-			const args = arguments;
-			if (!lastRan) {
-				func.apply(context, args);
-				lastRan = Date.now();
-			} else {
-				clearTimeout(lastFunc);
-				lastFunc = setTimeout(
-					function () {
-						if (Date.now() - lastRan >= limit) {
-							func.apply(context, args);
-							lastRan = Date.now();
-						}
-					},
-					limit - (Date.now() - lastRan),
-				);
-			}
-		};
-	}
-
 	// Add mousemove event listener to the overlay canvas for Voronoi interaction
-	map.on(
-		"pointermove",
-		throttle((event) => {
-			const mousePos = event.pixel;
-			const index = delaunay.find(mousePos[0], mousePos[1]);
-			drawVoronoi(index);
-		}, 100),
-	); // Adjust the throttle limit as needed
+	map.on("pointermove", (event) => {
+		const mousePos = event.pixel;
+		const projectedPoints = points.map((point) => {
+			const coord = fromLonLat(point);
+			return map.getPixelFromCoordinate(coord);
+		});
+
+		// Find the closest Voronoi cell to the mouse position
+		const delaunay = d3.Delaunay.from(projectedPoints);
+		const index = delaunay.find(mousePos[0], mousePos[1]);
+
+		// Redraw the Voronoi diagram with the highlighted cell
+		drawVoronoi(index);
+	});
+
+	// 3. Handle map events to redraw the Voronoi diagram
+	map.on("postrender", function () {
+		resizeCanvas();
+		drawVoronoi();
+	});
+
+	// Initial render
+	resizeCanvas();
+	drawVoronoi();
 </script>
