@@ -386,6 +386,8 @@ export const prerender = false;
 	overlayCanvas.style.top = "0";
 	overlayCanvas.style.left = "0";
 	overlayCanvas.style.pointerEvents = "none";
+	overlayCanvas.style.height = "100vh";
+	overlayCanvas.style.width = "100vw";
 	document.getElementById("map").appendChild(overlayCanvas);
 
 	function resizeCanvas() {
