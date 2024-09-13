@@ -366,7 +366,7 @@ export const prerender = false;
 	const points = Array.from({ length: 3000 }, () => [
 		-165 + Math.random() * 336, // Longitude between -120 and -60
 		-28 + Math.random() * 83, // Latitude between 20 and 50
-		Math.random() * 0.3 + 0.2,
+		Math.random() * 0.5 + 0.2,
 	]);
 
 	// 2. Create an overlay canvas for Voronoi
@@ -451,7 +451,7 @@ export const prerender = false;
 					overlayContext.lineTo(polygon[j][0], polygon[j][1]);
 				}
 				overlayContext.closePath();
-				// overlayContext.strokeStyle = "rgba(256, 256, 256, 0.2)";
+				// overlayContext.strokeStyle = "rgba(0, 0, 0, 0.1)";
 				// overlayContext.lineWidth = 1; // Set the outline width
 				// overlayContext.stroke();
 			}
@@ -469,6 +469,9 @@ export const prerender = false;
 				overlayContext.closePath();
 				overlayContext.fillStyle = "rgba(255, 255, 255, 0.9)";
 				overlayContext.fill();
+				overlayContext.strokeStyle = "rgba(0, 0, 0, 0.2)";
+				overlayContext.lineWidth = 1; // Set the outline width
+				overlayContext.stroke();
 			}
 		}
 	}
@@ -476,8 +479,8 @@ export const prerender = false;
 	// Add mousemove event listener to the overlay canvas for Voronoi interaction
 	map.on("pointermove", (event) => {
 		const mousePos = event.pixel;
-		const coord = toLonLat(map.getCoordinateFromPixel(mousePos));
-		points[points.length - 1] = coord; // Update the last point with the mouse position
+		// const coord = toLonLat(map.getCoordinateFromPixel(mousePos));
+		// points[points.length - 1] = coord; // Update the last point with the mouse position
 		const projectedPoints = points.map((point) => {
 			const coord = fromLonLat(point);
 			return map.getPixelFromCoordinate(coord);
