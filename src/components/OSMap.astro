@@ -270,7 +270,7 @@ export const prerender = false;
 		</div>
 		<label class="flex items-center cursor-pointer">
 			<input
-				id="themeToggle"
+				id="mapModeToggle"
 				type="checkbox"
 				value="generate"
 				class="sr-only peer"
@@ -297,6 +297,16 @@ export const prerender = false;
 	import { toLonLat, fromLonLat } from "ol/proj";
 	import * as d3 from "d3";
 	import { defaults as defaultControls } from "ol/control";
+
+	let generateMode = false;
+
+	const toggleMapMode = () => {
+		generateMode = !generateMode;
+	};
+
+	const mapModeToggle = document.getElementById("mapModeToggle");
+
+	mapModeToggle.addEventListener("change", toggleMapMode);
 
 	// tile url
 	// /tiles/${tileZ}/${tileX / tileSize}_${tileY / tileSize}.png
@@ -479,8 +489,10 @@ export const prerender = false;
 	// Add mousemove event listener to the overlay canvas for Voronoi interaction
 	map.on("pointermove", (event) => {
 		const mousePos = event.pixel;
-		// const coord = toLonLat(map.getCoordinateFromPixel(mousePos));
-		// points[points.length - 1] = coord; // Update the last point with the mouse position
+		if (generateMode) {
+			const coord = toLonLat(map.getCoordinateFromPixel(mousePos));
+			points[points.length - 1] = coord; // Update the last point with the mouse position
+		}
 		const projectedPoints = points.map((point) => {
 			const coord = fromLonLat(point);
 			return map.getPixelFromCoordinate(coord);
