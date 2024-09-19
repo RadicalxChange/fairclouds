@@ -297,6 +297,16 @@ export const prerender = false;
 	import { toLonLat, fromLonLat } from "ol/proj";
 	import * as d3 from "d3";
 	import { defaults as defaultControls } from "ol/control";
+	import { Vector as VectorLayer } from "ol/layer";
+	import { Vector as VectorSource } from "ol/source";
+	import { GeoJSON } from "ol/format";
+	import { Style, Stroke } from "ol/style";
+	import * as turf from "@turf/turf";
+	import Fill from "ol/style/Fill";
+	import { pointerMove } from "ol/events/condition";
+	import Select from "ol/interaction/Select";
+
+	const points = [];
 
 	let generateMode = false;
 
@@ -332,14 +342,14 @@ export const prerender = false;
 					maxZoom: 12, // Adjust based on the max zoom level available in your tiles
 					minZoom: 2,
 					tileSize: [256, 256], // Size of your tiles, typically 256x256 or 512x512
-					// Optionally define the extent and projection if necessary
 					wrapX: false,
+					projection: "EPSG:3857", // Ensure the projection is set correctly
 				}),
 			}),
 		],
 		view: new View({
 			center: [0, 0], // Adjust based on your map's center
-			zoom: 2, // Initial zoom level
+			zoom: 2, // Initial zoom level to fit the specific area
 			maxZoom: 12, // Maximum zoom level, should match maxZoom in XYZ source
 			minZoom: 2,
 			extent: [-20037508.34, -14537508.34, 20037508.34, 12537508.34],
@@ -372,149 +382,241 @@ export const prerender = false;
 	});
 	map.addControl(overviewMapControl);
 
-	// Generate 100 random geographic points
-	const points = Array.from({ length: 3000 }, () => [
-		-165 + Math.random() * 336, // Longitude between -120 and -60
-		-28 + Math.random() * 83, // Latitude between 20 and 50
-		Math.random() * 0.5 + 0.2,
-	]);
+	fetch("/outline.geojson")
+		.then((response) => response.json())
+		.then((outline) => {
+			const poly = turf.polygon(outline.features[0].geometry.coordinates);
 
-	// 2. Create an overlay canvas for Voronoi
-	const overlayCanvas = document.createElement("canvas");
-	const overlayContext = overlayCanvas.getContext("2d");
-	overlayCanvas.style.position = "absolute";
-	overlayCanvas.style.top = "0";
-	overlayCanvas.style.left = "0";
-	overlayCanvas.style.pointerEvents = "none";
-	overlayCanvas.style.height = "100vh";
-	overlayCanvas.style.width = "100vw";
-	document.getElementById("map").appendChild(overlayCanvas);
+			function generateRandomPoint(bbox) {
+				const [minX, minY, maxX, maxY] = bbox;
+				const longitude = minX + Math.random() * (maxX - minX);
+				const latitude = minY + Math.random() * (maxY - minY);
+				return [longitude, latitude];
+			}
 
-	function resizeCanvas() {
-		const size = map.getSize();
-		overlayCanvas.width = size[0];
-		overlayCanvas.height = size[1];
-	}
+			// Generate 3000 random geographic points inside the polygon
+			const bbox = turf.bbox(outline);
+			const points = [];
+			while (points.length < 3000) {
+				const point = generateRandomPoint(bbox);
+				if (turf.booleanPointInPolygon(turf.point(point), poly)) {
+					points.push(turf.point(point));
+				}
+			}
 
-	function drawVoronoi(highlightedCellIndex = null) {
-		if (!overlayContext) return;
+			// Create Voronoi diagram
+			const pointsCollection = turf.featureCollection(points);
+			const voronoi = turf.voronoi(pointsCollection, { bbox });
 
-		// Clear the canvas
-		overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+			function getRandomOpacity() {
+				return Math.random() * 0.5 + 0.1;
+			}
 
-		// Convert points to map coordinates and pixel positions
-		const projectedPoints = points.map((point) => {
-			const coord = fromLonLat(point);
-			return map.getPixelFromCoordinate(coord);
+			// Add opacity to Voronoi cell properties
+			voronoi.features.forEach((cell) => {
+				cell.properties = cell.properties || {};
+				cell.properties.opacity = getRandomOpacity();
+			});
+
+			// Clip Voronoi cells to the GeoJSON polygon
+			const clippedVoronoi = voronoi.features
+				.map((cell) => {
+					const intersection = turf.intersect(
+						turf.featureCollection([cell, poly]),
+					);
+					if (intersection) {
+						intersection.properties = { ...cell.properties }; // Preserve the opacity property
+						return intersection;
+					}
+					return null;
+				})
+				.filter(Boolean);
+
+			console.log(clippedVoronoi);
+
+			// Convert clipped Voronoi cells to a format that OpenLayers can use
+			const voronoiSource = new VectorSource({
+				features: new GeoJSON().readFeatures(
+					turf.featureCollection(clippedVoronoi),
+					{
+						featureProjection: "EPSG:3857",
+					},
+				),
+			});
+
+			const voronoiStyle = (feature) => {
+				const opacity = feature.get("opacity");
+				return new Style({
+					fill: new Fill({
+						color: `rgba(255, 255, 255, ${opacity})`,
+					}),
+				});
+			};
+
+			const voronoiLayer = new VectorLayer({
+				source: voronoiSource,
+				style: voronoiStyle,
+			});
+
+			// Add Voronoi layer to the map
+			map.addLayer(voronoiLayer);
+
+			// Create a highlight style for hover
+			const highlightStyle = new Style({
+				fill: new Fill({
+					color: "rgba(255, 255, 255, 0.9)", // Yellow fill with 50% opacity
+				}),
+				stroke: new Stroke({
+					color: "rgba(0, 0, 0, 0.5)",
+					width: 1,
+				}),
+			});
+
+			// Add select interaction for hover
+			const selectHover = new Select({
+				condition: pointerMove,
+				style: highlightStyle,
+			});
+
+			map.addInteraction(selectHover);
 		});
 
-		// Create Voronoi diagram using d3.Delaunay
-		const delaunay = d3.Delaunay.from(projectedPoints);
-		const voronoi = delaunay.voronoi([
-			0,
-			0,
-			overlayCanvas.width,
-			overlayCanvas.height,
-		]);
+	// // 2. Create an overlay canvas for Voronoi
+	// const overlayCanvas = document.createElement("canvas");
+	// const overlayContext = overlayCanvas.getContext("2d");
+	// overlayCanvas.style.position = "absolute";
+	// overlayCanvas.style.top = "0";
+	// overlayCanvas.style.left = "0";
+	// overlayCanvas.style.pointerEvents = "none";
+	// overlayCanvas.style.height = "100vh";
+	// overlayCanvas.style.width = "100vw";
+	// document.getElementById("map").appendChild(overlayCanvas);
 
-		// Calculate the convex hull of the points
-		const hullPoints = d3.polygonHull(projectedPoints);
-		if (!hullPoints) return;
+	// function resizeCanvas() {
+	// 	const size = map.getSize();
+	// 	overlayCanvas.width = size[0];
+	// 	overlayCanvas.height = size[1];
+	// }
 
-		// Clip the Voronoi diagram to the convex hull
-		overlayContext.beginPath();
-		overlayContext.moveTo(hullPoints[0][0], hullPoints[0][1]);
-		for (let i = 1; i < hullPoints.length; i++) {
-			overlayContext.lineTo(hullPoints[i][0], hullPoints[i][1]);
-		}
-		overlayContext.closePath();
-		overlayContext.clip();
+	// function drawVoronoi(highlightedCellIndex = null) {
+	// 	if (!overlayContext) return;
 
-		// Draw the outline of the convex hull
-		overlayContext.beginPath();
-		overlayContext.moveTo(hullPoints[0][0], hullPoints[0][1]);
-		for (let i = 1; i < hullPoints.length; i++) {
-			overlayContext.lineTo(hullPoints[i][0], hullPoints[i][1]);
-		}
-		overlayContext.closePath();
-		overlayContext.strokeStyle = "rgba(256, 256, 256, 0.4)";
-		overlayContext.lineWidth = 1; // Set the outline width
-		overlayContext.stroke();
+	// 	// Clear the canvas
+	// 	overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-		// Draw Voronoi polygons on the overlay canvas
-		overlayContext.beginPath();
-		for (let i = 0; i < projectedPoints.length; i++) {
-			const polygon = voronoi.cellPolygon(i);
-			if (polygon) {
-				// Fill the cell with a white opaque background
-				overlayContext.beginPath();
-				overlayContext.moveTo(polygon[0][0], polygon[0][1]);
-				for (let j = 1; j < polygon.length; j++) {
-					overlayContext.lineTo(polygon[j][0], polygon[j][1]);
-				}
-				overlayContext.closePath();
-				overlayContext.fillStyle = `rgba(255, 255, 255, ${points[i][2]})`;
-				overlayContext.fill();
+	// 	// Convert points to map coordinates and pixel positions
+	// 	const projectedPoints = points.map((point) => {
+	// 		const coord = fromLonLat(point);
+	// 		return map.getPixelFromCoordinate(coord);
+	// 	});
 
-				// Draw the cell border
-				overlayContext.beginPath();
-				overlayContext.moveTo(polygon[0][0], polygon[0][1]);
-				for (let j = 1; j < polygon.length; j++) {
-					overlayContext.lineTo(polygon[j][0], polygon[j][1]);
-				}
-				overlayContext.closePath();
-				// overlayContext.strokeStyle = "rgba(0, 0, 0, 0.1)";
-				// overlayContext.lineWidth = 1; // Set the outline width
-				// overlayContext.stroke();
-			}
-		}
+	// 	// Create Voronoi diagram using d3.Delaunay
+	// 	const delaunay = d3.Delaunay.from(projectedPoints);
+	// 	const voronoi = delaunay.voronoi([
+	// 		0,
+	// 		0,
+	// 		overlayCanvas.width,
+	// 		overlayCanvas.height,
+	// 	]);
 
-		// Highlight a cell if it's hovered
-		if (highlightedCellIndex !== null) {
-			const polygon = voronoi.cellPolygon(highlightedCellIndex);
-			if (polygon && polygon.length > 0) {
-				overlayContext.beginPath();
-				overlayContext.moveTo(polygon[0][0], polygon[0][1]);
-				for (let j = 1; j < polygon.length; j++) {
-					overlayContext.lineTo(polygon[j][0], polygon[j][1]);
-				}
-				overlayContext.closePath();
-				overlayContext.fillStyle = "rgba(255, 255, 255, 0.9)";
-				overlayContext.fill();
-				overlayContext.strokeStyle = "rgba(0, 0, 0, 0.2)";
-				overlayContext.lineWidth = 1; // Set the outline width
-				overlayContext.stroke();
-			}
-		}
-	}
+	// 	// Calculate the convex hull of the points
+	// 	const hullPoints = d3.polygonHull(projectedPoints);
+	// 	if (!hullPoints) return;
+
+	// 	// Clip the Voronoi diagram to the convex hull
+	// 	overlayContext.beginPath();
+	// 	overlayContext.moveTo(hullPoints[0][0], hullPoints[0][1]);
+	// 	for (let i = 1; i < hullPoints.length; i++) {
+	// 		overlayContext.lineTo(hullPoints[i][0], hullPoints[i][1]);
+	// 	}
+	// 	overlayContext.closePath();
+	// 	overlayContext.clip();
+
+	// 	// Draw the outline of the convex hull
+	// 	overlayContext.beginPath();
+	// 	overlayContext.moveTo(hullPoints[0][0], hullPoints[0][1]);
+	// 	for (let i = 1; i < hullPoints.length; i++) {
+	// 		overlayContext.lineTo(hullPoints[i][0], hullPoints[i][1]);
+	// 	}
+	// 	overlayContext.closePath();
+	// 	overlayContext.strokeStyle = "rgba(256, 256, 256, 0.4)";
+	// 	overlayContext.lineWidth = 1; // Set the outline width
+	// 	overlayContext.stroke();
+
+	// 	// Draw Voronoi polygons on the overlay canvas
+	// 	overlayContext.beginPath();
+	// 	for (let i = 0; i < projectedPoints.length; i++) {
+	// 		const polygon = voronoi.cellPolygon(i);
+	// 		if (polygon) {
+	// 			// Fill the cell with a white opaque background
+	// 			overlayContext.beginPath();
+	// 			overlayContext.moveTo(polygon[0][0], polygon[0][1]);
+	// 			for (let j = 1; j < polygon.length; j++) {
+	// 				overlayContext.lineTo(polygon[j][0], polygon[j][1]);
+	// 			}
+	// 			overlayContext.closePath();
+	// 			overlayContext.fillStyle = `rgba(255, 255, 255, ${points[i][2]})`;
+	// 			overlayContext.fill();
+
+	// 			// Draw the cell border
+	// 			overlayContext.beginPath();
+	// 			overlayContext.moveTo(polygon[0][0], polygon[0][1]);
+	// 			for (let j = 1; j < polygon.length; j++) {
+	// 				overlayContext.lineTo(polygon[j][0], polygon[j][1]);
+	// 			}
+	// 			overlayContext.closePath();
+	// 			// overlayContext.strokeStyle = "rgba(0, 0, 0, 0.1)";
+	// 			// overlayContext.lineWidth = 1; // Set the outline width
+	// 			// overlayContext.stroke();
+	// 		}
+	// 	}
+
+	// 	// Highlight a cell if it's hovered
+	// 	if (highlightedCellIndex !== null) {
+	// 		const polygon = voronoi.cellPolygon(highlightedCellIndex);
+	// 		if (polygon && polygon.length > 0) {
+	// 			overlayContext.beginPath();
+	// 			overlayContext.moveTo(polygon[0][0], polygon[0][1]);
+	// 			for (let j = 1; j < polygon.length; j++) {
+	// 				overlayContext.lineTo(polygon[j][0], polygon[j][1]);
+	// 			}
+	// 			overlayContext.closePath();
+	// 			overlayContext.fillStyle = "rgba(255, 255, 255, 0.9)";
+	// 			overlayContext.fill();
+	// 			overlayContext.strokeStyle = "rgba(0, 0, 0, 0.2)";
+	// 			overlayContext.lineWidth = 1; // Set the outline width
+	// 			overlayContext.stroke();
+	// 		}
+	// 	}
+	// }
 
 	// Add mousemove event listener to the overlay canvas for Voronoi interaction
-	map.on("pointermove", (event) => {
-		const mousePos = event.pixel;
-		if (generateMode) {
-			const coord = toLonLat(map.getCoordinateFromPixel(mousePos));
-			points[points.length - 1] = coord; // Update the last point with the mouse position
-		}
-		const projectedPoints = points.map((point) => {
-			const coord = fromLonLat(point);
-			return map.getPixelFromCoordinate(coord);
-		});
+	// map.on("pointermove", (event) => {
+	// 	const mousePos = event.pixel;
+	// 	if (generateMode) {
+	// 		const coord = toLonLat(map.getCoordinateFromPixel(mousePos));
+	// 		points[points.length - 1] = coord; // Update the last point with the mouse position
+	// 	}
+	// 	const projectedPoints = points.map((point) => {
+	// 		const coord = fromLonLat(point);
+	// 		return map.getPixelFromCoordinate(coord);
+	// 	});
 
-		// Find the closest Voronoi cell to the mouse position
-		const delaunay = d3.Delaunay.from(projectedPoints);
-		const index = delaunay.find(mousePos[0], mousePos[1]);
+	// 	// Find the closest Voronoi cell to the mouse position
+	// 	const delaunay = d3.Delaunay.from(projectedPoints);
+	// 	const index = delaunay.find(mousePos[0], mousePos[1]);
 
-		// Redraw the Voronoi diagram with the highlighted cell
-		drawVoronoi(index);
-	});
+	// 	// Redraw the Voronoi diagram with the highlighted cell
+	// 	drawVoronoi(index);
+	// });
 
 	// 3. Handle map events to redraw the Voronoi diagram
-	map.on("postrender", function () {
-		resizeCanvas();
-		drawVoronoi();
-	});
+	// map.on("postrender", function () {
+	// 	resizeCanvas();
+	// 	drawVoronoi();
+	// });
 
 	// Initial render
-	resizeCanvas();
-	drawVoronoi();
+	// resizeCanvas();
+	// drawVoronoi();
 </script>
