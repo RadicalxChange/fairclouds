@@ -1,6 +1,5 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import Map from "../../components/Map.astro";
 import { getLangFromUrl } from "../../i18n/utils";
 import directus from "../../lib/directus";
 import { readSingleton } from "@directus/sdk";
@@ -32,7 +31,7 @@ const lang = getLangFromUrl(Astro.url);
 ---
 
 <Layout title="Fairclouds">
-	<main>
+	<main class="mt-36">
 		<div class="">
 			<div class="flex justify-between">
 				<div class="px-4 py-2.5 max-w-[800px] mb-12 col-span-6 flex-grow">
@@ -44,9 +43,8 @@ const lang = getLangFromUrl(Astro.url);
 								: home.translations[1].intro
 						}
 					</h2>
-					<a
-						href="https://mailchi.mp/serpentinegalleries.org/fairclouds-subscriptions"
-						class="mb-12 button">{lang == "en" ? "Newsletter" : "Boletín"}</a
+					<a href="/en/map" class="mb-12 button"
+						>{lang == "en" ? "Enter" : "Entrar"}</a
 					>
 					<h2 class="whitespace-break-spaces opacity-60 mb-5">
 						<span class="text-small">{lang == "en" ? "ES " : "EN "}</span>
@@ -56,10 +54,8 @@ const lang = getLangFromUrl(Astro.url);
 								: home.translations[0].intro
 						}
 					</h2>
-					<a
-						href="https://mailchi.mp/serpentinegalleries.org/fairclouds-subscriptions"
-						class="mb-12 button opacity-60"
-						>{lang == "en" ? "Boletín" : "Newsletter"}</a
+					<a href="/en/map" class="mb-12 button block opacity-60"
+						>{lang == "en" ? "Entrar" : "Enter"}</a
 					>
 				</div>
 				<!-- <div class="anim-parent flex-shrink-0">
@@ -75,9 +71,6 @@ const lang = getLangFromUrl(Astro.url);
 				<Image src={radicalxchange} alt="" width="364" height="45" />
 			</div>
 		</div>
-
-		<Map />
-		<AddToCart client:load />
 	</main>
 </Layout>
 

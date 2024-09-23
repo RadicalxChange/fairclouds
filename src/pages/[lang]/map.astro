@@ -1,0 +1,19 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import OSMap from "../../components/OSMap.astro";
+import { getLangFromUrl } from "../../i18n/utils";
+
+export async function getStaticPaths() {
+  const paths = [{ params: { lang: "en" } }, { params: { lang: "es" } }];
+
+  return paths;
+}
+
+const lang = getLangFromUrl(Astro.url);
+---
+
+<Layout title="Fairclouds">
+  <main>
+    <OSMap />
+  </main>
+</Layout>
