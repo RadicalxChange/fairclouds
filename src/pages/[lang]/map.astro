@@ -12,7 +12,7 @@ export async function getStaticPaths() {
 const lang = getLangFromUrl(Astro.url);
 ---
 
-<Layout title="Fairclouds">
+<Layout fixed={true} title="Fairclouds">
   <main>
     <OSMap />
   </main>

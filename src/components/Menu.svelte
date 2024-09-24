@@ -1,7 +1,6 @@
 <script lang="ts">
   import { createDialog, melt } from "@melt-ui/svelte";
   import Login from "./Login.svelte";
-  import Blocks from "./BlocksSvelte.svelte";
 
   const {
     elements: { trigger, portalled, overlay, content },
@@ -9,8 +8,6 @@
   } = createDialog();
 
   let tab = "about";
-  export let about;
-  export let info;
 </script>
 
 <button
@@ -43,10 +40,13 @@
     >
       <div class="overflow-auto custom-scrollbar">
         {#if tab === "about"}
-          <Blocks content={about} />
+          <slot name="about" />
         {/if}
         {#if tab === "info"}
-          <Blocks content={info} />
+          <slot name="info" />
+        {/if}
+        {#if tab === "news"}
+          <slot name="news" />
         {/if}
         {#if tab === "login"}
           <Login />
@@ -68,20 +68,17 @@
           >
         </li>
         <li>
-          <a class="hover-blur" href="/blog">Blog</a>
+          <button
+            class="hover-blur"
+            class:active={tab == "news"}
+            on:click={() => (tab = "news")}>News</button
+          >
         </li>
         <li>
           <button
             class="hover-blur"
-            class:active={tab == "info"}
+            class:active={tab == "login"}
             on:click={() => (tab = "login")}>Login</button
-          >
-        </li>
-        <li>
-          <a
-            class="hover-blur"
-            href="https://mailchi.mp/serpentinegalleries.org/fairclouds-subscriptions"
-            >Newsletter</a
           >
         </li>
       </ul>

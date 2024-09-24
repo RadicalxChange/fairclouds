@@ -1,0 +1,31 @@
+---
+import { Image } from "astro:assets";
+import { format } from "date-fns";
+
+const { articles, lang } = Astro.props;
+console.log(articles);
+---
+
+<aside class="hidden xl:block max-w-[441px]">
+  {
+    articles.map((article) => (
+      <a class="flex gap-2" href={`/${lang}/blog/${article.slug}`}>
+        <Image
+          src="https://cdn.shopify.com/static/sample-images/bath_grande_crop_center.jpeg"
+          alt=""
+          width={106}
+          height={67}
+        />
+        <div>
+          <time
+            datetime={article.date_created}
+            class="mb-1 text-small block opacity-60"
+          >
+            {format(article.date_created, "EEEE, dd.MM.yyyy")}
+          </time>
+          <p> {article.translations[0].title}</p>
+        </div>
+      </a>
+    ))
+  }
+</aside>

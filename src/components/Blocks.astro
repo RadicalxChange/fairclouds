@@ -7,9 +7,24 @@ const { content } = Astro.props;
     content.map((block) => {
       switch (block.type) {
         case "paragraph":
-          return <p>{block.data.text}</p>;
-        case "heading":
-          return <h2>{block.data.text}</h2>;
+          return <p set:html={block.data.text} />;
+        case "header":
+          switch (block.data.level) {
+            case 1:
+              return <h1 set:html={block.data.text} />;
+            case 2:
+              return <h2 set:html={block.data.text} />;
+            case 3:
+              return <h3 set:html={block.data.text} />;
+            case 4:
+              return <h4 set:html={block.data.text} />;
+            case 5:
+              return <h5 set:html={block.data.text} />;
+            case 6:
+              return <h6 set:html={block.data.text} />;
+            default:
+              return <p set:html={block.data.text} />; // Fallback to paragraph if level is not valid
+          }
         case "quote":
           return (
             <blockquote>
@@ -20,7 +35,31 @@ const { content } = Astro.props;
             </blockquote>
           );
         case "image":
-          return <img src={block.url} alt={block.alt} />;
+          if (block.data.caption) {
+            return (
+              <figure>
+                <img
+                  src={`https://cms.fairclouds.life/assets/${block.data.file.fileId}`}
+                  alt={block.data.caption}
+                />
+                <figcaption set:html={block.data.caption} />
+              </figure>
+            );
+          } else
+            return (
+              <img
+                src={`https://cms.fairclouds.life/assets/${block.data.file.fileId}`}
+                alt={block.data.caption}
+              />
+            );
+        case "nestedlist":
+          return (
+            <ul>
+              {block.data.items.map((item) => (
+                <li set:html={item.content} />
+              ))}
+            </ul>
+          );
         // Add more cases as needed for different types of content
         default:
           return null; // Return null or an appropriate fallback for unknown types
