@@ -19,22 +19,22 @@ const { content } = Astro.props;
           case "header":
             switch (block.data.level) {
               case 1:
-                elements.push(<h1>{block.data.text}</h1>);
+                elements.push(<h1 set:html={block.data.text} />);
                 break;
               case 2:
-                elements.push(<h2>{block.data.text}</h2>);
+                elements.push(<h2 set:html={block.data.text} />);
                 break;
               case 3:
-                elements.push(<h3>{block.data.text}</h3>);
+                elements.push(<h3 set:html={block.data.text} />);
                 break;
               case 4:
-                elements.push(<h4>{block.data.text}</h4>);
+                elements.push(<h4 set:html={block.data.text} />);
                 break;
               case 5:
-                elements.push(<h5>{block.data.text}</h5>);
+                elements.push(<h5 set:html={block.data.text} />);
                 break;
               case 6:
-                elements.push(<h6>{block.data.text}</h6>);
+                elements.push(<h6 set:html={block.data.text} />);
                 break;
               default:
                 elements.push(<p set:html={block.data.text} />); // Fallback to paragraph if level is not valid
