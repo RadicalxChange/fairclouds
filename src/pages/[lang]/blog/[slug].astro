@@ -1,11 +1,7 @@
 ---
 import directus from "../../../lib/directus";
 import { readItems } from "@directus/sdk";
-import { getLangFromUrl } from "../../../i18n/utils";
-import Blocks from "../../../components/Blocks.astro";
 import Layout from "../../../layouts/Layout.astro";
-import { Image } from "astro:assets";
-import { format } from "date-fns";
 import Blog from "../../../components/Blog.astro";
 
 const directusBaseURL = import.meta.env.DIRECTUS_CMS_URL;
