@@ -1,0 +1,149 @@
+	/* Register your custom font family and tell the browser where to find it. */
+	@font-face {
+		font-family: "Rene";
+		src: url("/fonts/Rene Regular.woff2") format("woff");
+		font-weight: normal;
+		font-style: normal;
+		font-display: swap;
+	}
+	html {
+		font-family: "Rene", sans-serif;
+		background: #ffffff;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar {
+		width: 0.6875em;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-thumb {
+		background: #72aee9;
+		box-shadow: inset 0px 0px 6.8px 3px #ffffff;
+		border-radius: 100px;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-track {
+		background-color: transparent;
+	}
+
+	h1,
+	h2,
+	h3 {
+		font-size: 1.125rem;
+		line-height: 22px;
+		letter-spacing: -0.07em;
+		line-height: auto;
+	}
+
+	p,
+	.text-copy {
+		font-size: 1.125rem;
+		line-height: 22px;
+		letter-spacing: 0em;
+	}
+
+	.text-small {
+		font-size: 0.75rem;
+	}
+
+	.text-menu-languages {
+		font-size: 1.625rem;
+		letter-spacing: -0.07em;
+	}
+
+	.logo {
+		font-size: 3rem;
+	}
+
+	.prose h1,
+	.prose h2,
+	.prose h3 {
+		font-size: 2.125rem;
+		margin-bottom: 28px;
+	}
+	.button {
+		display: inline-block;
+		padding: 1.5px 15px;
+		gap: 10px;
+		background: rgba(255, 255, 255, 0.02);
+		box-shadow: inset 0px 0px 10px 3px #ffffff;
+		border-radius: 5px;
+		font-size: 2.125rem;
+		transition: 0.5s ease;
+	}
+
+	button:hover,
+	a:hover,
+	.hover-blur:hover {
+		filter: blur(2px);
+		transition: 0.75s ease;
+	}
+
+	.hover-blur {
+		transition: 0.5s ease;
+	}
+
+	button,
+	a {
+		transition: 0.5s ease;
+	}
+
+	html.accessible {
+		font-family: "Arial", sans-serif;
+	}
+
+	html.accessible.bg-primary {
+		background: #2078cf;
+	}
+
+	html.accessible h1,
+	html.accessible h2,
+	html.accessible h3,
+	html.accessible p,
+	html.accessible .text-copy,
+	html.accessible button {
+		letter-spacing: 0em !important;
+	}
+
+	input {
+		background: #72aee9;
+		box-shadow: inset 0px 0px 6.8px 3px #ffffff;
+		border-radius: 100px;
+		width: 100%;
+		padding: 10px 20px;
+		font-size: 1.625rem;
+		letter-spacing: -0.07em;
+	}
+
+	input::placeholder {
+		color: #ffffff;
+		opacity: 60%;
+	}
+
+	hr {
+		border-top: 1px dotted #fff;
+	}
+
+	.ol-overviewmap.ol-custom-overviewmap {
+		left: 15px !important;
+		bottom: 15px !important;
+		z-index: 20 !important;
+	}
+
+	.ol-custom-overviewmap canvas {
+		border-radius: 10px !important;
+	}
+	.ol-custom-overviewmap .ol-overviewmap-map {
+		border: 0px !important;
+		background: rgba(255, 255, 255, 0.02) !important;
+		box-shadow: inset 0px 0px 10px 3px #ffffff !important;
+		border-radius: 10px !important;
+		width: 270px !important;
+		height: 175px !important;
+	}
+
+	.ol-overviewmap-box {
+		background: rgba(255, 255, 255, 0.02) !important;
+		box-shadow: inset 0px 0px 10px 3px #ffffff !important;
+		border-radius: 5px !important;
+		border: 0px !important;
+	}
