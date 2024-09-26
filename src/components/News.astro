@@ -1,8 +1,11 @@
 ---
 import { Image } from "astro:assets";
 import { format } from "date-fns/format";
+import { useTranslations } from "../i18n/utils";
 
 const { articles, lang } = Astro.props;
+
+const t = useTranslations(lang);
 
 function getAbstract(blocks, length = 200) {
   let abstract = "";
@@ -51,7 +54,7 @@ function getAbstract(blocks, length = 200) {
             href={`/${lang}/blog/${article.slug}`}
             target="_blank"
           >
-            Read more
+            {t("readmore")}
           </a>
         </div>
       );

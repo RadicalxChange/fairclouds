@@ -1,6 +1,10 @@
 <script lang="ts">
+  import { useTranslations } from "../i18n/utils";
   import { createDialog, melt } from "@melt-ui/svelte";
   import Login from "./Login.svelte";
+  import { onMount } from "svelte";
+
+  export let lang: "en" | "es" = "en";
 
   const {
     elements: { trigger, portalled, overlay, content },
@@ -8,6 +12,11 @@
   } = createDialog();
 
   let tab = "about";
+
+  let t;
+  onMount(() => {
+    t = useTranslations(lang);
+  });
 </script>
 
 <button
@@ -49,7 +58,7 @@
           <slot name="news" />
         {/if}
         {#if tab === "login"}
-          <Login />
+          <Login {lang} />
         {/if}
       </div>
       <ul class="flex justify-between items-center pt-5 text-menu-languages">
@@ -57,28 +66,28 @@
           <button
             class="hover-blur"
             class:active={tab == "about"}
-            on:click={() => (tab = "about")}>About</button
+            on:click={() => (tab = "about")}>{t("about")}</button
           >
         </li>
         <li>
           <button
             class="hover-blur"
             class:active={tab == "info"}
-            on:click={() => (tab = "info")}>Info</button
+            on:click={() => (tab = "info")}>{t("info")}</button
           >
         </li>
         <li>
           <button
             class="hover-blur"
             class:active={tab == "news"}
-            on:click={() => (tab = "news")}>News</button
+            on:click={() => (tab = "news")}>{t("news")}</button
           >
         </li>
         <li>
           <button
             class="hover-blur"
             class:active={tab == "login"}
-            on:click={() => (tab = "login")}>Login</button
+            on:click={() => (tab = "login")}>{t("login")}</button
           >
         </li>
       </ul>

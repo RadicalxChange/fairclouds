@@ -49,7 +49,7 @@ const info = home.translations[0].info?.blocks;
 const about = home.translations[0].about?.blocks;
 ---
 
-<Menu client:load>
+<Menu lang={lang} client:load>
   <News slot="news" articles={articles} lang={lang} />
   <Blocks slot="info" content={info} />
   <Blocks slot="about" content={about} />

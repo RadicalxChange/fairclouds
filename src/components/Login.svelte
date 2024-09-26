@@ -1,8 +1,10 @@
 <script>
-  import { onMount } from "svelte";
+  // import { onMount } from "svelte";
   import { createDirectus, authentication } from "@directus/sdk";
+  // import { useTranslations } from "../i18n/utils";
 
-  import directus from "../lib/directus";
+  export let lang;
+
   let email = "";
   let password = "";
   let error = "";
@@ -54,6 +56,7 @@
     {#if error}
       <p>{error}</p>
     {/if}
-    <button type="submit">Login</button>
+    <!-- to do: use proper translation function -->
+    <button type="submit">{lang == "en" ? "Login" : "Acceso"}</button>
   </form>
 {/if}
