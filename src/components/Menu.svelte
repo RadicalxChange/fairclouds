@@ -43,25 +43,11 @@
   <div {...$portalled} use:portalled>
     <div {...$overlay} use:overlay />
     <div
-      class="fixed flex flex-col rounded-default top-20 right-4 z-50 max-h-[800px] w-full max-w-[610px] bg-primary shadow-cloud p-5 pb-1 focus:outline-none"
+      class="fixed flex flex-col rounded-default top-20 right-4 z-50 max-h-[800px] w-full max-w-[610px] bg-primary shadow-cloud p-5 pt-2 focus:outline-none"
       {...$content}
       use:content
     >
-      <div class="overflow-auto custom-scrollbar">
-        {#if tab === "about"}
-          <slot name="about" />
-        {/if}
-        {#if tab === "info"}
-          <slot name="info" />
-        {/if}
-        {#if tab === "news"}
-          <slot name="news" />
-        {/if}
-        {#if tab === "login"}
-          <Login {lang} />
-        {/if}
-      </div>
-      <ul class="flex justify-between items-center pt-5 text-menu-languages">
+      <ul class="flex justify-between items-center pb-2 text-menu-languages">
         <li>
           <button
             class="hover-blur"
@@ -91,6 +77,20 @@
           >
         </li>
       </ul>
+      <div class="overflow-auto custom-scrollbar">
+        {#if tab === "about"}
+          <slot name="about" />
+        {/if}
+        {#if tab === "info"}
+          <slot name="info" />
+        {/if}
+        {#if tab === "news"}
+          <slot name="news" />
+        {/if}
+        {#if tab === "login"}
+          <Login {lang} />
+        {/if}
+      </div>
     </div>
   </div>
 {/if}
