@@ -328,38 +328,27 @@ export const prerender = false;
 	// tile url
 	// /tiles/${tileZ}/${tileX / tileSize}_${tileY / tileSize}.png
 
-	const tileLayer = new TileLayer({
-		source: new XYZ({
-			url: "https://storage.googleapis.com/fairclouds_tiles/tiles/{z}/{x}_{y}.png", // Path to your tiles
-			maxZoom: 12, // Adjust based on the max zoom level available in your tiles
-			minZoom: 2,
-			tileSize: [256, 256], // Size of your tiles, typically 256x256 or 512x512
-			// Optionally define the extent and projection if necessary
-			wrapX: false,
-		}),
-	});
-
 	// Define the map with the XYZ tile source
 	const map = new Map({
 		target: "map",
 		layers: [
 			new TileLayer({
 				source: new XYZ({
-					url: "https://storage.googleapis.com/fairclouds_tiles/tiles_v2/{z}/{x}_{y}.png", // Path to your tiles
+					url: "https://storage.googleapis.com/fairclouds_tiles/tiles_512/{z}/{x}_{y}.png", // Path to your tiles
 					maxZoom: 12, // Adjust based on the max zoom level available in your tiles
-					minZoom: 2,
-					tileSize: [256, 256], // Size of your tiles, typically 256x256 or 512x512
+					minZoom: 0,
+					tileSize: [512, 512], // Size of your tiles, typically 256x256 or 512x512
 					wrapX: false,
 					projection: "EPSG:3857", // Ensure the projection is set correctly
 				}),
 			}),
 		],
 		view: new View({
-			center: [0, 0], // Adjust based on your map's center
+			center: [0, -10000000], // Adjust based on your map's center
 			zoom: 2, // Initial zoom level to fit the specific area
 			maxZoom: 12, // Maximum zoom level, should match maxZoom in XYZ source
-			minZoom: 2,
-			extent: [-20037508.34, -14537508.34, 20037508.34, 12537508.34],
+			minZoom: 0,
+			extent: [-20007508.34, -19000000, 20007508.34, 10537508],
 		}),
 		controls: defaultControls({ zoom: false }), // Disable zoom controls
 	});
@@ -370,20 +359,20 @@ export const prerender = false;
 		layers: [
 			new TileLayer({
 				source: new XYZ({
-					url: "https://storage.googleapis.com/fairclouds_tiles/tiles_v2/{z}/{x}_{y}.png", // Path to your tiles
-					maxZoom: 12, // Adjust based on the max zoom level available in your tiles
-					minZoom: 2,
-					tileSize: [256, 256], // Size of your tiles, typically 256x256 or 512x512
+					url: "https://storage.googleapis.com/fairclouds_tiles/tiles_512/{z}/{x}_{y}.png", // Path to your tiles
+					maxZoom: 1, // Adjust based on the max zoom level available in your tiles
+					minZoom: 1,
+					tileSize: [512, 512], // Size of your tiles, typically 256x256 or 512x512
 					// Optionally define the extent and projection if necessary
 					wrapX: false,
 				}),
 			}),
 		],
 		view: new View({
-			center: [0, 0],
-			zoom: 2,
-			maxZoom: 2,
-			extent: [-20037508.34, -20037508.34, 20037508.34, 20037508.34],
+			center: [0, -10000000],
+			zoom: 1,
+			maxZoom: 1,
+			extent: [-20007508.34, -19500000, 20007508.34, 10537508],
 		}),
 		collapsible: false,
 	});
@@ -507,7 +496,7 @@ export const prerender = false;
 				renderBuffer: 1000,
 				updateWhileInteracting: true,
 			});
-			map.addLayer(voronoiLayer);
+			// map.addLayer(voronoiLayer);
 
 			// Create a highlight style for hover
 			const highlightStyle = new Style({
