@@ -1,5 +1,5 @@
 <script>
-  import { createDialog, createSelect, melt } from "@melt-ui/svelte";
+  import { createDialog, melt } from "@melt-ui/svelte";
   import Login from "./Login.svelte";
   import Blocks from "./BlocksSvelte.svelte";
 
