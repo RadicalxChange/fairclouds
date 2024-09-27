@@ -11,6 +11,7 @@ export default {
 			boxShadow: {
         'cloud': 'inset 0px 0px 6.8px 3px #FFFFFF',
 				'large-cloud': 'inset 0px 0px 23.9px 5px #FFFFFF',
+				'focus': '0px 0px 23.9px 5px #FFFFFF',
       },
 			borderRadius: {
 				default: '10px',

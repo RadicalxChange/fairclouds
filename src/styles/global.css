@@ -109,7 +109,7 @@
 		letter-spacing: 0em !important;
 	}
 
-	input {
+	input, select {
 		background: #72aee9;
 		box-shadow: inset 0px 0px 6.8px 3px #ffffff;
 		border-radius: 100px;
@@ -119,9 +119,30 @@
 		letter-spacing: -0.07em;
 	}
 
-	input::placeholder {
+	input:focus, select:focus {
+    @apply shadow-focus outline-none;
+	}
+	
+
+	input::placeholder, select::placeholder {
 		color: #ffffff;
 		opacity: 60%;
+	}
+
+	select {
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		text-indent: 1px;
+		text-overflow: '';
+		background-image: url('/icons/dropdown.svg');
+		background-repeat: no-repeat;
+		background-position: right 16px center; 
+		background-size: 16px; 
+		padding-right: 40px; 
+	}
+
+	select::-ms-expand {
+		display: none;
 	}
 
 	hr {
@@ -152,3 +173,4 @@
 		border-radius: 5px !important;
 		border: 0px !important;
 	}
+

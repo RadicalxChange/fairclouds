@@ -43,7 +43,7 @@
   <div {...$portalled} use:portalled>
     <div {...$overlay} use:overlay />
     <div
-      class="fixed flex flex-col rounded-default top-20 right-4 z-50 max-h-[800px] w-full max-w-[610px] bg-primary shadow-cloud p-5 pt-2 focus:outline-none"
+      class="fixed flex flex-col rounded-default top-20 right-4 z-50 max-h-[calc(100vh-175px)] w-full max-w-[610px] bg-primary shadow-cloud p-5 pt-2 focus:outline-none"
       {...$content}
       use:content
     >

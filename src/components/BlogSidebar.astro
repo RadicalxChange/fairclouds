@@ -11,7 +11,7 @@ console.log(articles);
     articles.map((article) => (
       <a class="flex gap-2" href={`/${lang}/blog/${article.slug}`}>
         <Image
-          src="https://cdn.shopify.com/static/sample-images/bath_grande_crop_center.jpeg"
+          src={`https://cms.fairclouds.life/assets/${article.image}`}
           alt=""
           width={106}
           height={67}
