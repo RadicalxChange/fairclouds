@@ -34,4 +34,4 @@ def create_tiles(image_path, output_dir, tile_size=512, min_zoom=1, max_zoom=7):
     print('Tile creation completed')
 
 # Usage
-create_tiles("satellite-map.png", "output_tiles_sat")
+create_tiles("241010_FC_sky.png", "output_tiles_sky")

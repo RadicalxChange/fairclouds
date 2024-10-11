@@ -129,13 +129,16 @@ const drawings = await directus.request(
 		import { easeOut } from "ol/easing.js";
 		import { Point } from "ol/geom";
 		import CircleStyle from "ol/style/Circle";
+		import { draw } from "svelte/transition";
 
 		const points = [];
 
 		const cloudURL =
-			"https://storage.googleapis.com/fairclouds_tiles/tiles_512/{z}/{x}_{y}.png";
+			"https://storage.googleapis.com/fairclouds_tiles/tiles_v3/sky/{z}/{x}_{y}.png";
 		const satURL =
-			"https://storage.googleapis.com/fairclouds_tiles/tiles_512_sat/{z}/{x}_{y}.png";
+			"https://storage.googleapis.com/fairclouds_tiles/tiles_v3/sat/{z}/{x}_{y}.png";
+		const drawingsURL =
+			"https://storage.googleapis.com/fairclouds_tiles/tiles_v3/drawings/{z}/{x}_{y}.png";
 
 		const cloudTileSource = new XYZ({
 			url: cloudURL,
@@ -253,7 +256,7 @@ const drawings = await directus.request(
 				let voronoi = turf.voronoi(pointsCollection, { bbox });
 
 				function getRandomOpacity() {
-					return Math.random() * 0.5 + 0.1;
+					return Math.random() * 0.7 + 0.1;
 				}
 
 				// Add opacity to Voronoi cell properties
@@ -293,6 +296,7 @@ const drawings = await directus.request(
 
 				const voronoiStyle = (feature) => {
 					const opacity = feature.get("opacity");
+					// const blue = feature.get("blue");
 					return new Style({
 						fill: new Fill({
 							color: `rgba(255, 255, 255, ${opacity})`,
@@ -345,6 +349,22 @@ const drawings = await directus.request(
 					updateWhileInteracting: true,
 				});
 				map.addLayer(voronoiLayer);
+
+				// add drawings
+				const drawingsTileSource = new XYZ({
+					url: drawingsURL,
+					maxZoom: 12,
+					minZoom: 1,
+					tileSize: [512, 512],
+					wrapX: false,
+					projection: "EPSG:3857",
+				});
+
+				const drawingLayer = new TileLayer({
+					source: drawingsTileSource,
+				});
+
+				map.addLayer(drawingLayer);
 
 				// Create a highlight style for hover
 				const highlightStyle = new Style({
