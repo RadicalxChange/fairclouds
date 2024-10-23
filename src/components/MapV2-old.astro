@@ -1,0 +1,130 @@
+<div id="container" class="relative w-screen h-screen">
+  <!-- Background Canvas for the Cloud Image -->
+  <canvas id="backgroundCanvas" class="absolute inset-0"></canvas>
+
+  <!-- Foreground SVG Drawings -->
+  <img
+    src="/fairclouds-v2-drawings.png"
+    id="drawings"
+    class="absolute object-fill"
+  />
+
+  <!-- Canvas for the Eraser Effect -->
+  <canvas id="canvas" class="absolute inset-0"></canvas>
+</div>
+
+<script>
+  import * as d3 from "d3";
+
+  const backgroundCanvas = document.getElementById("backgroundCanvas");
+  const backgroundCtx = backgroundCanvas.getContext("2d");
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  const container = document.getElementById("container");
+  const drawings = document.getElementById("drawings");
+  const cloudImage = new Image();
+  cloudImage.src = "/fairclouds-v2-bg.jpg";
+
+  let mouseMovements = [];
+
+  // Resize the canvases to fill the window
+  function resizeCanvases() {
+    backgroundCanvas.width = window.innerWidth;
+    backgroundCanvas.height = window.innerHeight;
+    backgroundCtx.clearRect(
+      0,
+      0,
+      backgroundCanvas.width,
+      backgroundCanvas.height,
+    );
+    backgroundCtx.drawImage(
+      cloudImage,
+      0,
+      0,
+      backgroundCanvas.width,
+      backgroundCanvas.height,
+    );
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(
+      cloudImage,
+      0,
+      0,
+      backgroundCanvas.width,
+      backgroundCanvas.height,
+    );
+  }
+  window.addEventListener("resize", resizeCanvases);
+  cloudImage.onload = resizeCanvases;
+
+  // Initially show the SVG drawings
+  drawings.style.display = "block";
+
+  // Erase the canvas to reveal the SVG drawings
+  function eraseCanvas(event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const radius = 10;
+
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+    ctx.fill();
+
+    // Store the mouse movement with timestamp
+    mouseMovements.push({ x, y, radius, timestamp: Date.now() });
+  }
+
+  canvas.addEventListener("mousemove", eraseCanvas);
+
+  // Refill the erased areas after 10 seconds
+  function refillCanvas() {
+    const now = Date.now();
+    ctx.globalCompositeOperation = "source-over";
+    mouseMovements = mouseMovements.filter((movement) => {
+      if (now - movement.timestamp > 5000) {
+        const sx =
+          ((movement.x - movement.radius) / canvas.width) * cloudImage.width;
+        const sy =
+          ((movement.y - movement.radius) / canvas.height) * cloudImage.height;
+        const sWidth =
+          ((movement.radius * 2) / canvas.width) * cloudImage.width;
+        const sHeight =
+          ((movement.radius * 2) / canvas.height) * cloudImage.height;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(
+          movement.x,
+          movement.y,
+          movement.radius + 2,
+          0,
+          Math.PI * 2,
+          false,
+        );
+        ctx.clip();
+        ctx.drawImage(
+          cloudImage,
+          sx,
+          sy,
+          sWidth,
+          sHeight,
+          movement.x - movement.radius,
+          movement.y - movement.radius,
+          movement.radius * 2,
+          movement.radius * 2,
+        );
+        ctx.restore();
+        return false; // Remove this movement from the array
+      }
+      return true; // Keep this movement in the array
+    });
+
+    requestAnimationFrame(refillCanvas);
+  }
+
+  requestAnimationFrame(refillCanvas);
+</script>

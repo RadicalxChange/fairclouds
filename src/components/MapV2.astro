@@ -1,0 +1,240 @@
+---
+const cloudSize = { width: 20, height: 20 }; // Assuming each cloud is 20vh x 20vh
+
+function generateNonOverlappingClouds(count, xRange, yRange, cloudSize) {
+  const clouds = [];
+
+  function isOverlapping(newCloud) {
+    return clouds.some((cloud) => {
+      return (
+        newCloud.x < cloud.x + cloudSize.width &&
+        newCloud.x + cloudSize.width > cloud.x &&
+        newCloud.y < cloud.y + cloudSize.height &&
+        newCloud.y + cloudSize.height > cloud.y
+      );
+    });
+  }
+
+  while (clouds.length < count) {
+    const newCloud = {
+      x: Math.floor(Math.random() * (xRange.max - xRange.min + 1)) + xRange.min,
+      y: Math.floor(Math.random() * (yRange.max - yRange.min + 1)) + yRange.min,
+      id: clouds.length + 1,
+    };
+
+    if (!isOverlapping(newCloud)) {
+      clouds.push(newCloud);
+    }
+  }
+
+  return clouds;
+}
+
+const clouds = generateNonOverlappingClouds(
+  20,
+  { min: 10, max: 500 },
+  { min: 20, max: 70 },
+  cloudSize,
+);
+---
+
+<div class="bg-primary h-screen max-h-screen inline-block relative">
+  <!-- sky/clouds container -->
+  <img
+    src="/v3/bg.png"
+    alt=""
+    class="h-screen max-h-screen w-auto object-top max-w-none"
+  />
+  <div class="absolute w-full h-full top-0 left-0 z-20">
+    <!-- clouds layer -->
+    {
+      clouds.map((cloud) => {
+        return (
+          <button
+            class="w-[20vh] h-[20vh] absolute cloud-button"
+            style={{ left: cloud.x + "vh", top: cloud.y + "vh" }}
+            disabled
+          >
+            <div class="relative w-full h-full">
+              <img
+                src="/v3/43_cloud.png"
+                alt=""
+                class="absolute top-0 left-0 w-full h-full"
+              />
+              <img
+                src="/v3/43_drawing.png"
+                alt=""
+                class="absolute top-0 w-full h-full"
+              />
+              <canvas
+                data-id={cloud.id}
+                class="absolute top-0 left-0 z-10 cloud-canvas w-full h-full"
+              />
+            </div>
+          </button>
+        );
+      })
+    }
+
+    <!-- Parallax clouds -->
+    <img
+      src="/v3/43_cloud.png"
+      class="w-[80vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
+      style="top: 10vh; left: 20vh;"
+      data-speed="-0.2"
+    />
+    <img
+      src="/v3/43_cloud.png"
+      class="w-[80vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
+      style="top: 30vh; left: 90vh;"
+      data-speed="-0.3"
+    />
+    <img
+      src="/v3/43_cloud.png"
+      class="w-[80vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
+      style="top: 50vh; left: 120vh;"
+      data-speed="-0.1"
+    />
+    <img
+      src="/v3/43_cloud.png"
+      class="w-[80vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
+      style="top: 5vh; left: 160vh;"
+      data-speed="-0.25"
+    />
+    <img
+      src="/v3/43_cloud.png"
+      class="w-[80vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
+      style="top: 10vh; left: 220vh;"
+      data-speed="-0.1"
+    />
+  </div>
+
+  <!-- horizon -->
+  <img
+    src="/v3/horizon.png"
+    alt=""
+    class="fixed w-screen object-cover object-top h-[10vh] bottom-0 left-0"
+  />
+</div>
+
+<script>
+  const canvases = document.querySelectorAll(".cloud-canvas");
+  const parallaxClouds = document.querySelectorAll(".parallax-cloud");
+  const cloudImage = new Image();
+  cloudImage.src = "/v3/43_cloud.png";
+
+  let mouseMovements = new Map();
+  const checkInterval = 100; // Check every second
+  let lastCheckTime = 0;
+
+  cloudImage.onload = function () {
+    canvases.forEach((canvas) => {
+      const ctx = canvas.getContext("2d");
+
+      // Set canvas size
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+
+      ctx.drawImage(cloudImage, 0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "blue";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      canvas.style.filter = "blur(10px)";
+
+      canvas.addEventListener("mousemove", (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const radius = 10;
+
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+        ctx.fill();
+
+        // Store the mouse movement with timestamp
+        if (!mouseMovements.has(canvas)) {
+          mouseMovements.set(canvas, []);
+        }
+        mouseMovements
+          .get(canvas)
+          .push({ x, y, radius, timestamp: Date.now() });
+      });
+    });
+
+    function redraw() {
+      const now = Date.now();
+      mouseMovements.forEach((movements, canvas) => {
+        const ctx = canvas.getContext("2d");
+        mouseMovements.set(
+          canvas,
+          movements.filter((movement) => {
+            if (now - movement.timestamp > 10000) {
+              ctx.globalCompositeOperation = "source-over";
+              ctx.fillStyle = "blue";
+              ctx.fillRect(
+                movement.x - movement.radius,
+                movement.y - movement.radius,
+                movement.radius * 2,
+                movement.radius * 2,
+              );
+              return false;
+            }
+            return true;
+          }),
+        );
+
+        if (mouseMovements.get(canvas).length === 0) {
+          mouseMovements.delete(canvas);
+        }
+      });
+
+      if (now - lastCheckTime > checkInterval) {
+        lastCheckTime = now;
+        mouseMovements.forEach((_, canvas) => {
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const totalPixels = imageData.width * imageData.height;
+          const threshold = totalPixels * 0.25;
+          let erasedPixels = 0;
+
+          for (let i = 3; i < imageData.data.length; i += 4) {
+            if (imageData.data[i] === 0) {
+              erasedPixels++;
+            }
+          }
+
+          const erasedPercentage = erasedPixels / totalPixels;
+          if (erasedPercentage > 0.25) {
+            canvas.previousElementSibling.style.filter = "blur(0px)";
+            const button = canvas.closest("button");
+            if (button) {
+              button.disabled = false;
+            }
+            console.log("25% of the canvas has been erased");
+          } else {
+            const blurAmount = 10 * (1 - erasedPercentage / 0.25);
+            canvas.previousElementSibling.style.filter = `blur(${blurAmount}px)`;
+            const button = canvas.closest("button");
+            if (button) {
+              button.disabled = true;
+            }
+          }
+        });
+      }
+
+      requestAnimationFrame(redraw);
+    }
+
+    requestAnimationFrame(redraw);
+
+    // Parallax effect
+    window.addEventListener("scroll", function () {
+      const scrollPosition = window.scrollX;
+      parallaxClouds.forEach((cloud) => {
+        const speed = parseFloat(cloud.getAttribute("data-speed"));
+        cloud.style.transform = `translateX(${scrollPosition * speed}px)`;
+      });
+    });
+  };
+</script>

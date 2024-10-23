@@ -1,6 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import OSMap from "../../components/OSMap.astro";
+import MapV2 from "../../components/MapV2.astro";
 import { getLangFromUrl } from "../../i18n/utils";
 
 export async function getStaticPaths() {
@@ -14,6 +14,6 @@ const lang = getLangFromUrl(Astro.url);
 
 <Layout fixed={true} title="Fairclouds">
   <main>
-    <OSMap />
+    <MapV2 />
   </main>
 </Layout>
