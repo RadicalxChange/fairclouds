@@ -1,106 +1,7 @@
 ---
 const height = 982;
 const scaleFactor = 1.32;
-const drawings = [
-  {
-    id: "043",
-    x: 42,
-    y: 165,
-    width: 336,
-    height: 192,
-  },
-  {
-    id: "001",
-    x: 463,
-    y: 261,
-    width: 203,
-    height: 148,
-  },
-  {
-    id: "019",
-    x: 637,
-    y: 433,
-    width: 252,
-    height: 219,
-  },
-  {
-    id: "006",
-    x: 941,
-    y: 174,
-    width: 295,
-    height: 144,
-  },
-  {
-    id: "015",
-    x: 1551,
-    y: 65,
-    width: 308.47,
-    height: 282,
-  },
-  {
-    id: "015",
-    x: 1551,
-    y: 65,
-    width: 308.47,
-    height: 282,
-  },
-  {
-    id: "004",
-    x: 1702,
-    y: 366,
-    width: 293,
-    height: 226,
-  },
-  {
-    id: "003",
-    x: 1956,
-    y: 89,
-    width: 347,
-    height: 273,
-  },
-  {
-    id: "002",
-    x: 2104,
-    y: 426,
-    width: 313,
-    height: 166,
-  },
-  {
-    id: "002",
-    x: 2572,
-    y: 95,
-    width: 361,
-    height: 262,
-  },
-  {
-    id: "066",
-    x: 2507,
-    y: 435,
-    width: 481.52,
-    height: 225,
-  },
-  {
-    id: "066",
-    x: 2997,
-    y: 314,
-    width: 271,
-    height: 226,
-  },
-  {
-    id: "034",
-    x: 3272,
-    y: 128,
-    width: 366,
-    height: 257,
-  },
-  {
-    id: "070",
-    x: 3701,
-    y: 119,
-    width: 358,
-    height: 278,
-  },
-];
+const clouds = Astro.props.clouds;
 ---
 
 <div class="bg-primary h-screen max-h-screen inline-block relative">
@@ -114,7 +15,7 @@ const drawings = [
   <div class="absolute w-full h-full top-0 left-0 z-10">
     <!-- clouds layer -->
     {
-      drawings.map((cloud) => {
+      clouds.map((cloud) => {
         return (
           <button
             class="absolute cloud-button"
@@ -128,7 +29,10 @@ const drawings = [
           >
             <div class="relative w-full h-full">
               <img
-                src="/v3/drawing.png"
+                src={
+                  `https://cms.fairclouds.life/assets/` +
+                  cloud.drawings[0].map_drawing
+                }
                 alt=""
                 class="absolute top-0 w-full h-full"
               />
@@ -259,7 +163,7 @@ const drawings = [
         mouseMovements.set(
           canvas,
           movements.filter((movement) => {
-            if (now - movement.timestamp > 1000) {
+            if (now - movement.timestamp > 10000) {
               const canvasX = parseInt(canvas.dataset.x);
               const canvasY = parseInt(canvas.dataset.y);
               // const canvasWidth = parseInt(canvas.dataset.width);

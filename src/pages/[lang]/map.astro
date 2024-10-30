@@ -3,6 +3,8 @@ import Layout from "../../layouts/Layout.astro";
 import MapV2 from "../../components/MapV2.astro";
 import MapV2Pixi from "../../components/MapV2Pixi.astro";
 import { getLangFromUrl } from "../../i18n/utils";
+import directus from "../../lib/directus";
+import { readItems } from "@directus/sdk";
 
 export async function getStaticPaths() {
   const paths = [{ params: { lang: "en" } }, { params: { lang: "es" } }];
@@ -11,10 +13,25 @@ export async function getStaticPaths() {
 }
 
 const lang = getLangFromUrl(Astro.url);
+
+const clouds = await directus.request(
+  readItems("clouds", {
+    fields: [
+      "id",
+      "name",
+      "x",
+      "y",
+      "width",
+      "height",
+      "drawings.id",
+      "drawings.map_drawing",
+    ],
+  }),
+);
 ---
 
 <Layout fixed={true} title="Fairclouds">
   <main>
-    <MapV2 />
+    <MapV2 clouds={clouds} />
   </main>
 </Layout>
