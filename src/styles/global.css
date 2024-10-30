@@ -99,15 +99,23 @@
 	}
 
 	.icon-button {
-		@apply bg-white/5 shadow-cloud rounded-full w-11 h-11 flex items-center justify-center
+		@apply bg-primary shadow-cloud rounded-full w-11 h-11 flex items-center justify-center
 	}
 
 	html.accessible {
 		font-family: "Arial", sans-serif;
 	}
 
-	html.accessible.bg-primary {
-		background: #2078cf;
+	html.accessible .bg-primary, html.accessible.bg-primary {
+		background: #000065;
+	}
+
+	html.accessible .text-primary {
+		color: #000065;
+	}
+
+	html.accessible .border-primary {
+		border-color: #000065;
 	}
 
 	html.accessible h1,

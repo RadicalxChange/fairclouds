@@ -19,10 +19,7 @@
   });
 </script>
 
-<button
-  class="bg-white/5 shadow-cloud rounded-full w-11 h-11"
-  {...$trigger}
-  use:trigger
+<button class="icon-button" {...$trigger} use:trigger
   ><span class="sr-only">Menu</span>
   <svg
     class="mx-auto"
