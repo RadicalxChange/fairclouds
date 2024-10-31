@@ -10,10 +10,7 @@ import aerocene from "../../images/aerocene.png";
 import salinas from "../../images/salinas.svg";
 import radicalxchange from "../../images/radicalxchange.svg";
 import animation from "../../images/animation-sprite.png";
-
-import About from "../../components/About.astro";
-
-import AddToCart from "../../components/AddToCart.svelte";
+import Logo from "../../components/Logo.astro";
 
 export async function getStaticPaths() {
 	const paths = [{ params: { lang: "en" } }, { params: { lang: "es" } }];
@@ -59,7 +56,7 @@ const lang = getLangFromUrl(Astro.url);
 					>{lang == "en" ? "Entrar" : "Enter"}</a
 				>
 			</div>
-			<div class="anim-parent flex-shrink-0">
+			<div class="anim-parent flex-shrink-0 hidden lg:block">
 				<div class="sprite-anim"></div>
 			</div>
 		</div>

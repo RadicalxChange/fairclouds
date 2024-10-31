@@ -22,7 +22,7 @@
 	}
 
 	.custom-scrollbar::-webkit-scrollbar-thumb {
-		background: #72aee9;
+		background: transparent;
 		box-shadow: inset 0px 0px 6.8px 3px #ffffff;
 		border-radius: 100px;
 	}
@@ -67,16 +67,18 @@
 		margin-bottom: 28px;
 	}
 	.button {
+		@apply bg-primary;
 		display: inline-block;
 		padding: 5px 15px 0px 15px;
 		gap: 10px;
-		background: rgba(255, 255, 255, 0.02);
 		box-shadow: inset 0px 0px 10px 3px #ffffff;
 		border-radius: 5px;
 		font-size: 2.125rem;
 		transition: 0.5s ease;
 		line-height: 1;
 	}
+
+
 
 	button:hover,
 	a:hover,
@@ -96,6 +98,27 @@
 	button,
 	a {
 		transition: 0.5s ease;
+	}
+
+	.hint {
+		@apply bg-primary max-w-prose opacity-0 absolute pointer-events-none;
+		display: inline-block;
+		padding: 5px;
+		gap: 10px;
+		box-shadow: inset 0px 0px 10px #FFFFFF;
+		border-radius: 5px;
+		font-size: .75rem;
+		transition: 0.5s ease;
+		line-height: 1;
+	}
+
+	
+	.has-hint:hover .hint, .has-hint:focus-within .hint {
+		@apply opacity-100 z-50;
+	}
+
+	.has-hint {
+		@apply relative
 	}
 
 	.icon-button {
@@ -235,31 +258,6 @@
 
 	hr {
 		border-top: 1px dotted #fff;
-	}
-
-	.ol-overviewmap.ol-custom-overviewmap {
-		left: 15px !important;
-		bottom: 15px !important;
-		z-index: 20 !important;
-	}
-
-	.ol-custom-overviewmap canvas {
-		border-radius: 10px !important;
-	}
-	.ol-custom-overviewmap .ol-overviewmap-map {
-		border: 0px !important;
-		background: rgba(255, 255, 255, 0.02) !important;
-		box-shadow: inset 0px 0px 10px 3px #ffffff !important;
-		border-radius: 10px !important;
-		width: 270px !important;
-		height: 175px !important;
-	}
-
-	.ol-overviewmap-box {
-		background: rgba(255, 255, 255, 0.02) !important;
-		box-shadow: inset 0px 0px 10px 3px #ffffff !important;
-		border-radius: 5px !important;
-		border: 0px !important;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

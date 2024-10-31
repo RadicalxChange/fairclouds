@@ -17,9 +17,15 @@ interface Props {
 	title: string;
 	theme?: string;
 	fixed?: boolean;
+	logoOnMobile?: boolean;
 }
 
-const { title, theme = "blue", fixed = false } = Astro.props;
+const {
+	title,
+	theme = "blue",
+	fixed = false,
+	logoOnMobile = true,
+} = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
 ---
@@ -44,7 +50,7 @@ const lang = getLangFromUrl(Astro.url);
 		<header
 			class=`${fixed ? 'fixed' : 'sticky'} top-0 left-0 p-4 w-full flex gap-4 justify-between items-start z-20`
 		>
-			<div>
+			<div class={!logoOnMobile && "hidden lg:block"}>
 				<a href="/">
 					{
 						lang === "es" ? (
@@ -66,14 +72,17 @@ const lang = getLangFromUrl(Astro.url);
 				</a>
 				<LoadingFallback>
 					<p slot="fallback" class="opacity-0" aria-hidden>...</p>
-					<!-- <Weather slot="content" /> -->
+					<Weather slot="content" />
 				</LoadingFallback>
 			</div>
-			<div class="flex gap-4 items-center relative">
-				<ModeToggle theme={theme} />
-				<MenuContainer theme={theme} />
-				<!-- <Cart client:load /> -->
-			</div>
+			{
+				theme == "blue" && (
+					<div class="flex gap-4 items-center relative justify-between grow lg:grow-0">
+						<ModeToggle theme={theme} />
+						<MenuContainer theme={theme} />
+					</div>
+				)
+			}
 		</header>
 		<slot />
 	</body>

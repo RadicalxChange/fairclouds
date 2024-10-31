@@ -45,18 +45,14 @@
   <p>You are logged in!</p>
   <a href="/en/dashboard">Go to dashboard</a>
 {:else}
-  <form on:submit|preventDefault={handleLogin}>
+  <form class="space-y-5" on:submit|preventDefault={handleLogin}>
     <input type="email" bind:value={email} placeholder="Email" required />
-    <input
-      type="password"
-      bind:value={password}
-      placeholder="Password"
-      required
-    />
     {#if error}
       <p>{error}</p>
     {/if}
     <!-- to do: use proper translation function -->
-    <button type="submit">{lang == "en" ? "Login" : "Acceso"}</button>
+    <button class="button" type="submit"
+      >{lang == "en" ? "Login" : "Acceso"}</button
+    >
   </form>
 {/if}
