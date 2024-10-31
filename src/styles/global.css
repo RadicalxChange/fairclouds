@@ -7,9 +7,17 @@
 		font-display: swap;
 	}
 	html {
-		font-family: "Rene", sans-serif;
 		background: #ffffff;
+		font-family: "Rene", sans-serif;
 	}
+
+	/* h1, h2, h3, h4, h5, h6, button, .button {
+		font-family: "Rene", sans-serif;
+	}
+
+	.font-regular {
+		font-family: "Arial", sans-serif;
+	} */
 
 	html,
 	body {
@@ -267,4 +275,32 @@
 			transition-duration: 0.01ms !important;
 			animation-delay: 0.01ms !important;
 		}
+	}
+
+	.prose ul, .prose ol {
+		padding-left: 25px;
+	}
+
+	.prose ul li::before, .prose ol li::before {
+    content: url('/icons/list.svg');
+    display: inline-block;
+    width: 21px; /* Adjust width as needed */
+    height: 17px; /* Adjust height as needed */
+    margin-right: 3px; /* Adjust spacing between icon and text */
+    position: relative;
+    top: 2.5px; /* Move the icon down by 5 pixels */
+	}
+
+	.prose ul ul li::before, .prose ol ol li::before,
+	.prose ul ol li::before, .prose ol ul li::before {
+		content: url('/icons/inner-list.svg');
+	}
+
+	.text-black .prose ul li::before, .prose ol li::before {
+		content: url('/icons/list-black.svg');
+	}
+
+	.text-black .prose ul ul li::before, .text-black .prose ol ol li::before,
+	.text-black .prose ul ol li::before, .text-black .prose ol ul li::before {
+		content: url('/icons/inner-list-black.svg');
 	}
