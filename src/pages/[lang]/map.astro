@@ -1,7 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import MapV2 from "../../components/MapV2.astro";
-import MapV2Pixi from "../../components/MapV2Pixi.astro";
+import MapV2 from "../../components/MapV2.svelte";
 import { getLangFromUrl } from "../../i18n/utils";
 import directus from "../../lib/directus";
 import { readItems } from "@directus/sdk";
@@ -43,7 +42,7 @@ const clouds = await directus.request(
       >
     </div>
     <div>
-      <MapV2 clouds={clouds} />
+      <MapV2 clouds={clouds} client:load />
       <div
         class="flex fixed right-0 bottom-0 w-full gap-4 p-4 z-20 justify-between"
       >
