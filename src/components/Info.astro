@@ -1,0 +1,34 @@
+---
+import { languages } from "../i18n/ui";
+import { getLangFromUrl } from "../i18n/utils";
+import directus from "../lib/directus";
+import Blocks from "./Blocks.astro";
+
+const currentLang = getLangFromUrl(Astro.url);
+
+import { readSingleton } from "@directus/sdk";
+
+const about = await directus.request(
+  readSingleton("home", {
+    deep: {
+      translations: {
+        _filter: {
+          _and: [
+            {
+              languages_code: { _eq: currentLang },
+            },
+          ],
+        },
+      },
+    },
+    fields: [{ translations: ["info"] }],
+  }),
+);
+
+const infoContent = about.translations[0].info?.blocks;
+const isValidContent = infoContent && infoContent.length > 0;
+---
+
+<div>
+  {isValidContent && <Blocks content={infoContent} />}
+</div>

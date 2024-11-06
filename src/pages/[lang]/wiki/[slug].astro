@@ -1,44 +1,67 @@
 ---
-// import directus from "../../../lib/directus";
-// import { readItems } from "@directus/sdk";
+import directus from "../../../lib/directus";
+import { readItems } from "@directus/sdk";
+import Layout from "../../../layouts/Layout.astro";
+import WikiSidebar from "../../../components/WikiSidebar.astro";
+import Blocks from "../../../components/Blocks.astro";
 
 export async function getStaticPaths() {
-  const paths = [
-    { params: { lang: "en", slug: "wiki" } },
-    { params: { lang: "es", slug: "wiki" } },
-  ];
+  const pages = await directus.request(
+    readItems("wiki", {
+      fields: ["*", { translations: ["*"] }],
+    }),
+  );
 
+  let paths = [];
+
+  pages.forEach((page) => {
+    page.translations.forEach((translation) => {
+      if (["en", "es"].includes(translation.languages_code)) {
+        const path = {
+          params: { lang: translation.languages_code, slug: page.slug },
+          props: {
+            date: page.date_created,
+            translation,
+          },
+        };
+        paths.push(path);
+      }
+    });
+  });
+  console.log(paths);
   return paths;
 }
 
-// export async function getStaticPaths() {
-//   // en pages
-//   const pages = await directus.request(
-//     readItems("wiki", {
-//       fields: ["*", { translations: ["*"] }],
-//     }),
-//   );
-
-//   // console.log(pages);
-
-//   // to do: make translations work.
-
-//   const paths = pages.map((page) => {
-//     console.log(page.translations[0].slug);
-//     const lang = "en";
-//     const slug = page.translations[0].slug;
-//     return { params: { lang: lang, slug: slug }, props: page };
-//   });
-
-//   // es pages
-
-//   // combine together
-
-//   return paths;
-// }
-
-// const { lang, slug } = Astro.params;
-// const page = Astro.props;
+const { lang, slug } = Astro.params;
+const page = Astro.props;
+const pages = await directus.request(
+  readItems("wiki", {
+    deep: {
+      translations: {
+        _filter: {
+          _and: [
+            {
+              languages_code: { _eq: lang },
+            },
+          ],
+        },
+      },
+    },
+    fields: ["*", { translations: ["*"] }],
+  }),
+);
 ---
 
-<h1>WIP</h1>
+<Layout title="Fairclouds" theme="white">
+  <div class="flex gap-28 justify-between px-4 py-2.5">
+    <WikiSidebar pages={pages} lang={lang} />
+    <main class="grow">
+      <h1>{page.translation.title}</h1>
+      {
+        page.translation.content?.blocks && (
+          <Blocks content={page.translation.content.blocks} />
+        )
+      }
+    </main>
+  </div>
+</Layout>

@@ -2,96 +2,26 @@
 // dont prerender as this page will be unique.
 export const prerender = false;
 
+import { getLangFromUrl } from "../../i18n/utils";
+
 import Layout from "../../layouts/Layout.astro";
 import Stripe from "stripe";
 
+import CheckoutEmbed from "../../components/CheckoutEmbed.svelte";
+
 const PUBLIC_STRIPE_KEY = import.meta.env.PUBLIC_STRIPE_KEY;
-const stripe = new Stripe(import.meta.env.STRIPE_KEY);
 const { origin } = Astro.url;
-
-// if new polygon then create new product on stripe
-// const product = await stripe.products.create({
-//   name: "New license",
-//   default_price_data: {
-//     currency: "eur",
-//     recurring: {
-//       interval: "year",
-//     },
-//     unit_amount: 1000,
-//   },
-// });
-
-// if new polygon then create a new price
-// const price = await stripe.prices.create({
-//   currency: "eur",
-//   unit_amount: 1000,
-//   recurring: {
-//     interval: "year",
-//   },
-//   product: "prod_QEm5EvrtJ2VQ7M",
-// });
-
-// create checkout session
-const session = await stripe.checkout.sessions.create({
-  ui_mode: "embedded",
-  mode: "subscription",
-  line_items: [
-    {
-      price: "price_1POI8sA2ZZlG8pMYSRc4Yf8a",
-      quantity: 1,
-    },
-    {
-      price: "price_1POIX6A2ZZlG8pMYA98oiMGd",
-      quantity: 1,
-    },
-    // {
-    //   price: price.id,
-    //   quantity: 1,
-    // },
-  ],
-  return_url: `${origin}/return?session_id={CHECKOUT_SESSION_ID}`,
-  automatic_tax: { enabled: true },
-  custom_text: {
-    submit: {
-      message:
-        "Yearly price will change in accordance to how PCO works, find out more.",
-    },
-  },
-});
+const lang = getLangFromUrl(Astro.url);
 ---
 
-<Layout title="Checkout ☁️ Fairclouds">
+<Layout title="Checkout ☁️ Fairclouds" theme="white">
   <div class="p-4">
     <h1>Checkout</h1>
-
-    <div
-      id="checkout"
-      data-stripe-key={PUBLIC_STRIPE_KEY}
-      data-client-secret={session.client_secret}
-    >
-    </div>
+    <CheckoutEmbed
+      PUBLIC_STRIPE_KEY={PUBLIC_STRIPE_KEY}
+      lang={lang}
+      origin={origin}
+      client:load
+    />
   </div>
 </Layout>
-
-<script>
-  import { loadStripe } from "@stripe/stripe-js";
-  const checkoutDiv = document.querySelector("#checkout") as HTMLElement;
-  const { clientSecret, stripeKey } = checkoutDiv.dataset;
-
-  if (typeof clientSecret === "string" && typeof stripeKey === "string") {
-    const stripe = await loadStripe(stripeKey);
-    if (stripe !== null) {
-      const checkout = await stripe.initEmbeddedCheckout({
-        fetchClientSecret: () => Promise.resolve(clientSecret),
-      });
-      // Mount Checkout
-      checkout.mount("#checkout");
-    } else {
-      // Handle the case where stripe is null
-      console.error("Stripe failed to initialize");
-    }
-  } else {
-    // Handle the case where clientSecret or stripeKey is undefined
-    console.error("clientSecret or stripeKey is undefined");
-  }
-</script>

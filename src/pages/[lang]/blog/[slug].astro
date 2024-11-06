@@ -1,0 +1,59 @@
+---
+import directus from "../../../lib/directus";
+import { readItems } from "@directus/sdk";
+import Layout from "../../../layouts/Layout.astro";
+import Blog from "../../../components/Blog.astro";
+
+const directusBaseURL = import.meta.env.DIRECTUS_CMS_URL;
+
+export async function getStaticPaths() {
+  const articles = await directus.request(
+    readItems("articles", {
+      fields: ["*", { translations: ["*"] }],
+    }),
+  );
+
+  let paths = [];
+
+  articles.forEach((article) => {
+    article.translations.forEach((translation) => {
+      if (["en", "es"].includes(translation.languages_code)) {
+        const path = {
+          params: { lang: translation.languages_code, slug: article.slug },
+          props: {
+            image: article.image,
+            date: article.date_created,
+            translation,
+          },
+        };
+        paths.push(path);
+      }
+    });
+  });
+
+  return paths;
+}
+
+const { lang, slug } = Astro.params;
+const page = Astro.props;
+const articles = await directus.request(
+  readItems("articles", {
+    deep: {
+      translations: {
+        _filter: {
+          _and: [
+            {
+              languages_code: { _eq: lang },
+            },
+          ],
+        },
+      },
+    },
+    fields: ["*", { translations: ["*"] }],
+  }),
+);
+---
+
+<Layout title="Fairclouds" theme="white">
+  <Blog articles={articles} article={page} lang={lang} />
+</Layout>

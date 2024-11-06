@@ -1,0 +1,64 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Map from "../../components/Map.svelte";
+import { getLangFromUrl } from "../../i18n/utils";
+import directus from "../../lib/directus";
+import { readItems } from "@directus/sdk";
+import Timeline from "../../components/Timeline.astro";
+import Cart from "../../components/Cart.svelte";
+
+export async function getStaticPaths() {
+  const paths = [{ params: { lang: "en" } }, { params: { lang: "es" } }];
+
+  return paths;
+}
+
+const lang = getLangFromUrl(Astro.url);
+
+const clouds = await directus.request(
+  readItems("clouds", {
+    fields: [
+      "id",
+      "name",
+      "x",
+      "y",
+      "width",
+      "height",
+      "drawings.id",
+      "drawings.map_drawing",
+    ],
+  }),
+);
+---
+
+<Layout fixed={true} logoOnMobile={false} title="Fairclouds">
+  <main>
+    <div
+      class="hint absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50"
+    >
+      <span
+        >Explore the cloudscape to discover the hidden drawings. Once uncovered,
+        click to steward a cloud. As you return to a cloud, new drawings may
+        appear.</span
+      >
+    </div>
+    <div>
+      <Map clouds={clouds} client:load />
+      <div
+        class="flex fixed right-0 bottom-0 w-full gap-4 p-4 z-20 justify-between"
+      >
+        <Timeline />
+        <div class="has-hint">
+          <a class="button h-full" target="_blank" href="https://example.com/"
+            >Draw</a
+          >
+          <div role="tooltip" class="hint top-[0%] -mt-7 right-0 w-max">
+            Contribute your own drawing
+          </div>
+        </div>
+
+        <Cart client:load />
+      </div>
+    </div>
+  </main>
+</Layout>

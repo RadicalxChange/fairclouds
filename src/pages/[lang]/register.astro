@@ -1,0 +1,9 @@
+---
+export async function getStaticPaths() {
+  const paths = [{ params: { lang: "en" } }, { params: { lang: "es" } }];
+
+  return paths;
+}
+---
+
+<h1>Here you will complete registration by setting a password</h1>

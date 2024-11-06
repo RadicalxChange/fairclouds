@@ -1,0 +1,323 @@
+	/* Register your custom font family and tell the browser where to find it. */
+	@font-face {
+		font-family: "Rene";
+		src: url("/fonts/Rene Regular.woff2") format("woff");
+		font-weight: normal;
+		font-style: normal;
+		font-display: swap;
+	}
+	html {
+		background: #ffffff;
+		font-family: "Rene", sans-serif;
+	}
+
+	/* h1, h2, h3, h4, h5, h6, button, .button {
+		font-family: "Rene", sans-serif;
+	}
+
+	.font-regular {
+		font-family: "Arial", sans-serif;
+	} */
+
+	html,
+	body {
+		margin: 0;
+		padding: 0;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar {
+		width: 0.6875em;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-thumb {
+		background: transparent;
+		box-shadow: inset 0px 0px 6.8px 3px #ffffff;
+		border-radius: 100px;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-track {
+		background-color: transparent;
+	}
+
+	h1,
+	h2,
+	h3 {
+		font-size: 1.125rem;
+		line-height: 22px;
+		letter-spacing: -0.07em;
+		line-height: auto;
+	}
+
+	.text-heading {
+		font-size: 2.125rem;
+		line-height: 41px;
+		letter-spacing: -0.07em;
+	}
+
+	p,
+	.text-copy {
+		font-size: 1.125rem;
+		line-height: 22px;
+		letter-spacing: 0em;
+	}
+
+	.text-small {
+		font-size: 0.75rem;
+	}
+
+	.text-menu-languages {
+		font-size: 1.625rem;
+		letter-spacing: -0.07em;
+	}
+
+	.logo {
+		font-size: 3rem;
+	}
+
+	.prose h1,
+	.prose h2,
+	.prose h3 {
+		font-size: 2.125rem;
+		margin-bottom: 28px;
+	}
+	.button {
+		@apply bg-primary;
+		display: inline-block;
+		padding: 5px 15px 0px 15px;
+		gap: 10px;
+		box-shadow: inset 0px 0px 10px 3px #ffffff;
+		border-radius: 5px;
+		font-size: 2.125rem;
+		transition: 0.5s ease;
+		line-height: 1;
+	}
+
+
+
+	button:hover,
+	a:hover,
+	.hover-blur:hover {
+		filter: blur(2px);
+		transition: 0.75s ease;
+	}
+
+	.cloud-button:hover {
+		filter: blur(0);
+	}
+
+	.hover-blur {
+		transition: 0.5s ease;
+	}
+
+	button,
+	a {
+		transition: 0.5s ease;
+	}
+
+	.hint {
+		@apply bg-primary max-w-prose opacity-0 absolute pointer-events-none;
+		display: inline-block;
+		padding: 5px;
+		gap: 10px;
+		box-shadow: inset 0px 0px 10px #FFFFFF;
+		border-radius: 5px;
+		font-size: .75rem;
+		transition: 0.5s ease;
+		line-height: 1;
+	}
+
+	.has-hint:hover .hint {
+		filter: blur(0) !important;
+	}
+	
+	.has-hint:hover .hint, .has-hint:focus-within .hint {
+		@apply opacity-100 z-50;
+	}
+
+	.has-hint {
+		@apply relative
+	}
+
+	.icon-button {
+		@apply bg-primary shadow-cloud rounded-full w-11 h-11 flex items-center justify-center
+	}
+
+	html.accessible {
+		font-family: "Arial", sans-serif;
+	}
+
+	html.accessible .bg-primary, html.accessible.bg-primary {
+		background: #000065;
+	}
+
+	html.accessible .text-primary {
+		color: #000065;
+	}
+
+	html.accessible .border-primary {
+		border-color: #000065;
+	}
+
+	html.accessible h1,
+	html.accessible h2,
+	html.accessible h3,
+	html.accessible p,
+	html.accessible .text-copy,
+	html.accessible button {
+		letter-spacing: 0em !important;
+	}
+
+	input, select {
+		background: #72aee9;
+		box-shadow: inset 0px 0px 6.8px 3px #ffffff;
+		border-radius: 100px;
+		width: 100%;
+		padding: 10px 20px;
+		font-size: 1.625rem;
+		letter-spacing: -0.07em;
+	}
+
+	input:focus, select:focus {
+    @apply shadow-focus outline-none;
+	}
+	
+
+	input::placeholder, select::placeholder {
+		color: #ffffff;
+		opacity: 60%;
+	}
+
+	select {
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		text-indent: 1px;
+		text-overflow: '';
+		background-image: url('/icons/dropdown.svg');
+		background-repeat: no-repeat;
+		background-position: right 16px center; 
+		background-size: 16px; 
+		padding-right: 40px; 
+	}
+
+	select::-ms-expand {
+		display: none;
+	}
+
+	/* Style for range slider */
+	input[type="range"] {
+		box-shadow: none;
+		-webkit-appearance: none;
+		width: 100%;
+		background: transparent;
+	}
+
+	input[type="range"]:focus::-webkit-slider-thumb {
+		@apply shadow-focus;
+	}
+
+	input[type="range"]::-webkit-slider-runnable-track {
+		width: 100%;
+		height: 4px;
+		background: #ffffff;
+		cursor: pointer;
+	}
+
+	input[type="range"]::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		width: 14px;
+		height: 14px;
+		background: #ffffff;
+		border-radius: 50%;
+		cursor: pointer;
+		margin-top: -5px; /* Adjust to align thumb with track */
+	}
+
+	input[type="range"]::-moz-range-track {
+		width: 100%;
+		height: 4px;
+		background: #ffffff;
+		cursor: pointer;
+	}
+
+	input[type="range"]::-moz-range-thumb {
+		width: 14px;
+		height: 14px;
+		background: #ffffff;
+		border-radius: 50%;
+		cursor: pointer;
+	}
+
+	input[type="range"]::-ms-track {
+		width: 100%;
+		height: 4px;
+		background: transparent;
+		border-color: transparent;
+		color: transparent;
+		cursor: pointer;
+	}
+
+	input[type="range"]::-ms-fill-lower {
+		background: #ffffff;
+	}
+
+	input[type="range"]::-ms-fill-upper {
+		background: #ffffff;
+	}
+
+	input[type="range"]::-ms-thumb {
+		width: 20px;
+		height: 20px;
+		background: #ffffff;
+		border-radius: 50%;
+		cursor: pointer;
+		margin-top: 0; /* Adjust to align thumb with track */
+	}
+
+	hr {
+		border-top: 1px dotted #fff;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		* {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+			animation-delay: 0.01ms !important;
+		}
+	}
+
+	.prose ul, .prose ol {
+		padding-left: 25px;
+	}
+
+	.prose ul li::before, .prose ol li::before {
+    content: url('/icons/list.svg');
+    display: inline-block;
+    width: 21px; /* Adjust width as needed */
+    height: 17px; /* Adjust height as needed */
+    margin-right: 3px; /* Adjust spacing between icon and text */
+    position: relative;
+    top: 2.5px; /* Move the icon down by 5 pixels */
+	}
+
+	.prose ul ul li::before, .prose ol ol li::before,
+	.prose ul ol li::before, .prose ol ul li::before {
+		content: url('/icons/inner-list.svg');
+	}
+
+	.text-black .prose ul li::before, .prose ol li::before {
+		content: url('/icons/list-black.svg');
+	}
+
+	.text-black .prose ul ul li::before, .text-black .prose ol ol li::before,
+	.text-black .prose ul ol li::before, .text-black .prose ol ul li::before {
+		content: url('/icons/inner-list-black.svg');
+	}
+
+
+	/* to do: make this transition work with reduced motion */
+	.fade-out {
+    opacity: 0;
+    transition: opacity 2s ease-out;
+    transition-delay: 5s;
+  }

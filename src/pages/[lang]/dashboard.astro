@@ -1,0 +1,37 @@
+---
+// dont prerender as this page will be unique.
+export const prerender = false;
+
+import Layout from "../../layouts/Layout.astro";
+import directus from "../../lib/directus";
+import { readMe } from "@directus/sdk";
+
+// Import the utility function
+import { isAuthenticated } from "../../utils/auth";
+
+const userIsAuthenticated = isAuthenticated(Astro.request);
+
+let currentUser = null;
+
+if (!userIsAuthenticated) {
+  return Astro.redirect("/");
+} else {
+  // Fetch the current user from Directus
+  // Ensure your Directus SDK instance is configured to include the authentication token in its requests
+  try {
+    const response = await directus.request(readMe());
+    currentUser = response;
+  } catch (error) {
+    console.error("Failed to fetch current user:", error);
+    // Handle error, e.g., redirect to login if the token is invalid
+  }
+}
+---
+
+<Layout title="Dashboard">
+  <main>
+    <h1>
+      Welcome to the protected dashboard, {currentUser.email}!
+    </h1>
+  </main>
+</Layout>

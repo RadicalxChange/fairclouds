@@ -1,0 +1,506 @@
+---
+import Draw from "./Draw.svelte";
+import Treemap from "./Treemap.svelte";
+import Timeline from "./Timeline.svelte";
+import { readItems } from "@directus/sdk";
+import directus from "../lib/directus";
+
+// dont prerender this component as we need to get fresh data from the api.
+export const prerender = false;
+
+// Map settings
+
+// const polygons = await directus.request(
+// 	readItems("polygons", {
+// 		fields: ["id", "location", "price", { licenses: ["id"] }],
+// 	}),
+// );
+
+const drawings = await directus.request(
+	readItems("drawings", {
+		fields: ["id", "name", "location", "artist_credit", "image"],
+	}),
+);
+
+// intersection of a point with drawing polygons
+// const intersects = await directus.request(
+// 	readItems("drawings", {
+// 		fields: ["*"],
+// 		filter: {
+// 			area: {
+// 				_intersects: {
+// 					type: "Feature",
+// 					properties: {},
+// 					geometry: {
+// 						coordinates: [-66.09679179594478, -23.722487874932185],
+// 						type: "Point",
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}),
+// );
+
+// intersection of a polygon with drawing polygons
+// const response = await directus.items("Land").readByQuery({
+// 	limit: 100,
+// 	fields: ["id", "name", "center", "geometry"],
+// 	filter: {
+// 		center: {
+// 			_intersects: {
+// 				type: "Feature",
+// 				geometry: {
+// 					coordinates: [
+// 						[
+// 							[168.2947501099543, -17.723682144590242],
+// 							[168.2947501099543, -17.727328428851507],
+// 							[168.29840874403044, -17.727328428851507],
+// 							[168.29840874403044, -17.723682144590242],
+// 							[168.2947501099543, -17.723682144590242],
+// 						],
+// 					],
+// 					type: "Polygon",
+// 				},
+// 			},
+// 		},
+// 	},
+// });
+---
+
+<div
+	class="w-full h-screen flex flex-col bg-blue-100 items-center justify-center relative"
+>
+	<div class="w-full h-full" id="map">
+		<button
+			class="absolute bottom-[26px] left-[27px] z-20 shadow-cloud rounded-full w-8 h-8 flex justify-center items-center"
+			id="zoomOutButton"><img src="/icons/minus.svg" /></button
+		>
+		<button
+			class="absolute bottom-[26px] left-[244px] z-20 shadow-cloud rounded-full w-8 h-8 flex justify-center items-center"
+			id="zoomInButton"><img src="/icons/plus.svg" /></button
+		>
+	</div>
+	<div class="flex absolute right-0 bottom-0 w-full gap-4 p-4">
+		<div class="w-[270px]"></div>
+		<Timeline client:only />
+		<Draw client:only />
+		<Treemap drawings={drawings} client:only />
+
+		<div class="icon-button">
+			<img src="/icons/cart.svg" alt="" />
+		</div>
+		<label class="flex items-center cursor-pointer">
+			<input
+				id="mapModeToggle"
+				type="checkbox"
+				value="generate"
+				class="sr-only peer"
+			/>
+			<div
+				class="relative flex justify-between items-center px-2 w-[46px] h-6 sm:w-[81px] sm:h-[45px] bg-primary shadow-cloud rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-[2px] after:start-[3px] sm:after:top-[5px] sm:after:start-[6px] after:bg-white after:rounded-full after:w-5 after:h-5 sm:after:h-[35px] sm:after:w-[35px] after:transition-all"
+			>
+				<img src="/icons/eye.svg" alt="" class="z-10" />
+				<img src="/icons/create.svg" alt="" class="z-10" />
+				<span
+					class="sr-only ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"
+					>Generate new cells mode toggle</span
+				>
+			</div>
+		</label>
+	</div>
+
+	<script>
+		import "ol/ol.css"; // Import OpenLayers CSS
+		import { Map, View } from "ol";
+		import TileLayer from "ol/layer/Tile";
+		import XYZ from "ol/source/XYZ";
+		import OverviewMap from "ol/control/OverviewMap";
+		import { toLonLat, fromLonLat } from "ol/proj";
+		import { defaults as defaultControls } from "ol/control";
+		import { Vector as VectorLayer } from "ol/layer";
+		import { Vector as VectorSource } from "ol/source";
+		import { GeoJSON } from "ol/format";
+		import { Style, Stroke } from "ol/style";
+		import * as turf from "@turf/turf";
+		import Fill from "ol/style/Fill";
+		import { pointerMove } from "ol/events/condition";
+		import Select from "ol/interaction/Select";
+		import { easeOut } from "ol/easing.js";
+		import stroke from "ol/style/Stroke";
+		import cticleStyle from "ol/style/Circle";
+
+		const points = [];
+
+		// const osmURL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+		const cloudURL = "/tiles/salinas/sky/{z}/{x}_{y}.png";
+		// const satURL =
+		// 	"https://storage.googleapis.com/fairclouds_tiles/tiles_v3/sat/{z}/{x}_{y}.png";
+		const satURL = "/tiles/salinas/sat/{z}/{x}_{y}.png";
+		const drawingsURL = "/tiles/salinas/drawings/{z}/{x}_{y}.png";
+
+		const cloudTileSource = new XYZ({
+			url: cloudURL,
+			tileSize: [512, 512],
+			minZoom: 12,
+			maxZoom: 16,
+			wrapX: false,
+			projection: "EPSG:3857",
+		});
+
+		const satTileSource = new XYZ({
+			url: satURL,
+			tileSize: [512, 512],
+			minZoom: 12,
+			maxZoom: 16,
+			wrapX: false,
+			projection: "EPSG:3857",
+		});
+
+		const cloudTileSourceOverview = new XYZ({
+			url: cloudURL, // Path to your tiles
+			tileSize: [512, 512], // Size of your tiles, typically 256x256 or 512x512
+			minZoom: 12,
+			maxZoom: 16,
+			// Optionally define the extent and projection if necessary
+			wrapX: false,
+		});
+
+		const satTileSourceOverview = new XYZ({
+			url: satURL, // Path to your tiles
+			tileSize: [512, 512], // Size of your tiles, typically 256x256 or 512x512
+			minZoom: 12,
+			maxZoom: 16,
+			// Optionally define the extent and projection if necessary
+			wrapX: false,
+		});
+
+		const tileLayer = new TileLayer({
+			source: cloudTileSource,
+		});
+
+		const tileLayerOverview = new TileLayer({
+			source: cloudTileSourceOverview,
+		});
+
+		const toggleMapMode = (e) => {
+			if (e.target.checked) {
+				tileLayer.setSource(satTileSource);
+				tileLayerOverview.setSource(satTileSourceOverview);
+			} else {
+				tileLayer.setSource(cloudTileSource);
+				tileLayerOverview.setSource(cloudTileSourceOverview);
+			}
+		};
+
+		const mapModeToggle = document.getElementById("mapModeToggle");
+
+		mapModeToggle.addEventListener("change", toggleMapMode);
+
+		// tile url
+		// /tiles/${tileZ}/${tileX / tileSize}_${tileY / tileSize}.png
+
+		// Define the map with the XYZ tile source
+		const map = new Map({
+			target: "map",
+			layers: [tileLayer],
+			view: new View({
+				center: [-7352025, -2715442], // Adjust based on your map's center
+				zoom: 11, // Initial zoom level to fit the specific area
+				maxZoom: 20, // Maximum zoom level, should match maxZoom in XYZ source
+				extent: [-7379800.2343, -2733780.6108, -7326079.674, -2680060.0505],
+			}),
+			controls: defaultControls({ zoom: false }), // Disable zoom controls
+		});
+
+		// Add a minimap (OverviewMap control)
+		const overviewMapControl = new OverviewMap({
+			className: "ol-overviewmap ol-custom-overviewmap",
+			layers: [tileLayerOverview],
+			view: new View({
+				center: [-7351675, -2701717],
+				zoom: 11,
+				extent: [-7379800.2343, -2733780.6108, -7326079.674, -2680060.0505],
+			}),
+			collapsible: false,
+		});
+		map.addControl(overviewMapControl);
+
+		fetch("/outline.geojson")
+			.then((response) => response.json())
+			.then((outline) => {
+				const poly = turf.polygon(outline.features[0].geometry.coordinates);
+
+				function generateRandomPoint(bbox) {
+					const [minX, minY, maxX, maxY] = bbox;
+					const longitude = minX + Math.random() * (maxX - minX);
+					const latitude = minY + Math.random() * (maxY - minY);
+					return [longitude, latitude];
+				}
+
+				// Generate 3000 random geographic points inside the polygon
+				const bbox = turf.bbox(outline);
+				const points = [];
+				while (points.length < 3000) {
+					const point = generateRandomPoint(bbox);
+					if (turf.booleanPointInPolygon(turf.point(point), poly)) {
+						points.push(turf.point(point));
+					}
+				}
+
+				// Create Voronoi diagram
+				const pointsCollection = turf.featureCollection(points);
+				let voronoi = turf.voronoi(pointsCollection, { bbox });
+
+				function getRandomOpacity() {
+					return Math.random() * 0.3 + 0.05;
+				}
+
+				function getRandomColour() {
+					let colours = ["255,255,255"];
+					return colours[Math.floor(Math.random() * colours.length)];
+				}
+
+				// Add opacity to Voronoi cell properties
+				voronoi.features.forEach((cell) => {
+					cell.properties = cell.properties || {};
+					cell.properties.opacity = getRandomOpacity();
+					cell.properties.colour = getRandomColour();
+				});
+
+				// Clip Voronoi cells to the GeoJSON polygon
+				const clippedVoronoi = voronoi.features
+					.map((cell) => {
+						const intersection = turf.intersect(
+							turf.featureCollection([cell, poly]),
+						);
+						if (intersection) {
+							intersection.properties = { ...cell.properties }; // Preserve the opacity property
+							return intersection;
+						}
+						return null;
+					})
+					.filter(Boolean);
+
+				// Step 1: Calculate the center of the map
+				const mapCenter = [-66.02418, -23.7204];
+
+				// Step 2: Sort Voronoi cells by distance from the center
+				const sortedVoronoi = clippedVoronoi.sort((a, b) => {
+					const aCenter = turf.centroid(a).geometry.coordinates;
+					const bCenter = turf.centroid(b).geometry.coordinates;
+					const aDistance = turf.distance(mapCenter, aCenter);
+					const bDistance = turf.distance(mapCenter, bCenter);
+					return aDistance - bDistance;
+				});
+
+				// Convert clipped Voronoi cells to a format that OpenLayers can use
+				const voronoiSource = new VectorSource();
+
+				const voronoiStyle = (feature) => {
+					const opacity = feature.get("opacity");
+					const colour = feature.get("colour");
+					// const blue = feature.get("blue");
+					return new Style({
+						fill: new Fill({
+							color: `rgba(${colour}, ${opacity})`,
+						}),
+					});
+				};
+
+				// Ease-out circular function
+				const ease = (t) => 1 - Math.pow(1 - t, 3);
+
+				// Step 3: Gradually add cells to the map with ease-out circular easing
+				let index = 0;
+				const totalCells = sortedVoronoi.length;
+				const duration = 2000; // Total duration in milliseconds
+				let startTime;
+
+				const addCells = (currentTime) => {
+					if (!startTime) {
+						startTime = currentTime;
+					}
+					const elapsedTime = currentTime - startTime;
+					const progress = Math.min(elapsedTime / duration, 1);
+					const easedProgress = ease(progress);
+					const targetIndex = Math.floor(easedProgress * totalCells);
+
+					while (index < targetIndex && index < totalCells) {
+						const cell = sortedVoronoi[index];
+						const feature = new GeoJSON().readFeature(cell, {
+							featureProjection: "EPSG:3857",
+						});
+						voronoiSource.addFeature(feature);
+						index++;
+					}
+
+					if (index < totalCells) {
+						requestAnimationFrame(addCells);
+					}
+				};
+
+				// Delay the start of the animation by 500 milliseconds
+				setTimeout(() => {
+					requestAnimationFrame(addCells);
+				}, 500);
+
+				// Add the voronoiSource to the map
+				const voronoiLayer = new VectorLayer({
+					source: voronoiSource,
+					style: voronoiStyle,
+					renderBuffer: 1000,
+					updateWhileInteracting: true,
+				});
+				map.addLayer(voronoiLayer);
+
+				// add drawings
+				const drawingsTileSource = new XYZ({
+					url: drawingsURL,
+					maxZoom: 17,
+					minZoom: 14,
+					tileSize: [512, 512],
+					wrapX: false,
+					projection: "EPSG:3857",
+				});
+
+				const drawingLayer = new TileLayer({
+					source: drawingsTileSource,
+				});
+
+				map.addLayer(drawingLayer);
+
+				// Create a highlight style for hover
+				const highlightStyle = new Style({
+					fill: new Fill({
+						color: "rgba(255, 255, 255, 1)",
+					}),
+					stroke: new Stroke({
+						color: "rgba(114, 174, 233, 1)",
+						width: 3,
+					}),
+				});
+
+				// Add select interaction for hover
+				const selectHover = new Select({
+					condition: pointerMove,
+					style: highlightStyle,
+				});
+
+				map.addInteraction(selectHover);
+
+				// Add event listener to capture mouse position and add new Voronoi cell
+				map.on("click", (event) => {
+					const coordinate = map.getEventCoordinate(event.originalEvent);
+					const lonLat = toLonLat(coordinate); // Transform to EPSG:4326
+					const point = turf.point(lonLat);
+
+					// Check if the point is inside the polygon
+					if (turf.booleanPointInPolygon(point, poly)) {
+						console.log(point);
+
+						points.push(point);
+
+						// // Update Voronoi diagram with the new point
+						const pointsCollection = turf.featureCollection(points);
+						voronoi = turf.voronoi(pointsCollection, { bbox });
+
+						// // Add opacity to new Voronoi cell properties
+						voronoi.features.forEach((cell) => {
+							cell.properties = cell.properties || {};
+							cell.properties.opacity = getRandomOpacity();
+						});
+
+						// // Clip Voronoi cells to the GeoJSON polygon
+						const newClippedVoronoi = voronoi.features
+							.map((cell) => {
+								const intersection = turf.intersect(
+									turf.featureCollection([cell, poly]),
+								);
+								if (intersection) {
+									intersection.properties = { ...cell.properties }; // Preserve the opacity property
+									return intersection;
+								}
+								return null;
+							})
+							.filter(Boolean);
+
+						// // Update Voronoi source with new features
+						voronoiSource.clear();
+
+						// Create a GeoJSON FeatureCollection from newClippedVoronoi
+						const featureCollection = {
+							type: "FeatureCollection",
+							features: newClippedVoronoi,
+						};
+
+						// Read features from the FeatureCollection
+						const newFeatures = new GeoJSON().readFeatures(featureCollection, {
+							featureProjection: "EPSG:3857",
+						});
+
+						// Add the new features to the voronoiSource
+						voronoiSource.addFeatures(newFeatures);
+					}
+				});
+
+				// Add points layer
+				// const pointsSource = new VectorSource({
+				// 	features: points.map(
+				// 		(point) => new Feature(new Point(fromLonLat(point))),
+				// 	),
+				// });
+
+				// const pointsLayer = new VectorLayer({
+				// 	source: pointsSource,
+				// 	style: new Style({
+				// 		image: new CircleStyle({
+				// 			radius: 5,
+				// 			fill: new Fill({ color: "red" }),
+				// 			stroke: new Stroke({ color: "black", width: 1 }),
+				// 		}),
+				// 	}),
+				// });
+
+				// map.addLayer(pointsLayer);
+
+				// Add GeoJSON layer
+				const geojsonSource = new VectorSource({
+					url: "/drawings-test.geojson",
+					format: new GeoJSON(),
+				});
+
+				const geojsonLayer = new VectorLayer({
+					source: geojsonSource,
+					style: new Style({
+						stroke: new Stroke({
+							color: "blue",
+							width: 2,
+						}),
+						fill: new Fill({
+							color: "rgba(0, 0, 255, 0.1)",
+						}),
+					}),
+				});
+
+				// map.addLayer(geojsonLayer);
+			});
+
+		// Add custom zoom buttons
+		const zoomInButton = document.getElementById("zoomInButton");
+		const zoomOutButton = document.getElementById("zoomOutButton");
+
+		zoomInButton.addEventListener("click", () => {
+			zoomTo(+1);
+		});
+
+		zoomOutButton.addEventListener("click", () => {
+			zoomTo(-1);
+		});
+
+		function zoomTo(amount) {
+			const view = map.getView();
+			const zoom = view.getZoom();
+			view.animate({ duration: 250, easing: easeOut, zoom: zoom + amount });
+		}
+	</script>
+</div>
