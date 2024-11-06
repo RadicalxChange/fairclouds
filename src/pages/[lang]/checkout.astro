@@ -12,30 +12,6 @@ import CheckoutEmbed from "../../components/CheckoutEmbed.svelte";
 const PUBLIC_STRIPE_KEY = import.meta.env.PUBLIC_STRIPE_KEY;
 const { origin } = Astro.url;
 const lang = getLangFromUrl(Astro.url);
-
-// if new polygon then create new product on stripe
-// const product = await stripe.products.create({
-//   name: "New license",
-//   default_price_data: {
-//     currency: "eur",
-//     recurring: {
-//       interval: "year",
-//     },
-//     unit_amount: 1000,
-//   },
-// });
-
-// if new polygon then create a new price
-// const price = await stripe.prices.create({
-//   currency: "eur",
-//   unit_amount: 1000,
-//   recurring: {
-//     interval: "year",
-//   },
-//   product: "prod_QEm5EvrtJ2VQ7M",
-// });
-
-// create checkout session
 ---
 
 <Layout title="Checkout ☁️ Fairclouds" theme="white">
@@ -47,73 +23,5 @@ const lang = getLangFromUrl(Astro.url);
       origin={origin}
       client:load
     />
-    <!-- <div id="checkout" data-stripe-key={PUBLIC_STRIPE_KEY}></div> -->
   </div>
 </Layout>
-
-<!-- <script type="module">
-  import { loadStripe } from "@stripe/stripe-js";
-  const checkoutDiv = document.querySelector("#checkout");
-
-  console.log(stripeLineItems);
-
-  async function createCheckoutSession() {
-    try {
-      const response = await fetch("/api/checkout-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          line_items: stripeLineItems,
-          origin,
-          lang,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const data = await response.json();
-
-      const stripe = await loadStripe(PUBLIC_STRIPE_KEY);
-      if (stripe !== null) {
-        const checkout = await stripe.initEmbeddedCheckout({
-          fetchClientSecret: () => Promise.resolve(data.clientSecret),
-        });
-        // Mount Checkout
-        checkout.mount("#checkout");
-      } else {
-        // Handle the case where stripe is null
-        console.error("Stripe failed to initialize");
-      }
-    } catch (error) {
-      console.error("Failed to create checkout session:", error);
-    }
-  }
-
-  createCheckoutSession();
-</script> -->
-
-<!-- <script>
-  import { loadStripe } from "@stripe/stripe-js";
-  const { clientSecret, stripeKey } = checkoutDiv.dataset;
-
-  if (typeof clientSecret === "string" && typeof stripeKey === "string") {
-    const stripe = await loadStripe(stripeKey);
-    if (stripe !== null) {
-      const checkout = await stripe.initEmbeddedCheckout({
-        fetchClientSecret: () => Promise.resolve(clientSecret),
-      });
-      // Mount Checkout
-      checkout.mount("#checkout");
-    } else {
-      // Handle the case where stripe is null
-      console.error("Stripe failed to initialize");
-    }
-  } else {
-    // Handle the case where clientSecret or stripeKey is undefined
-    console.error("clientSecret or stripeKey is undefined");
-  }
-</script> -->
