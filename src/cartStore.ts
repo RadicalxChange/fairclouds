@@ -1,27 +1,28 @@
 import { atom } from 'nanostores';
-import { persistentMap } from '@nanostores/persistent'
+import { persistentMap } from '@nanostores/persistent';
 
 export const isCartOpen = atom(false);
 
 export type CartItem = {
-  priceId: string;
+  id: string;
   name: string;
   quantity: number;
-}
-export type ItemDisplayInfo = Pick<CartItem, 'priceId' | 'name' | 'quantity'>;
+  priceId: string; // Added priceId attribute
+};
+
+export type ItemDisplayInfo = Pick<CartItem, 'id' | 'name' | 'quantity' | 'priceId'>;
 
 export const cartItems = persistentMap<Record<string, CartItem>>('cart:', {}, {
   encode: JSON.stringify,
   decode: JSON.parse,
 });
 
-
-export function addCartItem({ priceId, name, quantity }: ItemDisplayInfo) {
-  const existingEntry = cartItems.get()[priceId];
+export function addCartItem({ id, name, quantity, priceId }: ItemDisplayInfo) {
+  const existingEntry = cartItems.get()[id];
   if (!existingEntry) {
     cartItems.setKey(
-      priceId,
-      { priceId, name, quantity }
+      id,
+      { id, name, quantity, priceId } // Added priceId attribute
     );
   }
 }

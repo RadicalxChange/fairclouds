@@ -9,19 +9,23 @@
   } = createDialog({ forceVisible: true });
 </script>
 
-<div class="relative grow">
-  <button
-    {...$trigger}
-    use:trigger
+<div class="relative grow hidden lg:block has-hint">
+  <div
     class="w-full h-full bg-primary rounded-full shadow-cloud flex justify-center items-center relative"
   >
     <span class="opacity-50">Timeline</span>
+    <img
+      class="absolute left-[14%] flex justify-center items-cente rounded-full text-serif text-small h-7 w-7"
+      src="/icons/cloud.svg"
+      alt=""
+    />
     <div
-      class="absolute left-1/4 flex justify-center items-center bg-white rounded-full border-primary border text-primary text-serif text-small h-7 w-7"
-    >
-      <span>C1</span>
-    </div>
+      class="absolute bg-white border-l border-white h-full left-[10%]"
+    ></div>
     <div
+      class="absolute bg-white border-l border-white h-full right-[10%]"
+    ></div>
+    <!-- <div
       class="absolute left-8 flex justify-center items-center bg-white rounded-full border-primary border text-primary text-serif text-small h-7 w-7"
     >
       <span>C2</span>
@@ -32,8 +36,13 @@
       class="absolute left-6 flex justify-center items-center bg-white rounded-full border-primary border text-primary text-serif text-small h-7 w-7"
     >
       <span>C3</span>
-    </div>
-  </button>
+    </div> -->
+  </div>
+  <div role="tooltip" class="hint top-[-100%] left-0 -mt-2">
+    Each stewardship cycle lasts one year. 30 days before the end of the cycle,
+    the Fairclouds community will revalue the cells and stewards will need to
+    decide to either, renew or transfer their licence to the next steward.
+  </div>
 
   {#if $open}
     <div {...$overlay} use:overlay />

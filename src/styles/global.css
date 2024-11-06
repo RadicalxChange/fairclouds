@@ -7,8 +7,22 @@
 		font-display: swap;
 	}
 	html {
-		font-family: "Rene", sans-serif;
 		background: #ffffff;
+		font-family: "Rene", sans-serif;
+	}
+
+	/* h1, h2, h3, h4, h5, h6, button, .button {
+		font-family: "Rene", sans-serif;
+	}
+
+	.font-regular {
+		font-family: "Arial", sans-serif;
+	} */
+
+	html,
+	body {
+		margin: 0;
+		padding: 0;
 	}
 
 	.custom-scrollbar::-webkit-scrollbar {
@@ -16,7 +30,7 @@
 	}
 
 	.custom-scrollbar::-webkit-scrollbar-thumb {
-		background: #72aee9;
+		background: transparent;
 		box-shadow: inset 0px 0px 6.8px 3px #ffffff;
 		border-radius: 100px;
 	}
@@ -32,6 +46,12 @@
 		line-height: 22px;
 		letter-spacing: -0.07em;
 		line-height: auto;
+	}
+
+	.text-heading {
+		font-size: 2.125rem;
+		line-height: 41px;
+		letter-spacing: -0.07em;
 	}
 
 	p,
@@ -61,10 +81,10 @@
 		margin-bottom: 28px;
 	}
 	.button {
+		@apply bg-primary;
 		display: inline-block;
 		padding: 5px 15px 0px 15px;
 		gap: 10px;
-		background: rgba(255, 255, 255, 0.02);
 		box-shadow: inset 0px 0px 10px 3px #ffffff;
 		border-radius: 5px;
 		font-size: 2.125rem;
@@ -72,11 +92,17 @@
 		line-height: 1;
 	}
 
+
+
 	button:hover,
 	a:hover,
 	.hover-blur:hover {
 		filter: blur(2px);
 		transition: 0.75s ease;
+	}
+
+	.cloud-button:hover {
+		filter: blur(0);
 	}
 
 	.hover-blur {
@@ -88,16 +114,48 @@
 		transition: 0.5s ease;
 	}
 
+	.hint {
+		@apply bg-primary max-w-prose opacity-0 absolute pointer-events-none;
+		display: inline-block;
+		padding: 5px;
+		gap: 10px;
+		box-shadow: inset 0px 0px 10px #FFFFFF;
+		border-radius: 5px;
+		font-size: .75rem;
+		transition: 0.5s ease;
+		line-height: 1;
+	}
+
+	.has-hint:hover .hint {
+		filter: blur(0) !important;
+	}
+	
+	.has-hint:hover .hint, .has-hint:focus-within .hint {
+		@apply opacity-100 z-50;
+	}
+
+	.has-hint {
+		@apply relative
+	}
+
 	.icon-button {
-		@apply bg-white/5 shadow-cloud rounded-full w-11 h-11 flex items-center justify-center
+		@apply bg-primary shadow-cloud rounded-full w-11 h-11 flex items-center justify-center
 	}
 
 	html.accessible {
 		font-family: "Arial", sans-serif;
 	}
 
-	html.accessible.bg-primary {
-		background: #2078cf;
+	html.accessible .bg-primary, html.accessible.bg-primary {
+		background: #000065;
+	}
+
+	html.accessible .text-primary {
+		color: #000065;
+	}
+
+	html.accessible .border-primary {
+		border-color: #000065;
 	}
 
 	html.accessible h1,
@@ -219,31 +277,6 @@
 		border-top: 1px dotted #fff;
 	}
 
-	.ol-overviewmap.ol-custom-overviewmap {
-		left: 15px !important;
-		bottom: 15px !important;
-		z-index: 20 !important;
-	}
-
-	.ol-custom-overviewmap canvas {
-		border-radius: 10px !important;
-	}
-	.ol-custom-overviewmap .ol-overviewmap-map {
-		border: 0px !important;
-		background: rgba(255, 255, 255, 0.02) !important;
-		box-shadow: inset 0px 0px 10px 3px #ffffff !important;
-		border-radius: 10px !important;
-		width: 270px !important;
-		height: 175px !important;
-	}
-
-	.ol-overviewmap-box {
-		background: rgba(255, 255, 255, 0.02) !important;
-		box-shadow: inset 0px 0px 10px 3px #ffffff !important;
-		border-radius: 5px !important;
-		border: 0px !important;
-	}
-
 	@media (prefers-reduced-motion: reduce) {
 		* {
 			animation-duration: 0.01ms !important;
@@ -252,3 +285,39 @@
 			animation-delay: 0.01ms !important;
 		}
 	}
+
+	.prose ul, .prose ol {
+		padding-left: 25px;
+	}
+
+	.prose ul li::before, .prose ol li::before {
+    content: url('/icons/list.svg');
+    display: inline-block;
+    width: 21px; /* Adjust width as needed */
+    height: 17px; /* Adjust height as needed */
+    margin-right: 3px; /* Adjust spacing between icon and text */
+    position: relative;
+    top: 2.5px; /* Move the icon down by 5 pixels */
+	}
+
+	.prose ul ul li::before, .prose ol ol li::before,
+	.prose ul ol li::before, .prose ol ul li::before {
+		content: url('/icons/inner-list.svg');
+	}
+
+	.text-black .prose ul li::before, .prose ol li::before {
+		content: url('/icons/list-black.svg');
+	}
+
+	.text-black .prose ul ul li::before, .text-black .prose ol ol li::before,
+	.text-black .prose ul ol li::before, .text-black .prose ol ul li::before {
+		content: url('/icons/inner-list-black.svg');
+	}
+
+
+	/* to do: make this transition work with reduced motion */
+	.fade-out {
+    opacity: 0;
+    transition: opacity 2s ease-out;
+    transition-delay: 5s;
+  }

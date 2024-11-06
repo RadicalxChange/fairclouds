@@ -19,10 +19,7 @@
   });
 </script>
 
-<button
-  class="bg-white/5 shadow-cloud rounded-full w-11 h-11"
-  {...$trigger}
-  use:trigger
+<button class="icon-button" {...$trigger} use:trigger
   ><span class="sr-only">Menu</span>
   <svg
     class="mx-auto"
@@ -82,7 +79,19 @@
           <slot name="about" />
         {/if}
         {#if tab === "info"}
-          <slot name="info" />
+          <div class="relative">
+            <div class="mb-6">
+              <slot name="info" />
+            </div>
+            <div class="sticky bottom-0 left-0 z-10 flex gap-2.5">
+              <a class="button" target="_blank" href={`/${lang}/wiki/faq`}
+                >Wiki</a
+              >
+              <a class="button" target="_blank" href={`/${lang}/wiki/support`}
+                >Support</a
+              >
+            </div>
+          </div>
         {/if}
         {#if tab === "news"}
           <slot name="news" />
