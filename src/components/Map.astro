@@ -1,0 +1,200 @@
+---
+// dont prerender this component as we need to get fresh data from the api.
+export const prerender = false;
+
+import directus from "../lib/directus";
+import { readItems } from "@directus/sdk";
+
+const polygons = await directus.request(
+	readItems("polygons", {
+		fields: ["id", "location", "price", { licenses: ["id"] }],
+	}),
+);
+
+// intersection of a point with drawing polygons
+// const intersects = await directus.request(
+// 	readItems("drawings", {
+// 		fields: ["*"],
+// 		filter: {
+// 			area: {
+// 				_intersects: {
+// 					type: "Feature",
+// 					properties: {},
+// 					geometry: {
+// 						coordinates: [-66.09679179594478, -23.722487874932185],
+// 						type: "Point",
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}),
+// );
+// console.log("INTERSECTION");
+// console.log(intersects);
+
+// intersection of a polygon with drawing polygons
+// const response = await directus.items("Land").readByQuery({
+// 	limit: 100,
+// 	fields: ["id", "name", "center", "geometry"],
+// 	filter: {
+// 		center: {
+// 			_intersects: {
+// 				type: "Feature",
+// 				geometry: {
+// 					coordinates: [
+// 						[
+// 							[168.2947501099543, -17.723682144590242],
+// 							[168.2947501099543, -17.727328428851507],
+// 							[168.29840874403044, -17.727328428851507],
+// 							[168.29840874403044, -17.723682144590242],
+// 							[168.2947501099543, -17.723682144590242],
+// 						],
+// 					],
+// 					type: "Polygon",
+// 				},
+// 			},
+// 		},
+// 	},
+// });
+---
+
+<div
+	class="w-full h-screen flex flex-col bg-blue-100 items-center justify-center relative"
+>
+	<canvas class="w-screen h-screen" id="chart"></canvas>
+	<canvas
+		class="bg-white border border-black absolute bottom-2 left-2 hidden"
+		id="minimap"></canvas>
+	<!-- <a class="bg-grey rounded-full px-6 py-2" href="/checkout">Checkout</a> -->
+</div>
+
+<script>
+	// fetch data from api
+
+	// create map
+	import * as d3 from "d3";
+
+	// Get the device pixel ratio, falling back to 1.
+	const dpr = window.devicePixelRatio || 1;
+
+	const canvas = document.getElementById("chart") as HTMLCanvasElement;
+	const minimap = document.getElementById("minimap") as HTMLCanvasElement;
+
+	const svgUrl = "/fairclouds-zoom-test.svg"; // Replace with the actual path to your SVG file
+
+	const context = canvas.getContext("2d");
+	const img = new Image();
+	canvas.width = canvas.offsetWidth; // Set canvas width
+	canvas.height = canvas.offsetHeight; // Set canvas height
+
+	const miniCtx = minimap.getContext("2d");
+	let viewportWidth = (minimap.width / 6) * dpr;
+	let viewportHeight = (minimap.height / 6) * dpr;
+
+	const points = [
+		[100, 100],
+		[200, 200],
+		[300, 300],
+	]; // Example points
+
+	const voronoi = d3.Delaunay.from(points).voronoi([
+		0,
+		0,
+		canvas.width,
+		canvas.height,
+	]);
+
+	// Function to convert SVG to Canvas
+	async function loadSvgToCanvas(svgUrl: string, canvas: HTMLCanvasElement) {
+		const response = await fetch(svgUrl);
+		const svgText = await response.text();
+
+		const svgBlob = new Blob([svgText], {
+			type: "image/svg+xml;charset=utf-8",
+		});
+		const url = URL.createObjectURL(svgBlob);
+
+		img.onload = function () {
+			const ctx = canvas.getContext("2d");
+			if (!ctx) {
+				throw new Error("Unable to get canvas context");
+			}
+
+			// Adjust the canvas size for Retina displays
+			canvas.width = canvas.offsetWidth * dpr;
+			canvas.height = canvas.offsetHeight * dpr;
+
+			// Scale the context to ensure correct drawing dimensions.
+			ctx.scale(dpr, dpr);
+
+			// Now, draw the image at the "normal" size despite the canvas being larger.
+			ctx.drawImage(img, 0, 0, canvas.offsetWidth, canvas.offsetHeight);
+
+			// Minimap
+			minimap.width = canvas.offsetWidth / 4;
+			minimap.height = canvas.offsetHeight / 4;
+
+			// miniCtx.drawImage(img, 0, 0, minimap.width, minimap.height);
+
+			miniCtx.strokeStyle = "red";
+			miniCtx.strokeRect(0, 0, minimap.width, minimap.height);
+
+			URL.revokeObjectURL(url);
+		};
+
+		img.src = url;
+	}
+
+	loadSvgToCanvas(svgUrl, canvas);
+
+	// Setup zoom behavior
+	const zoom = d3
+		.zoom()
+		.scaleExtent([0.5, 800]) // Zoom limits
+		.on("zoom", (event) => {
+			const transform = event.transform;
+
+			// Clear the canvas
+			context.clearRect(0, 0, canvas.width, canvas.height);
+
+			// Apply the transformation
+			context.save(); // Save the current context state
+			context.translate(transform.x, transform.y); // Apply translation
+			context.scale(transform.k, transform.k); // Apply scale
+
+			// Draw the image at (0, 0) since the transformation is already applied
+			context.drawImage(img, 0, 0, canvas.width / dpr, canvas.height / dpr);
+
+			// Draw Voronoi cells
+			// context.beginPath();
+			// voronoi.render(context);
+			// context.strokeStyle = "rgba(255, 0, 0, 0.5)"; // Example: red lines for Voronoi edges
+			// context.stroke();
+
+			// Calculate the new size of the viewportRect based on the zoom scale
+			const newViewportWidth = (viewportWidth / event.transform.k) * dpr;
+			const newViewportHeight = (viewportHeight / event.transform.k) * dpr;
+
+			// Calculate the new position of the viewportRect
+			// This assumes the top-left of the main canvas corresponds to (0,0) in minimap coordinates
+			const newX =
+				(-event.transform.x * minimap.width) / canvas.width / event.transform.k;
+			const newY =
+				(-event.transform.y * minimap.height) /
+				canvas.height /
+				event.transform.k;
+
+			// Redraw the minimap and viewportRect
+			miniCtx.clearRect(0, 0, minimap.width, minimap.height); // Clear the minimap
+			// miniCtx.drawImage(img, 0, 0, minimap.width, minimap.height); // Redraw the minimap image
+
+			// Draw the new viewportRect
+			miniCtx.strokeStyle = "red";
+			miniCtx.strokeRect(newX, newY, newViewportWidth, newViewportHeight);
+
+			context.restore(); // Restore the context to its original state
+		});
+
+	// Apply zoom behavior to the canvas
+	d3.select(canvas).call(zoom);
+</script>
