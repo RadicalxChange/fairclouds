@@ -5,6 +5,7 @@ import { getLangFromUrl } from "../../i18n/utils";
 import directus from "../../lib/directus";
 import { readItems } from "@directus/sdk";
 import Timeline from "../../components/Timeline.astro";
+import Cart from "../../components/Cart.svelte";
 
 export async function getStaticPaths() {
   const paths = [{ params: { lang: "en" } }, { params: { lang: "es" } }];
@@ -56,14 +57,7 @@ const clouds = await directus.request(
           </div>
         </div>
 
-        <!-- <Draw client:only /> -->
-
-        <div class="icon-button has-hint">
-          <img src="/icons/cart.svg" alt="" />
-          <div role="tooltip" class="hint top-[0%] -mt-7 right-0 w-max">
-            Basket / Checkout
-          </div>
-        </div>
+        <Cart client:load />
       </div>
     </div>
   </main>

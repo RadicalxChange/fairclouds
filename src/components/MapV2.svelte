@@ -1,11 +1,10 @@
 <script>
   import { onMount } from "svelte";
+  import CloudModal from "./CloudModal.svelte";
   export let clouds;
   const height = 982;
   const scaleFactor = 1.32;
-  let mouseMovements = new Map();
-  const checkInterval = 100; // Check every second
-  let lastCheckTime = 0;
+  let selectedCloud;
 
   // set active drawing index to 0
   clouds.forEach((cloud) => {
@@ -63,13 +62,28 @@
         ctx.arc(x, y, radius, 0, Math.PI * 2, false);
         ctx.fill();
 
-        // Store the mouse movement with timestamp
-        if (!mouseMovements.has(canvas)) {
-          mouseMovements.set(canvas, []);
+        // Check if 10% or more of the canvas has been erased
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        let erasedPixels = 0;
+
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] === 0) {
+            // Check if the alpha channel is 0 (erased pixel)
+            erasedPixels++;
+          }
         }
-        // mouseMovements
-        //   .get(canvas)
-        //   .push({ x, y, radius, timestamp: Date.now() });
+
+        const totalPixels = canvas.width * canvas.height;
+        const erasedPercentage = (erasedPixels / totalPixels) * 100;
+
+        if (erasedPercentage >= 10) {
+          // enable button
+          const button = canvas.closest("button");
+          if (button) {
+            button.disabled = false;
+          }
+        }
       });
 
       canvas.addEventListener("mouseleave", () => {
@@ -96,6 +110,11 @@
           } else {
             clouds[index].activeDrawingIndex = newActiveDrawingIndex;
           }
+          // disable button
+          const button = canvas.closest("button");
+          if (button) {
+            button.disabled = true;
+          }
         }, 7001);
       });
 
@@ -106,101 +125,6 @@
         }
       });
     });
-
-    // function redraw() {
-    //   const now = Date.now();
-    //   mouseMovements.forEach((movements, canvas) => {
-    //     const ctx = canvas.getContext("2d");
-    //     mouseMovements.set(
-    //       canvas,
-    //       movements.filter((movement) => {
-    //         if (now - movement.timestamp > 10000) {
-    //           const canvasX = parseInt(canvas.dataset.x);
-    //           const canvasY = parseInt(canvas.dataset.y);
-    //           // const canvasWidth = parseInt(canvas.dataset.width);
-    //           // const canvasHeight = parseInt(canvas.dataset.height);
-    //           console.log(screenScale);
-    //           console.log(
-    //             canvasX + movement.x * screenScale - movement.radius,
-    //             canvasY + movement.y * screenScale - movement.radius,
-    //             movement.radius * 2,
-    //             movement.radius * 2,
-    //             movement.x - movement.radius,
-    //             movement.y - movement.radius,
-    //             movement.radius * 2,
-    //             movement.radius * 2,
-    //           );
-    //           ctx.globalCompositeOperation = "source-over";
-
-    //           // Save the current context state
-    //           ctx.save();
-
-    //           // Create a circular clipping path
-    //           ctx.beginPath();
-    //           ctx.arc(movement.x, movement.y, movement.radius, 0, Math.PI * 2);
-    //           ctx.clip();
-
-    //           // Draw the image within the clipped area
-    //           ctx.drawImage(
-    //             bgImg,
-    //             canvasX + movement.x * screenScale - movement.radius,
-    //             canvasY + movement.y * screenScale - movement.radius,
-    //             movement.radius * 2,
-    //             movement.radius * 2,
-    //             movement.x - movement.radius,
-    //             movement.y - movement.radius,
-    //             movement.radius * 2,
-    //             movement.radius * 2,
-    //           );
-
-    //           // Restore the context state
-    //           ctx.restore();
-
-    //           return false;
-    //         }
-    //         return true;
-    //       }),
-    //     );
-
-    //     if (mouseMovements.get(canvas).length === 0) {
-    //       mouseMovements.delete(canvas);
-    //     }
-    //   });
-
-    //   if (now - lastCheckTime > checkInterval) {
-    //     lastCheckTime = now;
-    //     mouseMovements.forEach((_, canvas) => {
-    //       const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    //       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    //       const totalPixels = imageData.width * imageData.height;
-    //       const threshold = totalPixels * 0.25;
-    //       let erasedPixels = 0;
-
-    //       for (let i = 3; i < imageData.data.length; i += 4) {
-    //         if (imageData.data[i] === 0) {
-    //           erasedPixels++;
-    //         }
-    //       }
-
-    //       const erasedPercentage = erasedPixels / totalPixels;
-    //       if (erasedPercentage > 0.25) {
-    //         const button = canvas.closest("button");
-    //         if (button) {
-    //           button.disabled = false;
-    //         }
-    //         console.log("25% of the canvas has been erased");
-    //       } else {
-    //         const blurAmount = 10 * (1 - erasedPercentage / 0.25);
-    //         const button = canvas.closest("button");
-    //         if (button) {
-    //           button.disabled = true;
-    //         }
-    //       }
-    //     });
-    //   }
-
-    //   requestAnimationFrame(redraw);
-    // }
 
     // requestAnimationFrame(redraw);
 
@@ -232,6 +156,7 @@
           100}vh; width: {(cloud.width / height) *
           100}vh; height: {(cloud.height / height) * 100}vh;"
         disabled
+        on:click={() => (selectedCloud = cloud.id)}
       >
         <div class="relative w-full h-full">
           <img
@@ -283,6 +208,8 @@
       style="top: 10vh; left: 220vh;"
       data-speed="-0.1"
     />` -->
+
+    <CloudModal cloud={selectedCloud} />
   </div>
 
   <!-- horizon -->
