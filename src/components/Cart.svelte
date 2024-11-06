@@ -42,11 +42,13 @@
     >
       <h3 class="mb-2.5">Cart</h3>
       {#if Object.values($cartItems).length}
-        {#each Object.values($cartItems) as cartItem}
-          <li>
-            <h3>{cartItem.name}</h3>
-          </li>
-        {/each}
+        <ul class="mb-2.5">
+          {#each Object.values($cartItems) as cartItem}
+            <li>
+              <h3>{cartItem.name}</h3>
+            </li>
+          {/each}
+        </ul>
         <a href="/en/checkout" class="button">Checkout</a>
       {:else}
         <p>Your cart is empty!</p>

@@ -2,6 +2,7 @@
   import { useTranslations } from "../i18n/utils";
   import { createDialog, melt } from "@melt-ui/svelte";
   import { onMount } from "svelte";
+  import { addCartItem, cartItems } from "../cartStore";
 
   export let lang: "en" | "es" = "en";
   export let cloud: number;
@@ -23,6 +24,17 @@
   onMount(() => {
     t = useTranslations(lang);
   });
+
+  function handleAddToCart() {
+    cloud.quantity = 1;
+    cloud.priceId = "price_1Pcq65I5tEqwxzqyI35xSvI0";
+    addCartItem(cloud);
+  }
+
+  function isCloudInCart(cloudId) {
+    console.log(Object.values($cartItems));
+    return Object.values($cartItems).some((item) => item.id === cloudId);
+  }
 </script>
 
 {#if $open}
@@ -33,7 +45,7 @@
       use:content
     >
       <div class="flex justify-between items-center mb-[30px]">
-        <h3 class="text-heading">Cloud {cloud}</h3>
+        <h3 class="text-heading">Cloud {cloud.name}</h3>
         <span
           class="bg-white text-primary text-copy rounded-full pl-[14px] pr-[7px] pt-1"
           >10$ *</span
@@ -74,10 +86,18 @@
         *XX current stewards. The initial cost of the licence is relative to of
         the number of current stewards.
       </p>
-      <button class="button group w-fit">
-        <span class="group-hover:hidden">Steward this cloud</span>
-        <span class="hidden group-hover:block">Add to cart</span>
-      </button>
+      {#if isCloudInCart(cloud.id)}
+        <button disabled class="button group w-fit cursor-not-allowed">
+          In your cart
+        </button>
+      {:else}
+        <button on:click={handleAddToCart} class="button group w-fit">
+          <span class="group-hover:hidden">Steward this cloud</span>
+          <span class="hidden group-hover:block">Add to cart</span>
+        </button>
+      {/if}
+
+      <!-- Add to Cart Button -->
     </div>
   </div>
 {/if}

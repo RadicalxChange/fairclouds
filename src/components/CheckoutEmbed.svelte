@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { loadStripe } from "@stripe/stripe-js";
-  import { isCartOpen, cartItems } from "../cartStore";
+  import { cartItems } from "../cartStore";
 
   export let PUBLIC_STRIPE_KEY;
   export let lang;

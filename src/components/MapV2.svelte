@@ -137,6 +137,13 @@
       });
     });
   });
+
+  function handleCloudClick(cloud) {
+    selectedCloud = {
+      id: cloud.id,
+      name: cloud.name,
+    };
+  }
 </script>
 
 <div class="bg-primary h-screen max-h-screen inline-block relative">
@@ -156,7 +163,7 @@
           100}vh; width: {(cloud.width / height) *
           100}vh; height: {(cloud.height / height) * 100}vh;"
         disabled
-        on:click={() => (selectedCloud = cloud.id)}
+        on:click={() => handleCloudClick(cloud)}
       >
         <div class="relative w-full h-full">
           <img
