@@ -185,36 +185,30 @@
     {/each}
 
     <!-- Parallax clouds -->
-    <!-- <img
-      src="/v3/43_cloud.png"
-      class="w-[80vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
-      style="top: 10vh; left: 20vh;"
+    <img
+      src="/v3/parallax-clouds-1.png"
+      class="w-[73vh] left-[2vh] top-[8vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
       data-speed="-0.2"
+      alt
     />
     <img
-      src="/v3/43_cloud.png"
-      `class="w-[80vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
-      style="top: 30vh; left: 90vh;"
+      src="/v3/parallax-clouds-2.png"
+      class="w-[160vh] left-[128vh] top-[33vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
       data-speed="-0.3"
+      alt
     />
     <img
-      src="/v3/43_cloud.png"
-      class="w-[80vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
-      style="top: 50vh; left: 120vh;"
+      src="/v3/parallax-clouds-3.png"
+      class="w-[127vh] left-[288vh] top-[55vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
       data-speed="-0.1"
+      alt
     />
     <img
-      src="/v3/43_cloud.png"
-      class="w-[80vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
-      style="top: 5vh; left: 160vh;"
+      src="/v3/parallax-clouds-4.png"
+      class="w-[99vh] left-[277vh] top-[16vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
       data-speed="-0.25"
+      alt
     />
-    <img
-      src="/v3/43_cloud.png"
-      class="w-[80vh] absolute h-auto parallax-cloud blur-[10px] z-30 pointer-events-none"
-      style="top: 10vh; left: 220vh;"
-      data-speed="-0.1"
-    />` -->
 
     <CloudModal cloud={selectedCloud} />
   </div>
