@@ -27,7 +27,17 @@
 
   function handleAddToCart() {
     cloud.quantity = 1;
-    cloud.priceId = "price_1Pcq65I5tEqwxzqyI35xSvI0";
+    switch (cloud.licenses.length) {
+      case 0:
+        cloud.priceId = "price_1QPrPKI5tEqwxzqyJpFyuszU";
+        break;
+      case 1:
+        cloud.priceId = "price_1QPrRnI5tEqwxzqyKxeuIdJ6";
+        break;
+      default:
+        cloud.priceId = "price_1QPrSBI5tEqwxzqym5FzNxrG";
+        break;
+    }
     addCartItem(cloud);
   }
 
@@ -52,38 +62,21 @@
         >
       </div>
       <p class="mb-[21px]">
-        Become a temporary steward of this cloud and the XX drawing(s) it
+        Become a temporary steward of this cloud and the {cloud.drawings.length} drawing(s) it
         contains.
       </p>
       <div class="mb-2.5 flex gap-2.5">
-        <img
-          src="/drawing-placeholder.jpg"
-          alt="alt of drawing to go here"
-          class="h-[45px] w-auto"
-        />
-        <img
-          src="/drawing-placeholder.jpg"
-          alt="alt of drawing to go here"
-          class="h-[45px] w-auto"
-        />
-        <img
-          src="/drawing-placeholder.jpg"
-          alt="alt of drawing to go here"
-          class="h-[45px] w-auto"
-        />
-        <img
-          src="/drawing-placeholder.jpg"
-          alt="alt of drawing to go here"
-          class="h-[45px] w-auto"
-        />
-        <img
-          src="/drawing-placeholder.jpg"
-          alt="alt of drawing to go here"
-          class="h-[45px] w-auto"
-        />
+        {#each cloud.drawings as drawing}
+          <img
+            src={`https://cms.fairclouds.life/assets/` +
+                drawing.map_drawing}
+            alt="alt of drawing to go here"
+            class="h-[45px] w-auto"
+          />
+        {/each}
       </div>
       <p class="mb-10 text-small">
-        *XX current stewards. The initial cost of the licence is relative to of
+        *{cloud.licenses.length} current steward{cloud.licenses.length !== 1 ? "s" : ""}. The initial cost of the licence is relative to
         the number of current stewards.
       </p>
       {#if isCloudInCart(cloud.id)}

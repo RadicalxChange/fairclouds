@@ -142,6 +142,8 @@
     selectedCloud = {
       id: cloud.id,
       name: cloud.name,
+      drawings: cloud.drawings,
+      licenses: cloud.licenses.filter(license => license.active),
     };
   }
 </script>
