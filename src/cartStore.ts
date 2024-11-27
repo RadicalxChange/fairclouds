@@ -26,3 +26,10 @@ export function addCartItem({ id, name, quantity, priceId }: ItemDisplayInfo) {
     );
   }
 }
+
+export function removeCartItem(itemId: string) {
+  const cart = cartItems.get();
+  if (cart[itemId]) {
+    cartItems.setKey(itemId, undefined); // Remove the item by setting it to `undefined`
+  }
+}

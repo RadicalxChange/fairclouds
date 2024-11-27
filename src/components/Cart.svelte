@@ -1,5 +1,5 @@
 <script>
-  import { isCartOpen, cartItems } from "../cartStore";
+  import { isCartOpen, cartItems, removeCartItem } from "../cartStore";
   import { createDialog, melt } from "@melt-ui/svelte";
 
   const {
@@ -40,12 +40,18 @@
       {...$content}
       use:content
     >
-      <h3 class="mb-2.5">Cart</h3>
       {#if Object.values($cartItems).length}
+        <h3 class="mb-2.5">You currently have {Object.values($cartItems).length} cloud{Object.values($cartItems).length !== 1 ? "s" : ""} in your shopping basket.</h3>
         <ul class="mb-2.5">
           {#each Object.values($cartItems) as cartItem}
-            <li>
+            <li class="flex flex-row justify-between">
               <h3>{cartItem.name}</h3>
+              <button 
+                class="text-red-500 hover:text-red-700 focus:outline-none" 
+                on:click={() => removeCartItem(cartItem.id)}
+              >
+                Delete
+              </button>
             </li>
           {/each}
         </ul>
