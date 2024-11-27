@@ -41,7 +41,7 @@
   <div role="tooltip" class="hint top-[-100%] left-0 -mt-2">
     Each stewardship cycle lasts one year. 30 days before the end of the cycle,
     the Fairclouds community will revalue the cells and stewards will need to
-    decide to either, renew or transfer their licence to the next steward.
+    decide to either renew, or transfer their licence to the next steward.
   </div>
 
   {#if $open}
@@ -128,7 +128,7 @@
         <p class="col-span-3 text-small opacity-60">
           Each stewardship cycle lasts one year. In the last month (magenta
           zone), the community will revalue the cells and stewards will need to
-          decide to either, renew or sell their licence.
+          decide to either renew, or sell their licence.
         </p>
       </div>
     </div>
