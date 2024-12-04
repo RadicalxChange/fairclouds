@@ -2,10 +2,11 @@
 // dont prerender as this page will be unique.
 export const prerender = false;
 
+// TODO: save license info to db
+
 import Layout from "../../layouts/Layout.astro";
 import Stripe from "stripe";
 
-export const prenender = false;
 const stripe = new Stripe(import.meta.env.STRIPE_KEY);
 const sessionID = Astro.url.searchParams.get("session_id");
 

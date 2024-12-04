@@ -1,37 +1,112 @@
 ---
-// dont prerender as this page will be unique.
+// Don't prerender as this page will be unique for each user.
 export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
 import directus from "../../lib/directus";
-import { readMe } from "@directus/sdk";
+import { withToken, readMe } from '@directus/sdk';
+import { parse } from "cookie";
 
-// Import the utility function
-import { isAuthenticated } from "../../utils/auth";
-
-const userIsAuthenticated = isAuthenticated(Astro.request);
+const DIRECTUS_URL = "https://cms.fairclouds.life";
 
 let currentUser = null;
 
-if (!userIsAuthenticated) {
-  return Astro.redirect("/");
-} else {
-  // Fetch the current user from Directus
-  // Ensure your Directus SDK instance is configured to include the authentication token in its requests
+// Read cookies from the incoming request
+const cookies = parse(Astro.request.headers.get("cookie") || "");
+const authToken = cookies.auth_token;
+
+if (authToken) {
   try {
-    const response = await directus.request(readMe());
-    currentUser = response;
+    currentUser = await directus.request(
+      withToken(authToken,
+        readMe({
+          fields: [
+            "*",
+            "licenses.*",
+            "licenses.cloud_id.id",
+            "licenses.cloud_id.name",
+            "licenses.cloud_id.x",
+            "licenses.cloud_id.y",
+            "licenses.cloud_id.width",
+            "licenses.cloud_id.height",
+            "licenses.cloud_id.drawings.*"
+          ],
+        })
+      )
+    );
+    console.log(currentUser.licenses)
   } catch (error) {
-    console.error("Failed to fetch current user:", error);
-    // Handle error, e.g., redirect to login if the token is invalid
+    console.error("Failed to fetch user or validate token:", error);
   }
 }
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    timeZoneName: "short",
+  }).format(date);
+};
+
 ---
 
 <Layout title="Dashboard">
   <main>
-    <h1>
-      Welcome to the protected dashboard, {currentUser.email}!
-    </h1>
+    {currentUser ? (
+      <div class="p-12">
+        <h1>Welcome to your account dashboard, {currentUser.first_name}!</h1>
+        <p class="mt-4">You have {currentUser.credits} store credits.</p>
+
+        <h2 class="mt-8">Your Licenses</h2>
+        {currentUser.licenses?.length > 0 ? (
+          <ul>
+            {currentUser.licenses.map(license => (
+              <li class="my-4 flex flex-col gap-2" style="border: 1px solid #ccc; padding: 0.5rem;">
+                <h3>Cloud {license.cloud_id.name}</h3>
+                <h3>Steward #{license.sort}</h3>
+                <p><strong>Active:</strong> {license.active ? "Yes" : "No"}</p>
+                <p><strong>Cycle Start:</strong> {formatDate(license.cycle_start)}</p>
+                <p><strong>Cycle End:</strong> {formatDate(license.cycle_end)}</p>
+
+                {license.cloud_id ? (
+                  <>
+
+                    {license.cloud_id.drawings?.length > 0 ? (
+                      <>
+                        <h5 class="my-4">Drawings</h5>
+                        <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                          {license.cloud_id.drawings.map(drawing => (
+                            <div style="padding: 0.5rem;">
+                              <img 
+                                src={`${DIRECTUS_URL}/assets/${drawing.map_drawing}`} 
+                                alt={`Drawing ${drawing.id}`} 
+                                style="max-width: 150px; max-height: 150px;" 
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <p>No drawings available for this cloud.</p>
+                    )}
+                  </>
+                ) : (
+                  <p>No associated cloud information for this license.</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>You have no licenses.</p>
+        )}
+      </div>
+    ) : (
+      <h1>You are not logged in.</h1>
+    )}
   </main>
 </Layout>

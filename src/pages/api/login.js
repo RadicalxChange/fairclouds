@@ -3,7 +3,7 @@ export const prerender = false;
 
 export const POST = async ({ request }) => {
   const { email, password } = await request.json();
-  const DIRECTUS_URL = import.meta.env.DIRECTUS_URL
+  const DIRECTUS_URL = "https://cms.fairclouds.life"
   try {
     const response = await fetch(`${DIRECTUS_URL}/auth/login`, {
       method: 'POST',
@@ -19,17 +19,23 @@ export const POST = async ({ request }) => {
       });
     }
 
-    const data = await response.json();
-    const accessToken = data.data.access_token;
+    const { data } = await response.json();
+    const { access_token, refresh_token } = data;
+
+    const maxAge = 60 * 60 * 24 * 7; // 7 days
 
     return new Response(JSON.stringify({ message: 'Login successful' }), {
       status: 200,
       headers: {
-        'Set-Cookie': `auth_token=${accessToken}; HttpOnly; Secure; SameSite=Strict; Path=/;`,
+        'Set-Cookie': [
+          `auth_token=${access_token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=3600;`, // 1-hour access token
+          `refresh_token=${refresh_token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${maxAge};`, // 7-day refresh token
+        ].join(' '),
         'Content-Type': 'application/json',
       },
     });
   } catch (err) {
+    console.error("Login endpoint error:", err); // Log the error
     return new Response(JSON.stringify({ error: 'Login failed' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
