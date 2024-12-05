@@ -1,6 +1,5 @@
 <script>
-  import { createDirectus, authentication } from "@directus/sdk";
-  import { directusAuth } from "../lib/directus";
+  import Register from "./Register.svelte";
 
   export let lang;
 
@@ -8,8 +7,7 @@
   let password = "";
   let error = "";
   let isLoggedIn = false;
-
-  // const client = createDirectus("https://cms.fairclouds.life").with(authentication());
+  let showRegister = false; // Controls whether to show the Register component
 
   const handleLogin = async () => {
     error = "";
@@ -32,7 +30,12 @@
   };
 </script>
 
-{#if isLoggedIn}
+{#if showRegister}
+  <Register />
+  <button class="button mt-4" on:click={() => (showRegister = false)}>
+    {lang === "en" ? "Back to Login" : "Volver al inicio de sesión"}
+  </button>
+{:else if isLoggedIn}
   <p>You are logged in!</p>
   <a href="/en/dashboard">Go to dashboard</a>
 {:else}
@@ -58,4 +61,9 @@
       {lang === "en" ? "Login" : "Acceso"}
     </button>
   </form>
+
+  <!-- Sign Up button -->
+  <button class="button secondary mt-4" on:click={() => (showRegister = true)}>
+    {lang === "en" ? "Sign Up" : "Regístrate"}
+  </button>
 {/if}

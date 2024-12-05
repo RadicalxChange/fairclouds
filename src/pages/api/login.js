@@ -22,9 +22,6 @@ export const POST = async ({ request, cookies }) => {
     const { data } = await response.json();
     const { access_token, refresh_token } = data;
 
-    const isLocal = import.meta.env.MODE === 'development';
-    const secureFlag = isLocal ? '' : 'Secure;';
-
     // Set cookies
     cookies.set('auth_token', access_token, {
       httpOnly: true,
