@@ -1,7 +1,7 @@
 // dont prerender as this page will be unique.
 export const prerender = false;
 
-export const POST = async ({ request }) => {
+export const POST = async ({ request, cookies }) => {
   const { email, password } = await request.json();
   const DIRECTUS_URL = "https://cms.fairclouds.life"
   try {
@@ -22,17 +22,29 @@ export const POST = async ({ request }) => {
     const { data } = await response.json();
     const { access_token, refresh_token } = data;
 
-    const maxAge = 60 * 60 * 24 * 7; // 7 days
+    const isLocal = import.meta.env.MODE === 'development';
+    const secureFlag = isLocal ? '' : 'Secure;';
+
+    // Set cookies
+    cookies.set('auth_token', access_token, {
+      httpOnly: true,
+      secure: 'Secure',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 3600, // 1 hour
+    });
+
+    cookies.set('refresh_token', refresh_token, {
+      httpOnly: true,
+      secure: 'Secure',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 604800, // 7 days
+    });
 
     return new Response(JSON.stringify({ message: 'Login successful' }), {
       status: 200,
-      headers: {
-        'Set-Cookie': [
-          `auth_token=${access_token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=3600;`, // 1-hour access token
-          `refresh_token=${refresh_token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${maxAge};`, // 7-day refresh token
-        ].join(' '),
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {
     console.error("Login endpoint error:", err); // Log the error

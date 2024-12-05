@@ -28,27 +28,6 @@ const {
 } = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
-
-// Token refresh
-const REFRESH_INTERVAL = 55 * 60 * 1000; // 55 minutes
-
-const refreshToken = async () => {
-  try {
-    const response = await fetch('/api/refresh', { method: 'POST' });
-    if (!response.ok) {
-      throw new Error('Failed to refresh token');
-    }
-    const { message } = await response.json();
-    console.log(message);
-  } catch (err) {
-    console.error('Token refresh error:', err);
-  }
-};
-
-// Start auto-refreshing tokens on the client
-if (typeof window !== "undefined") {
-  setInterval(refreshToken, REFRESH_INTERVAL);
-}
 ---
 
 <!doctype html>
@@ -106,5 +85,24 @@ if (typeof window !== "undefined") {
 			}
 		</header>
 		<slot />
+		<script>
+			const REFRESH_INTERVAL = 12 * 60 * 1000; // 12 minutes (directus token expiration is 15 minutes)
+
+			const refreshToken = async () => {
+				try {
+					const response = await fetch('/api/refresh', { method: 'POST' });
+					if (!response.ok) {
+					throw new Error('Failed to refresh token');
+					}
+					const { message } = await response.json();
+					console.log(message);
+				} catch (err) {
+					console.error('Token refresh error:', err);
+				}
+			};
+
+			// Start auto-refreshing tokens
+			setInterval(refreshToken, REFRESH_INTERVAL);
+		</script>		  
 	</body>
 </html>
