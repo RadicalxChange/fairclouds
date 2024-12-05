@@ -6,6 +6,7 @@
 
   export let lang: "en" | "es" = "en";
   export let cloud: number;
+  export let currentUser;
 
   const {
     elements: { trigger, portalled, overlay, content },
@@ -45,6 +46,16 @@
     console.log(Object.values($cartItems));
     return Object.values($cartItems).some((item) => item.id === cloudId);
   }
+
+  function getLicense(currentUser, cloudId) {
+    if (!currentUser || !currentUser.licenses || !Array.isArray(currentUser.licenses)) {
+      return null;
+    }
+
+    return currentUser.licenses.find(
+      (license) => license.cloud_id && license.cloud_id.id === cloudId
+    ) || null;
+  }
 </script>
 
 {#if $open}
@@ -62,7 +73,7 @@
         >
       </div>
       <p class="mb-[21px]">
-        Become a temporary steward of this cloud and the {cloud.drawings.length} drawing(s) it
+        {currentUser && getLicense(currentUser, cloud.id) ? "You are Steward #" + getLicense(currentUser, cloud.id).sort : "Become a temporary steward"} of this cloud and the {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
         contains.
       </p>
       <div class="mb-2.5 flex gap-2.5">

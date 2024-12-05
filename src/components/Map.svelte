@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import CloudModal from "./CloudModal.svelte";
   export let clouds;
+  export let currentUser;
   const height = 982;
   const scaleFactor = 1.32;
   let selectedCloud;
@@ -212,7 +213,7 @@
       alt
     />
 
-    <CloudModal cloud={selectedCloud} />
+    <CloudModal cloud={selectedCloud} currentUser={currentUser} />
   </div>
 
   <!-- horizon -->
