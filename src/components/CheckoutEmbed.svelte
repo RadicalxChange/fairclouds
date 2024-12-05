@@ -6,6 +6,7 @@
   export let PUBLIC_STRIPE_KEY;
   export let lang;
   export let origin;
+  export let currentUser;
   let stripePromise;
   const cartItemsValue = cartItems.get();
   let loading = true;
@@ -36,6 +37,8 @@
           line_items: stripeLineItems,
           origin: origin,
           lang: lang,
+          customer_email: currentUser?.email,
+          cloud_ids: Object.keys(cartItemsValue).join(','),
         }),
       });
 

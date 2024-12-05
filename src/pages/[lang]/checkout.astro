@@ -6,8 +6,41 @@ import { getLangFromUrl } from "../../i18n/utils";
 
 import Layout from "../../layouts/Layout.astro";
 import Stripe from "stripe";
+import directus from "../../lib/directus";
+import { withToken, readMe } from '@directus/sdk';
+import { parse } from "cookie";
 
 import CheckoutEmbed from "../../components/CheckoutEmbed.svelte";
+
+let currentUser = null;
+
+// Read cookies from the incoming request
+const cookies = parse(Astro.request.headers.get("cookie") || "");
+const authToken = cookies.auth_token;
+
+if (authToken) {
+  try {
+    currentUser = await directus.request(
+      withToken(authToken,
+        readMe({
+          fields: [
+            "*",
+            "licenses.*",
+            "licenses.cloud_id.id",
+            "licenses.cloud_id.name",
+            "licenses.cloud_id.x",
+            "licenses.cloud_id.y",
+            "licenses.cloud_id.width",
+            "licenses.cloud_id.height",
+            "licenses.cloud_id.drawings.*"
+          ],
+        })
+      )
+    );
+  } catch (error) {
+    console.error("Failed to fetch user or validate token:", error);
+  }
+}
 
 const PUBLIC_STRIPE_KEY = import.meta.env.PUBLIC_STRIPE_KEY;
 const { origin } = Astro.url;
@@ -21,6 +54,7 @@ const lang = getLangFromUrl(Astro.url);
       PUBLIC_STRIPE_KEY={PUBLIC_STRIPE_KEY}
       lang={lang}
       origin={origin}
+      currentUser={currentUser}
       client:load
     />
   </div>

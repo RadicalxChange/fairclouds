@@ -7,12 +7,17 @@ const STRIPE_KEY = import.meta.env.STRIPE_KEY;
 
 export const POST = async ({ request }) => {
   try {
-    const { line_items, origin, lang } = await request.json();
+    const { line_items, origin, lang, customer_email, cloud_ids } = await request.json();
     const stripe = new Stripe(STRIPE_KEY);
+    
+    const metadata = {
+      cloud_ids: cloud_ids,
+    }
 
     const session = await stripe.checkout.sessions.create({
       ui_mode: "embedded",
       mode: "subscription",
+      customer_email: customer_email,
       line_items: line_items,
       return_url: `${origin}/${lang}/return?session_id={CHECKOUT_SESSION_ID}`,
       automatic_tax: { enabled: true },
@@ -22,6 +27,7 @@ export const POST = async ({ request }) => {
             "Yearly price will change in accordance to how PCO works, find out more.",
         },
       },
+      metadata,
     });
 
     // Return the session's client secret to the client

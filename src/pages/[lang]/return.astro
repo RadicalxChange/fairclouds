@@ -2,10 +2,10 @@
 // dont prerender as this page will be unique.
 export const prerender = false;
 
-// TODO: save license info to db
-
 import Layout from "../../layouts/Layout.astro";
 import Stripe from "stripe";
+import directus from "../../lib/directus";
+import { createItem } from '@directus/sdk';
 
 const stripe = new Stripe(import.meta.env.STRIPE_KEY);
 const sessionID = Astro.url.searchParams.get("session_id");
@@ -14,8 +14,13 @@ let name, email;
 if (sessionID !== null) {
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionID);
+    console.log(session)
     if (session.customer_details !== null) {
       ({ name, email } = session.customer_details);
+
+      // Update the database on successful checkout
+      // TODO: create new license for all cloud_ids found in session.metadata. make sure to set sort to the correct steward number.
+      // const result = await directus.request(createItem('licenses', newLicense));
     } else {
       // Handle the case where customer_details is null
       console.error("customer_details is null");
