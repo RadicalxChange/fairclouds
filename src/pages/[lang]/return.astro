@@ -4,39 +4,72 @@ export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
 import Stripe from "stripe";
-import directus from "../../lib/directus";
+import { directusAdmin } from "../../lib/directus";
 import { createItem } from '@directus/sdk';
 
 const stripe = new Stripe(import.meta.env.STRIPE_KEY);
 const sessionID = Astro.url.searchParams.get("session_id");
 
-let name, email;
+let name, email, errorMessage = "";
 if (sessionID !== null) {
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionID);
-    console.log(session)
     if (session.customer_details !== null) {
       ({ name, email } = session.customer_details);
 
       // Update the database on successful checkout
-      // TODO: create new license for all cloud_ids found in session.metadata. make sure to set sort to the correct steward number.
-      // const result = await directus.request(createItem('licenses', newLicense));
+      const { user_id, license_data } = session.metadata;
+      for (const license of JSON.parse(license_data)) {
+        const newLicense = {
+          cloud_id: license.cloud_id,
+          steward: user_id,
+          status: "Published",
+          sort: license.sort,
+          // cycle_start:
+          // cycle_end:
+          active: true
+        }
+        console.log(newLicense)
+
+        // Create a new license
+        const result = await directusAdmin.request(createItem('licenses', newLicense));
+      };
     } else {
       // Handle the case where customer_details is null
       console.error("customer_details is null");
+      errorMessage = "We were unable to retrieve your customer details. Please contact support.";
     }
   } catch (e) {
-    return Astro.redirect("/checkout");
+    console.error("Error during checkout processing:", e);
+
+    // Customize the error message based on the error type
+    if (e.code === "resource_missing") {
+      errorMessage = "Your checkout session could not be found. Please try again.";
+    } else if (e.code === "validation_error") {
+      errorMessage = "There was an issue validating your purchase. Please contact support.";
+    } else {
+      errorMessage = "An unexpected error occurred. Please try again later.";
+    }
   }
 } else {
   // Handle the case where sessionID is null
   console.error("sessionID is null");
+  errorMessage = "Invalid session ID. Please try again.";
 }
 ---
 
 <Layout title="Thank you ☁️ Fairclouds">
   <div class="p-4">
-    <h1>Thank you for your purchase, {name}!</h1>
-    <p>We've sent a receipt to {email}.</p>
+    {errorMessage ? (
+      <div>
+        <h2>Oops!</h2>
+        <p>{errorMessage}</p>
+      </div>
+    ) : (
+      <div>
+        <h1>Thank you for your purchase, {name}!</h1>
+        <p>We've sent a receipt to {email}.</p>
+      </div>
+    )}
   </div>
 </Layout>

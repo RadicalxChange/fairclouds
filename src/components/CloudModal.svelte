@@ -28,6 +28,7 @@
 
   function handleAddToCart() {
     cloud.quantity = 1;
+    cloud.sort = cloud.licenses.length + 1;
     switch (cloud.licenses.length) {
       case 0:
         cloud.priceId = "price_1QPrPKI5tEqwxzqyJpFyuszU";
@@ -87,7 +88,7 @@
         {/each}
       </div>
       <p class="mb-10 text-small">
-        *{cloud.licenses.length} current steward{cloud.licenses.length !== 1 ? "s" : ""}. The initial cost of the licence is relative to
+        {cloud.licenses.length} current steward{cloud.licenses.length !== 1 ? "s" : ""}. The initial cost of the licence is relative to
         the number of current stewards.
       </p>
       {#if isCloudInCart(cloud.id)}

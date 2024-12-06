@@ -11,10 +11,14 @@
   const cartItemsValue = cartItems.get();
   let loading = true;
 
-  console.log(cartItemsValue);
   const stripeLineItems = Object.values(cartItemsValue).map((item) => ({
     price: item.priceId,
     quantity: item.quantity,
+  }));
+  
+  const licensesData = Object.values(cartItemsValue).map((item) => ({
+    cloud_id: item.id,
+    sort: item.sort,
   }));
 
   onMount(async () => {
@@ -37,8 +41,8 @@
           line_items: stripeLineItems,
           origin: origin,
           lang: lang,
-          customer_email: currentUser?.email,
-          cloud_ids: Object.keys(cartItemsValue).join(','),
+          current_user: currentUser,
+          license_data: licensesData,
         }),
       });
 

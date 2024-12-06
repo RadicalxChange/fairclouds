@@ -7,17 +7,18 @@ const STRIPE_KEY = import.meta.env.STRIPE_KEY;
 
 export const POST = async ({ request }) => {
   try {
-    const { line_items, origin, lang, customer_email, cloud_ids } = await request.json();
+    const { line_items, origin, lang, current_user, license_data } = await request.json();
     const stripe = new Stripe(STRIPE_KEY);
     
     const metadata = {
-      cloud_ids: cloud_ids,
+      user_id: current_user?.id,
+      license_data: JSON.stringify(license_data),
     }
 
     const session = await stripe.checkout.sessions.create({
       ui_mode: "embedded",
       mode: "subscription",
-      customer_email: customer_email,
+      customer_email: current_user?.email,
       line_items: line_items,
       return_url: `${origin}/${lang}/return?session_id={CHECKOUT_SESSION_ID}`,
       automatic_tax: { enabled: true },

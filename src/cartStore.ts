@@ -7,22 +7,23 @@ export type CartItem = {
   id: string;
   name: string;
   quantity: number;
-  priceId: string; // Added priceId attribute
+  priceId: string;
+  sort: number;
 };
 
-export type ItemDisplayInfo = Pick<CartItem, 'id' | 'name' | 'quantity' | 'priceId'>;
+export type ItemDisplayInfo = Pick<CartItem, 'id' | 'name' | 'quantity' | 'priceId' | 'sort'>;
 
 export const cartItems = persistentMap<Record<string, CartItem>>('cart:', {}, {
   encode: JSON.stringify,
   decode: JSON.parse,
 });
 
-export function addCartItem({ id, name, quantity, priceId }: ItemDisplayInfo) {
+export function addCartItem({ id, name, quantity, priceId, sort }: ItemDisplayInfo) {
   const existingEntry = cartItems.get()[id];
   if (!existingEntry) {
     cartItems.setKey(
       id,
-      { id, name, quantity, priceId } // Added priceId attribute
+      { id, name, quantity, priceId, sort }
     );
   }
 }

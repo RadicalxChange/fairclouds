@@ -12,12 +12,6 @@ import Cart from "../../components/Cart.svelte";
 import { withToken, readMe } from '@directus/sdk';
 import { parse } from "cookie";
 
-export async function getStaticPaths() {
-  const paths = [{ params: { lang: "en" } }, { params: { lang: "es" } }];
-
-  return paths;
-}
-
 let currentUser = null;
 
 // Read cookies from the incoming request
