@@ -6,7 +6,7 @@ const { pages, lang } = Astro.props;
   {
     pages.map((page) => (
       <a class="button static wiki-page" href={`/${lang}/wiki/${page.slug}`}>
-        {page.translations[0].title}
+        {page.translations[0]?.title}
       </a>
     ))
   }
