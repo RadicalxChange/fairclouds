@@ -93,16 +93,16 @@
     >
       <div class="flex justify-between items-center mb-[30px]">
         <h3 class="text-heading">Cloud {cloud.name}</h3>
-        <span
+        <!-- <span
           class="bg-white text-primary text-copy rounded-full pl-[14px] pr-[7px] pt-1"
           >10$ *</span
-        >
+        > -->
       </div>
       <p class="mb-[21px]">
         {currentUser && getLicense(currentUser, cloud.id) ? "You are Steward #" + getLicense(currentUser, cloud.id).sort : "Become a temporary steward"} of this cloud and the {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
         contains.
       </p>
-      <div class="mb-2.5 flex gap-2.5">
+      <div class="mb-2.5 flex flex-wrap gap-2.5 w-full">
         {#each cloud.drawings as drawing, index}
           <img
             src={`https://cms.fairclouds.life/assets/` +
