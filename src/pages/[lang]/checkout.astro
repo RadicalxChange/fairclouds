@@ -50,12 +50,16 @@ const lang = getLangFromUrl(Astro.url);
 <Layout title="Checkout ☁️ Fairclouds" theme="white">
   <div class="p-4">
     <h1>Checkout</h1>
-    <CheckoutEmbed
-      PUBLIC_STRIPE_KEY={PUBLIC_STRIPE_KEY}
-      lang={lang}
-      origin={origin}
-      currentUser={currentUser}
-      client:load
-    />
+    {currentUser ? (
+      <CheckoutEmbed
+        PUBLIC_STRIPE_KEY={PUBLIC_STRIPE_KEY}
+        lang={lang}
+        origin={origin}
+        currentUser={currentUser}
+        client:load
+      />
+    ) : (
+      <p class="mt-8">You must be logged in to check out. Return to the map and click the 3 dots in the top right corner to log in.</p>
+    )}
   </div>
 </Layout>
