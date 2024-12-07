@@ -9,21 +9,22 @@ export type CartItem = {
   quantity: number;
   priceId: string;
   sort: number;
+  drawings: any;
 };
 
-export type ItemDisplayInfo = Pick<CartItem, 'id' | 'name' | 'quantity' | 'priceId' | 'sort'>;
+export type ItemDisplayInfo = Pick<CartItem, 'id' | 'name' | 'quantity' | 'priceId' | 'sort' | 'drawings'>;
 
 export const cartItems = persistentMap<Record<string, CartItem>>('cart:', {}, {
   encode: JSON.stringify,
   decode: JSON.parse,
 });
 
-export function addCartItem({ id, name, quantity, priceId, sort }: ItemDisplayInfo) {
+export function addCartItem({ id, name, quantity, priceId, sort, drawings }: ItemDisplayInfo) {
   const existingEntry = cartItems.get()[id];
   if (!existingEntry) {
     cartItems.setKey(
       id,
-      { id, name, quantity, priceId, sort }
+      { id, name, quantity, priceId, sort, drawings }
     );
   }
 }

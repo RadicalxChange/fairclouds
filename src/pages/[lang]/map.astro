@@ -37,7 +37,6 @@ if (authToken) {
         })
       )
     );
-    console.log(currentUser)
   } catch (error) {
     console.error("Failed to fetch user or validate token:", error);
   }
@@ -55,6 +54,8 @@ const clouds = await directus.request(
       "width",
       "height",
       "drawings.id",
+      "drawings.title",
+      "drawings.image",
       "drawings.map_drawing",
       "licenses.id",
       "licenses.active",

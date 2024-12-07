@@ -45,9 +45,21 @@
         <ul class="mb-2.5">
           {#each Object.values($cartItems) as cartItem}
             <li class="flex flex-row justify-between">
-              <h3>{cartItem.name}</h3>
+              <div>
+                <h3>{cartItem.name}</h3>
+                <div class="mb-2.5 flex flex-wrap gap-2.5 w-full pt-2">
+                  {#each cartItem.drawings as drawing, index}
+                    <img
+                      src={`https://cms.fairclouds.life/assets/` +
+                          drawing.image}
+                      alt={drawing.title}
+                      class="h-[45px] w-auto"
+                    />
+                  {/each}
+                </div>
+              </div>
               <button 
-                class="text-red-500 hover:text-red-700 focus:outline-none" 
+                class="text-red-500 hover:text-red-700 focus:outline-none mb-auto ml-2" 
                 on:click={() => removeCartItem(cartItem.id)}
               >
                 Delete

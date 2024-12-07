@@ -15,12 +15,36 @@
 
   let t;
 
-  $: (() => {
-    //fetch info for selected cloud
+  // Slideshow logic
+  let currentIndex = 0;
+  let slideshowInterval;
+  let drawings;
 
-    // open dialog programmatically
-    if (cloud) open.set(true);
+  $: (() => {
+    // Fetch info for selected cloud
+    if (cloud) {
+      drawings = cloud.drawings;
+      currentIndex = 0;
+      startSlideshow();
+      open.set(true);
+    }
   })();
+
+  function startSlideshow() {
+    if (slideshowInterval) clearInterval(slideshowInterval);
+    slideshowInterval = setInterval(() => {
+      currentIndex = (currentIndex + 1) % drawings.length;
+    }, 3000); // Change image every 3 seconds
+  }
+
+  function pauseSlideshow(index) {
+    clearInterval(slideshowInterval);
+    currentIndex = index;
+  }
+
+  function resumeSlideshow() {
+    startSlideshow();
+  }
 
   onMount(() => {
     t = useTranslations(lang);
@@ -60,6 +84,7 @@
 </script>
 
 {#if $open}
+  <!-- Cloud Modal -->
   <div {...$portalled} use:portalled>
     <div
       class="fixed flex flex-col rounded-default bottom-20 right-4 z-50 max-h-[calc(100vh-175px)] w-full max-w-[610px] bg-primary shadow-cloud p-5 pt-2 focus:outline-none"
@@ -78,17 +103,19 @@
         contains.
       </p>
       <div class="mb-2.5 flex gap-2.5">
-        {#each cloud.drawings as drawing}
+        {#each cloud.drawings as drawing, index}
           <img
             src={`https://cms.fairclouds.life/assets/` +
-                drawing.map_drawing}
-            alt="alt of drawing to go here"
-            class="h-[45px] w-auto"
+                drawing.image}
+            alt={drawing.title}
+            class="h-[45px] w-auto cursor-pointer"
+            on:mouseenter={() => pauseSlideshow(index)}
+            on:mouseleave={resumeSlideshow}
           />
         {/each}
       </div>
       <p class="mb-10 text-small">
-        {cloud.licenses.length} current steward{cloud.licenses.length !== 1 ? "s" : ""}. The initial cost of the licence is relative to
+        This cloud has {cloud.licenses.length} current steward{cloud.licenses.length !== 1 ? "s" : ""}. The initial cost of the licence is relative to
         the number of current stewards.
       </p>
       {#if isCloudInCart(cloud.id)}
@@ -96,14 +123,30 @@
           In your cart
         </button>
       {:else}
-        <button on:click={handleAddToCart} class="button group w-fit">
+        <button on:click={handleAddToCart} class="button group w-full max-w-[450px]">
           <span class="group-hover:hidden">Steward this cloud</span>
           <span class="hidden group-hover:block">Add to cart</span>
         </button>
       {/if}
-
-      <!-- Add to Cart Button -->
     </div>
+  </div>
+  <!-- Slideshow Modal -->
+  <div
+    class="fixed hidden lg:flex flex-col rounded-default bottom-20 left-4 z-50 w-auto h-auto bg-primary shadow-cloud p-2 focus:outline-none"
+  >
+    {#if cloud.drawings.length > 0}
+      <img
+        src={`https://cms.fairclouds.life/assets/` + cloud.drawings[currentIndex].image}
+        alt={cloud.drawings[currentIndex].title}
+        class="object-contain"
+        style="
+          max-height: 65vh;
+          width: auto;
+          max-width: calc(100vw - 610px - 64px);"
+      />
+    {:else}
+      <p>No drawings available.</p>
+    {/if}
   </div>
 {/if}
 

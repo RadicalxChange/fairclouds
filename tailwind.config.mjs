@@ -9,7 +9,7 @@ export default {
 				grey: '#D9D9D9'
 			},
 			boxShadow: {
-        'cloud': 'inset 0px 0px 6.8px 3px #FFFFFF',
+        		'cloud': 'inset 0px 0px 6.8px 3px #FFFFFF',
 				'large-cloud': 'inset 0px 0px 23.9px 5px #FFFFFF',
 				'focus': '0px 0px 23.9px 5px #FFFFFF',
       },
