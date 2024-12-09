@@ -48,13 +48,15 @@
               <div>
                 <h3>{cartItem.name}</h3>
                 <div class="mb-2.5 flex flex-wrap gap-2.5 w-full pt-2">
-                  {#each cartItem.drawings as drawing, index}
-                    <img
-                      src={`https://cms.fairclouds.life/assets/` +
-                          drawing.image}
-                      alt={drawing.title}
-                      class="h-[45px] w-auto"
-                    />
+                  {#each cartItem?.drawings || [] as drawing, index}
+                    {#if drawing?.image}
+                      <img
+                        src={`https://cms.fairclouds.life/assets/` +
+                            drawing.image}
+                        alt={drawing.title}
+                        class="h-[45px] w-auto"
+                      />
+                    {/if}
                   {/each}
                 </div>
               </div>
