@@ -36,17 +36,21 @@
 {#if $open}
   <div {...$portalled} use:portalled>
     <div
-      class="fixed flex flex-col rounded-default bottom-20 right-4 z-50 max-h-[calc(100vh-175px)] w-full max-w-[610px] bg-primary shadow-cloud p-5 pt-2 focus:outline-none"
+      class="fixed flex flex-col rounded-default bottom-20 right-4 z-50 max-h-[calc(100vh-175px)] w-full max-w-[610px] bg-primary shadow-cloud p-5 focus:outline-none"
       {...$content}
       use:content
     >
       {#if Object.values($cartItems).length}
         <h3 class="mb-2.5">You currently have {Object.values($cartItems).length} cloud{Object.values($cartItems).length !== 1 ? "s" : ""} in your shopping basket.</h3>
-        <ul class="mb-2.5">
+        <ul class="mb-2.5 my-4">
           {#each Object.values($cartItems) as cartItem}
-            <li class="flex flex-row justify-between">
+            <li class="flex flex-row justify-between my-4">
               <div>
-                <h3>{cartItem.name}</h3>
+                <h3 class="inline-block mr-4">Cloud {cartItem.name} - License {cartItem.tier}</h3>
+                <span
+                  class="bg-white text-primary text-copy rounded-full pl-[7px] pr-[7px] pt-1 inline-block"
+                  >{cartItem.price.currency.toUpperCase()} {(cartItem.price.unit_amount / 100).toFixed(2)}</span
+                >
                 <div class="mb-2.5 flex flex-wrap gap-2.5 w-full pt-2">
                   {#each cartItem?.drawings || [] as drawing, index}
                     {#if drawing?.image}

@@ -12,19 +12,17 @@
   let loading = true;
 
   const stripeLineItems = Object.values(cartItemsValue).map((item) => ({
-    price: item.priceId,
+    price: item.price.id,
     quantity: item.quantity,
   }));
   
   const licensesData = Object.values(cartItemsValue).map((item) => ({
     cloud_id: item.id,
-    sort: item.sort,
+    tier: item.tier,
+    price_id: item.price.id,
   }));
 
   onMount(async () => {
-    stripePromise = loadStripe(PUBLIC_STRIPE_KEY);
-    const stripe = await stripePromise;
-    // Assuming you have a function to create a session or you might directly use stripe here
     await createCheckoutSession();
   });
 

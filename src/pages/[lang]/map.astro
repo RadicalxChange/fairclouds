@@ -6,10 +6,9 @@ import Layout from "../../layouts/Layout.astro";
 import Map from "../../components/Map.svelte";
 import { getLangFromUrl } from "../../i18n/utils";
 import directus from "../../lib/directus";
-import { readItems } from "@directus/sdk";
+import { readItems, withToken, readMe } from "@directus/sdk";
 import Timeline from "../../components/Timeline.astro";
 import Cart from "../../components/Cart.svelte";
-import { withToken, readMe } from '@directus/sdk';
 import { parse } from "cookie";
 
 let currentUser = null;
@@ -49,6 +48,7 @@ const clouds = await directus.request(
     fields: [
       "id",
       "name",
+      "product_id",
       "x",
       "y",
       "width",

@@ -7,26 +7,27 @@ export type CartItem = {
   id: string;
   name: string;
   quantity: number;
-  priceId: string;
-  sort: number;
+  price: any;
+  tier: number;
   drawings: any;
 };
 
-export type ItemDisplayInfo = Pick<CartItem, 'id' | 'name' | 'quantity' | 'priceId' | 'sort' | 'drawings'>;
+export type ItemDisplayInfo = Pick<CartItem, 'id' | 'name' | 'quantity' | 'price' | 'tier' | 'drawings'>;
 
 export const cartItems = persistentMap<Record<string, CartItem>>('cart:', {}, {
   encode: JSON.stringify,
   decode: JSON.parse,
 });
 
-export function addCartItem({ id, name, quantity, priceId, sort, drawings }: ItemDisplayInfo) {
+export function addCartItem({ id, name, quantity, price, tier, drawings }: ItemDisplayInfo) {
   const existingEntry = cartItems.get()[id];
-  if (!existingEntry) {
-    cartItems.setKey(
-      id,
-      { id, name, quantity, priceId, sort, drawings }
-    );
+  if (existingEntry) {
+    removeCartItem(existingEntry.id)
   }
+  cartItems.setKey(
+    id,
+    { id, name, quantity, price, tier, drawings }
+  );
 }
 
 export function removeCartItem(itemId: string) {
@@ -34,4 +35,9 @@ export function removeCartItem(itemId: string) {
   if (cart[itemId]) {
     cartItems.setKey(itemId, undefined); // Remove the item by setting it to `undefined`
   }
+}
+
+export function clearCart() {
+  console.log("cartStore:", cartItems.get())
+  cartItems.set({});
 }

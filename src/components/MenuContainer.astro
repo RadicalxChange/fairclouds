@@ -3,13 +3,11 @@ import { languages } from "../i18n/ui";
 import { getLangFromUrl } from "../i18n/utils";
 import directus from "../lib/directus";
 import Menu from "./Menu.svelte";
-import { readItems } from "@directus/sdk";
+import { readItems, readSingleton } from "@directus/sdk";
 import News from "./News.astro";
 import Blocks from "./Blocks.astro";
 
 const lang = getLangFromUrl(Astro.url);
-
-import { readSingleton } from "@directus/sdk";
 
 const home = await directus.request(
   readSingleton("home", {

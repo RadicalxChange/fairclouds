@@ -143,6 +143,7 @@
     selectedCloud = {
       id: cloud.id,
       name: cloud.name,
+      product_id: cloud.product_id,
       drawings: cloud.drawings,
       licenses: cloud.licenses.filter(license => license.active),
     };
