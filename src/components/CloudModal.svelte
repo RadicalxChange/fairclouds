@@ -170,8 +170,8 @@
               Current Licenses Available
             </option>
             {#each prices as price, i}
-              <option value={price.id} disabled={!price.active}>
-                License {i + 1} - {price.currency.toUpperCase()} {(price.unit_amount / 100).toFixed(2)} {!price.active ? "(Stewarded)" : ""}
+              <option value={price.id} disabled={price.metadata.isStewarded === "true"}>
+                License {i + 1} - {price.currency.toUpperCase()} {(price.unit_amount / 100).toFixed(2)} {price.metadata.isStewarded === "true" ? "(Stewarded)" : ""}
               </option>
             {/each}
           </select>

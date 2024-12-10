@@ -12,8 +12,15 @@ const stripe = new Stripe(import.meta.env.STRIPE_KEY);
 const sessionID = Astro.url.searchParams.get("session_id");
 
 let name, email, errorMessage = "";
-let cycle;
+let cycle,
+    session,
+    user_id,
+    license_data,
+    parsedLicenseData;
+
 if (sessionID !== null) {
+
+  // Get the current cycle
   try {
     const result = await directus.request(
       readItems("cycles", {
@@ -31,41 +38,14 @@ if (sessionID !== null) {
   } catch (e) {
     console.error("Error loading current cycle:", e);
   }
+
+  // Process checkout session
   try {
-    const session = await stripe.checkout.sessions.retrieve(sessionID);
+    session = await stripe.checkout.sessions.retrieve(sessionID);
     if (session.customer_details !== null) {
       ({ name, email } = session.customer_details);
-
-      // Check if licenses have already been created for this checkout session
-      const existingLicenses = await directusAdmin.request(
-        readItems("licenses", {
-          filter: {
-            checkout_session_id: {
-              _eq: session.id,
-            },
-          },
-        })
-      );
-
-      if (existingLicenses.length === 0) {
-        // Update the database on successful checkout
-        const { user_id, license_data } = session.metadata;
-        const newLicenses = JSON.parse(license_data).map((data) => ({
-          cloud_id: data.cloud_id,
-          steward: user_id,
-          cycle_id: cycle.id,
-          price_id: data.price_id,
-          tier: data.tier,
-          active: true,
-          checkout_session_id: session.id,
-        }));
-
-        // Batch create new licenses
-        const result = await directusAdmin.request(createItem('licenses', newLicenses));
-        console.log("Created new licenses:", result);
-      } else {
-        console.log("Licenses have already been created for this checkout session:", existingLicenses);
-      }
+      ({ user_id, license_data } = session.metadata || {});
+      parsedLicenseData = license_data ? JSON.parse(license_data) : [];
     } else {
       // Handle the case where customer_details is null
       console.error("customer_details is null");
@@ -83,8 +63,60 @@ if (sessionID !== null) {
       errorMessage = "An unexpected error occurred. Please try again later.";
     }
   }
+
+  if (user_id && parsedLicenseData?.length > 0) {
+    // Mark prices as stewarded in Stripe to take them off the market
+    try {
+      await Promise.all(
+        parsedLicenseData.map((data) =>
+          stripe.prices.update(data.price_id, {
+            metadata: { isStewarded: "true" },
+          })
+        )
+      );
+    }
+    catch (e) {
+      console.error("Error updating price metadata", e);
+    }
+
+    // Create licenses in the database
+    try {
+      // Check if licenses have already been created for this checkout session
+      const existingLicenses = await directusAdmin.request(
+        readItems("licenses", {
+          filter: {
+            checkout_session_id: {
+              _eq: session.id,
+            },
+          },
+        })
+      );
+
+      if (existingLicenses.length === 0) {
+        // Update the database on successful checkout
+        const newLicenses = parsedLicenseData.map((data) => ({
+          cloud_id: data.cloud_id,
+          steward: user_id,
+          cycle_id: cycle.id,
+          price_id: data.price_id,
+          tier: data.tier,
+          active: true,
+          checkout_session_id: session.id,
+        }));
+
+        // Batch create new licenses
+        const result = await directusAdmin.request(createItem('licenses', newLicenses));
+        console.log("Created new licenses:", result);
+      } else {
+        console.log("Licenses have already been created for this checkout session:", existingLicenses);
+      }
+    } catch (e) {
+      console.error("Error creating licenses:", e);
+    }
+  }
+
+// Handle the case where sessionID is null
 } else {
-  // Handle the case where sessionID is null
   console.error("sessionID is null");
   errorMessage = "Invalid session ID. Please try again.";
 }
