@@ -5,7 +5,7 @@
   import { addCartItem, cartItems } from "../cartStore";
 
   export let lang: "en" | "es" = "en";
-  export let cloud: number;
+  export let cloud;
   export let currentUser;
 
   const {
@@ -85,7 +85,7 @@
   }
 
   $: isCloudInCart = Object.values($cartItems).some(
-    (item) => item.id === cloud.id && item.price.id === selectedPriceId
+    (item) => cloud ? item.id === cloud.id && item.price.id === selectedPriceId : false
   );
 
   function getLicense(currentUser, cloudId) {
@@ -120,7 +120,7 @@
 
     } catch (error) {
       console.error("Failed to load prices:", error);
-      loading = false;
+      // loading = false;
     }
   }
 </script>
