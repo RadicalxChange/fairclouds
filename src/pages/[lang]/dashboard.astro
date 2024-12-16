@@ -3,6 +3,7 @@
 export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
+import DownloadButton from '../../components/DownloadButton.svelte';
 import directus from "../../lib/directus";
 import { withToken, readMe } from '@directus/sdk';
 import { parse } from "cookie";
@@ -82,7 +83,7 @@ const formatDate = (dateString) => {
                     {license.cloud_id.drawings?.length > 0 ? (
                       <>
                         <h5 class="my-4">Drawings</h5>
-                        <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                        <div class="flex flex-wrap gap-1">
                           {license.cloud_id.drawings.map(drawing => (
                             <div style="padding: 0.5rem;">
                               <img 
@@ -92,6 +93,9 @@ const formatDate = (dateString) => {
                               />
                             </div>
                           ))}
+                        </div>
+                        <div class="my-4">
+                          <DownloadButton cloudId={license.cloud_id.id} client:load />
                         </div>
                       </>
                     ) : (
