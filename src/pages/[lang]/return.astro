@@ -9,6 +9,7 @@ import { directusAdmin } from "../../lib/directus";
 import { readItems, createItem } from '@directus/sdk';
 
 const stripe = new Stripe(import.meta.env.STRIPE_KEY);
+const BASE_URL = import.meta.env.PUBLIC_BASE_URL
 const sessionID = Astro.url.searchParams.get("session_id");
 
 let name, email, errorMessage = "";
@@ -17,6 +18,7 @@ let cycle,
     user_id,
     license_data,
     parsedLicenseData;
+let checkoutIsProcessed;
 
 if (sessionID !== null) {
 
@@ -91,8 +93,9 @@ if (sessionID !== null) {
           },
         })
       );
+      checkoutIsProcessed = existingLicenses.length !== 0
 
-      if (existingLicenses.length === 0) {
+      if (!checkoutIsProcessed) {
         // Update the database on successful checkout
         const newLicenses = parsedLicenseData.map((data) => ({
           cloud_id: data.cloud_id,
@@ -113,6 +116,33 @@ if (sessionID !== null) {
     } catch (e) {
       console.error("Error creating licenses:", e);
     }
+
+    if (!checkoutIsProcessed) {
+      // Send confirmation email
+      try {
+        console.log("sending confirmation email...");
+        const response = await fetch(BASE_URL + "/api/send-mail", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            templateId: import.meta.env.PURCHASE_CONFIRM_EMAIL_TEMPLATE,
+            templateModel: {
+              "user_name": name,
+              "licenses": parsedLicenseData,
+            }
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Error sending confirmation email");
+        }
+      } catch (e) {
+        console.error("Error sending confirmation email:", e);
+      }
+    }
   }
 
 // Handle the case where sessionID is null
@@ -130,9 +160,15 @@ if (sessionID !== null) {
         <p>{errorMessage}</p>
       </div>
     ) : (
-      <div>
+      <div class="space-y-4">
         <h1>Thank you for your purchase, {name}!</h1>
         <p>We've sent a receipt to {email}.</p>
+        <p>Go to your dashboard to view your licenses and download cloud assets.</p>
+        <div class="has-hint">
+          <a class="button h-full" href="/en/dashboard"
+            >Go to Dashboard
+          </a>
+        </div>
       </div>
     )}
   </div>

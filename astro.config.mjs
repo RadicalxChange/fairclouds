@@ -23,11 +23,13 @@ export default defineConfig({
   adapter: cloudflare({}),
   vite: {
     define: {
+      'process.env.PUBLIC_BASE_URL': JSON.stringify(process.env.PUBLIC_BASE_URL),
       'process.env.PUBLIC_STRIPE_KEY': JSON.stringify(process.env.PUBLIC_STRIPE_KEY),
       'process.env.STRIPE_KEY': JSON.stringify(process.env.STRIPE_KEY),
       'process.env.WEATHER_KEY': JSON.stringify(process.env.WEATHER_KEY),
       'process.env.DIRECTUS_API_TOKEN': JSON.stringify(process.env.DIRECTUS_API_TOKEN),
-      'process.env.POSTMARK_API_TOKEN': JSON.stringify(process.env.POSTMARK_API_TOKEN)
+      'process.env.POSTMARK_API_TOKEN': JSON.stringify(process.env.POSTMARK_API_TOKEN),
+      'process.env.PURCHASE_CONFIRM_EMAIL_TEMPLATE': JSON.stringify(process.env.PURCHASE_CONFIRM_EMAIL_TEMPLATE)
     }
   },
   security: {

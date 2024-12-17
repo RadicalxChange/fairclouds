@@ -25,7 +25,7 @@ export const POST = async ({ request }) => {
       custom_text: {
         submit: {
           message:
-            "Yearly price will change in accordance to how PCO works, find out more.",
+            "Price will be adjusted annually.",
         },
       },
       metadata,
