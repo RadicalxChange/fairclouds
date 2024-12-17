@@ -1,7 +1,7 @@
 // dont prerender as this page will be unique.
 export const prerender = false;
 
-import AdmZip from 'adm-zip';
+import JSZip from 'jszip';
 
 export const POST = async ({ request }) => {
   const { cloudId } = await request.json();
@@ -26,7 +26,8 @@ export const POST = async ({ request }) => {
     }
 
     const { data: drawings } = await response.json();
-    const zip = new AdmZip();
+    
+    const zip = new JSZip();
 
     // Create an array of promises for each image fetch
     const imagePromises = drawings.map(drawing => {
@@ -52,11 +53,11 @@ export const POST = async ({ request }) => {
     // Add each image to the zip if the fetch was successful
     images.forEach(image => {
       if (image) { // Check if the image was successfully fetched
-        zip.addFile(`${image.title}.png`, new Uint8Array(image.buffer), "File downloaded from Directus");
+        zip.file(`${image.title}.png`, image.buffer, {binary: true});
       }
     });
 
-    const zipBuffer = zip.toBuffer();
+    const zipBuffer = await zip.generateAsync({type: "uint8array"});
 
     return new Response(zipBuffer, {
       status: 200,

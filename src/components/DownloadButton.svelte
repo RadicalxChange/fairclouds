@@ -5,7 +5,6 @@
 
   async function handleDownload() {
     loading = true;
-    console.log("calling api...")
     const response = await fetch("/api/download-cloud-drawings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
