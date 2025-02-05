@@ -48,11 +48,6 @@ export const POST = async ({ request }) => {
                 tier: item.price.tier
               },
               billing_scheme: "per_unit",
-              recurring: {
-                interval: "year",
-                interval_count: 1,
-                usage_type: "licensed"
-              },
             });
           } catch (err) {
             console.error(`Failed to create Stripe price:`, err);

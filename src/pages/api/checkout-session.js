@@ -17,7 +17,7 @@ export const POST = async ({ request }) => {
 
     const session = await stripe.checkout.sessions.create({
       ui_mode: "embedded",
-      mode: "subscription",
+      mode: "payment",
       customer_email: current_user?.email,
       line_items: line_items,
       return_url: `${origin}/${lang}/return?session_id={CHECKOUT_SESSION_ID}`,
@@ -25,7 +25,7 @@ export const POST = async ({ request }) => {
       custom_text: {
         submit: {
           message:
-            "Price will be adjusted annually.",
+            "Price will be adjusted for each new cycle.",
         },
       },
       metadata,
