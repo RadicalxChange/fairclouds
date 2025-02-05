@@ -13,33 +13,13 @@ const BASE_URL = import.meta.env.PUBLIC_BASE_URL
 const sessionID = Astro.url.searchParams.get("session_id");
 
 let name, email, errorMessage = "";
-let cycle,
-    session,
+let session,
     user_id,
     license_data,
     parsedLicenseData;
 let checkoutIsProcessed;
 
 if (sessionID !== null) {
-
-  // Get the current cycle
-  try {
-    const result = await directus.request(
-      readItems("cycles", {
-        fields: ["*"],
-        filter: {
-          status: {
-            _eq: "published", // Filter where status equals "Published"
-          },
-        },
-        sort: ["-id"], // Sort by id in descending order
-        limit: 1, // Retrieve only the first result (highest id)
-      })
-    );
-    cycle = result[0]
-  } catch (e) {
-    console.error("Error loading current cycle:", e);
-  }
 
   // Process checkout session
   try {
@@ -71,7 +51,7 @@ if (sessionID !== null) {
     try {
       await Promise.all(
         parsedLicenseData.map((data) =>
-          stripe.prices.update(data.price_id, {
+          stripe.prices.update(data.stripe_price_id, {
             metadata: { isStewarded: "true" },
           })
         )
@@ -98,12 +78,8 @@ if (sessionID !== null) {
       if (!checkoutIsProcessed) {
         // Update the database on successful checkout
         const newLicenses = parsedLicenseData.map((data) => ({
-          cloud_id: data.cloud_id,
           steward: user_id,
-          cycle_id: cycle.id,
-          price_id: data.price_id,
-          tier: data.tier,
-          active: true,
+          price_id: data.directus_price_id,
           checkout_session_id: session.id,
         }));
 

@@ -145,7 +145,7 @@
       name: cloud.name,
       product_id: cloud.product_id,
       drawings: cloud.drawings,
-      licenses: cloud.licenses.filter(license => license.active),
+      prices: cloud.prices.filter(price => price.cycle_id.prices_active === true),
     };
   }
 </script>
