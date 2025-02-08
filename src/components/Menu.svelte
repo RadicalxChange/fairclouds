@@ -11,12 +11,22 @@
     states: { open },
   } = createDialog();
 
+  // This boolean will be passed into Login. 
+  // If set to true in the Login component, we know to reload on modal close.
+  let reloadOnClose = false;
+
   let tab = "about";
 
   let t;
   onMount(() => {
     t = useTranslations(lang);
   });
+
+  // Watch for when $open changes from true to false.
+  // If reloadOnClose was set to true by Login, reload the page.
+  $: if (!$open && reloadOnClose) {
+    window.location.reload();
+  }
 </script>
 
 <button class="icon-button" {...$trigger} use:trigger
@@ -97,7 +107,7 @@
           <slot name="news" />
         {/if}
         {#if tab === "login"}
-          <Login {lang} />
+          <Login {lang} bind:reloadOnClose />
         {/if}
       </div>
     </div>

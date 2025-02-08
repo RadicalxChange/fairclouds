@@ -2,6 +2,7 @@
   import Register from "./Register.svelte";
 
   export let lang;
+  export let reloadOnClose; 
 
   let email = "";
   let password = "";
@@ -24,6 +25,7 @@
       }
 
       isLoggedIn = true;
+      reloadOnClose = true;
     } catch (err) {
       error = err.message || "An error occurred during login.";
     }
