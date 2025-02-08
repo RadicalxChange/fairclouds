@@ -157,9 +157,15 @@
               Current Licenses Available
             </option>
             {#each prices as price}
-              <option value={price.id} disabled={price.licenses && price.licenses.length !== 0}>
-                License {price.tier} - € {price.amount.toFixed(2)} {price.licenses && price.licenses.length !== 0 ? "(Stewarded)" : ""}
-              </option>
+              {#if price.isRenewalPrice}
+                <option value={price.id}>
+                  License {price.tier} - € {(Math.round((price.amount / 2) * 100) / 100).toFixed(2)} Renew your current license
+                </option>
+              {:else}
+                <option value={price.id} disabled={price.licenses && price.licenses.length !== 0}>
+                  License {price.tier} - € {price.amount.toFixed(2)} {price.licenses && price.licenses.length !== 0 ? "(Stewarded)" : ""}
+                </option>
+              {/if}
             {/each}
           </select>
         </div>      

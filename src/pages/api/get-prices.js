@@ -25,19 +25,20 @@ export const POST = async ({ request }) => {
         let stripePrice = null;
 
         // If price_id exists, attempt to retrieve the Stripe price
-        if (price && price.price_id) {
-          try {
-            stripePrice = await stripe.prices.retrieve(price.price_id);
-          } catch (err) {
-            console.error(`Failed to retrieve Stripe price ${price.price_id}. Creating new Stripe price instead.`, err);
-          }
-        }
+        // TODO: this is broken because renewal prices and non-renewal prices currently use the same Directus Price Object
+        // if (price && price.price_id) {
+        //   try {
+        //     stripePrice = await stripe.prices.retrieve(price.price_id);
+        //   } catch (err) {
+        //     console.error(`Failed to retrieve Stripe price ${price.price_id}. Creating new Stripe price instead.`, err);
+        //   }
+        // }
 
         // If retrieval failed or no price_id exists, create a new Stripe price
         if (!stripePrice) {
           try {
             stripePrice = await stripe.prices.create({
-              unit_amount: price.amount * 100,
+              unit_amount: Math.round((price.isRenewalPrice ? price.amount / 2 : price.amount) * 100),
               currency: "eur",
               product: item.product_id,
               nickname: item.price.cycle_id.name + ', Tier ' + item.price.tier,
@@ -45,7 +46,8 @@ export const POST = async ({ request }) => {
                 directus_price_id: item.price.id,
                 cycle_id: item.price.cycle_id.id,
                 cycle_name: item.price.cycle_id.name,
-                tier: item.price.tier
+                tier: item.price.tier,
+                is_renewal_price: !!price.isRenewalPrice
               },
               billing_scheme: "per_unit",
             });

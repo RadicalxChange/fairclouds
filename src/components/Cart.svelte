@@ -47,10 +47,21 @@
             <li class="flex flex-row justify-between my-4">
               <div>
                 <h3 class="inline-block mr-4">Cloud {cartItem.name} - License {cartItem.price.tier}</h3>
-                <span
-                  class="bg-white text-primary text-copy rounded-full pl-[7px] pr-[7px] pt-1 inline-block"
-                  >€ {cartItem.price.amount.toFixed(2)}</span
-                >
+                {#if cartItem.price.isRenewalPrice}
+                  <span
+                    class="bg-white text-primary text-copy rounded-full pl-[7px] pr-[7px] pt-1 inline-block mr-4"
+                    >€ {(cartItem.price.isRenewalPrice ? Math.round((cartItem.price.amount / 2) * 100) / 100 : cartItem.price.amount).toFixed(2)}</span
+                  >
+                  <span
+                    class="inline-block"
+                    >Renewal Price</span
+                  >
+                {:else}
+                  <span
+                    class="bg-white text-primary text-copy rounded-full pl-[7px] pr-[7px] pt-1 inline-block"
+                    >€ {cartItem.price.amount.toFixed(2)}</span
+                  >
+                {/if}
                 <div class="mb-2.5 flex flex-wrap gap-2.5 w-full pt-2">
                   {#each cartItem?.drawings || [] as drawing, index}
                     {#if drawing?.image}

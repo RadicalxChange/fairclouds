@@ -31,7 +31,17 @@ if (authToken) {
             "licenses.cloud_id.y",
             "licenses.cloud_id.width",
             "licenses.cloud_id.height",
-            "licenses.cloud_id.drawings.*"
+            "licenses.cloud_id.drawings.*",
+            "licenses.price_id.id",
+            "licenses.price_id.amount",
+            "licenses.price_id.cloud_id",
+            "licenses.price_id.cycle_id.id",
+            "licenses.price_id.cycle_id.name",
+            "licenses.price_id.cycle_id.start_date",
+            "licenses.price_id.cycle_id.end_date",
+            "licenses.price_id.cycle_id.prices_status",
+            "licenses.price_id.cycle_id.renewal_active",
+            "licenses.price_id.tier",
           ],
         })
       )
@@ -64,7 +74,7 @@ const clouds = await directus.request(
       "prices.cycle_id.name",
       "prices.cycle_id.start_date",
       "prices.cycle_id.end_date",
-      "prices.cycle_id.prices_active",
+      "prices.cycle_id.prices_status",
       "prices.cycle_id.renewal_active",
       "prices.tier",
       "prices.price_id",

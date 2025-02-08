@@ -139,13 +139,77 @@
     });
   });
 
+  function getActivePrices(cloud) {
+    const prices = cloud.prices;
+    const activePrices = prices.filter(price => price.cycle_id.prices_status === "active");
+    const earlyAccessPrices = prices.filter(price => price.cycle_id.prices_status === "early_access");
+
+    // If user is not logged in, display standard prices.
+    if (!currentUser) {
+      return activePrices;
+    }
+
+    const renewableLicenses = currentUser.licenses.filter(license => license.price_id.cloud_id === cloud.id && license.price_id.cycle_id.renewal_active === true);
+
+    // If user has no renewable licenses, display standard prices.
+    if (renewableLicenses.length === 0) {
+     return activePrices;
+    }
+
+    const renewalIsEarlyAccess = renewableLicenses[0].price_id.cycle_id.prices_status === "active";
+
+    // If new prices are not ready, display standard prices.
+    if (renewalIsEarlyAccess && earlyAccessPrices.length === 0) {
+      return activePrices;
+    }
+
+    renewableLicenses.forEach(license => {
+
+      if (renewalIsEarlyAccess) {
+
+        const newPrice = earlyAccessPrices.find(price => price.cloud_id === license.price_id.cloud_id && price.tier === license.price_id.tier);
+
+        if (newPrice) {
+          newPrice.isRenewalPrice = true;
+
+          const index = activePrices.findIndex(activePrice =>
+            activePrice.cloud_id === newPrice.cloud_id &&
+            activePrice.tier === newPrice.tier
+          );
+          
+          if (index !== -1) {
+            // Replace the existing active price with the renewal price.
+            activePrices[index] = newPrice;
+          } else {
+            // No matching active price; add the renewal price to the result array.
+            activePrices.push(newPrice);
+          }
+        }
+      } else {
+        const index = activePrices.findIndex(activePrice =>
+          activePrice.cloud_id === license.price_id.cloud_id &&
+          activePrice.tier === license.price_id.tier
+        );
+          
+        if (index !== -1 && activePrices[index].licenses !== 0) {
+          // Replace the existing active price with the renewal price.
+          activePrices[index].isRenewalPrice = true;
+        } else {
+          // TODO: No matching active price; create the new price with quadratic formula.
+        }
+      }
+    });
+    
+    return activePrices;
+  }
+
   function handleCloudClick(cloud) {
     selectedCloud = {
       id: cloud.id,
       name: cloud.name,
       product_id: cloud.product_id,
       drawings: cloud.drawings,
-      prices: cloud.prices.filter(price => price.cycle_id.prices_active === true),
+      prices: getActivePrices(cloud),
     };
   }
 </script>
