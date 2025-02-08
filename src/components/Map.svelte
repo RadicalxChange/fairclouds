@@ -191,9 +191,11 @@
           activePrice.tier === license.price_id.tier
         );
           
-        if (index !== -1 && activePrices[index].licenses !== 0) {
-          // Replace the existing active price with the renewal price.
-          activePrices[index].isRenewalPrice = true;
+        if (index !== -1) {
+          // If the price exists and hasn't already been stewarded, replace the existing active price with the renewal price.
+          if (activePrices[index].licenses.length === 0) {
+            activePrices[index].isRenewalPrice = true;
+          }
         } else {
           // TODO: No matching active price; create the new price with quadratic formula.
         }
