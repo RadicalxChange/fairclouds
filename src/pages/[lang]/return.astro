@@ -4,9 +4,8 @@ export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
 import Stripe from "stripe";
-import directus from "../../lib/directus";
 import { directusAdmin } from "../../lib/directus";
-import { readItems, createItem } from '@directus/sdk';
+import { readItems, createItem, updateUser } from '@directus/sdk';
 
 const stripe = new Stripe(import.meta.env.STRIPE_KEY);
 const BASE_URL = import.meta.env.PUBLIC_BASE_URL
@@ -15,9 +14,11 @@ const sessionID = Astro.url.searchParams.get("session_id");
 let name, email, errorMessage = "";
 let session,
     user_id,
+    user_credits,
     license_data,
-    parsedLicenseData;
-let checkoutIsProcessed;
+    parsedLicenseData,
+    resultLicenses,
+    checkoutIsProcessed;
 
 if (sessionID !== null) {
 
@@ -26,7 +27,7 @@ if (sessionID !== null) {
     session = await stripe.checkout.sessions.retrieve(sessionID);
     if (session.customer_details !== null) {
       ({ name, email } = session.customer_details);
-      ({ user_id, license_data } = session.metadata || {});
+      ({ user_id, user_credits, license_data } = session.metadata || {});
       parsedLicenseData = license_data ? JSON.parse(license_data) : [];
     } else {
       // Handle the case where customer_details is null
@@ -84,8 +85,19 @@ if (sessionID !== null) {
         }));
 
         // Batch create new licenses
-        const result = await directusAdmin.request(createItem('licenses', newLicenses));
-        console.log("Created new licenses:", result);
+        resultLicenses = await directusAdmin.request(createItem('licenses', newLicenses, {
+          fields: [
+            "*",
+            "price_id.id",
+            "price_id.amount",
+            "price_id.cloud_id",
+            "price_id.tier",
+            "price_id.cycle_id.id",
+            "price_id.cycle_id.renewal_active",
+          ]
+        }));
+        console.log("Created new licenses:", resultLicenses);
+
       } else {
         console.log("Licenses have already been created for this checkout session:", existingLicenses);
       }
@@ -94,7 +106,104 @@ if (sessionID !== null) {
     }
 
     if (!checkoutIsProcessed) {
-      // Send confirmation email
+      // If the new steward used store credits, update their credit balance in the Directus db.
+      if (session.total_details.amount_discount && session.total_details.amount_discount !== 0) {
+        try {
+          console.log("Steward " + user_id + " redeemed " + session.total_details.amount_discount + " store credits. Updating Directus db...")
+
+          const result = await directusAdmin.request(updateUser(user_id, {
+            credits: Math.max(user_credits - session.total_details.amount_discount, 0),
+          }));
+        } catch (e) {
+          console.error("Error updating new steward credit balance:", e);
+        }
+      }
+
+      // If a license was taken over from another steward, award the former steward store credits equal to 50% of new license price.
+      try {
+        await Promise.all(
+          resultLicenses.map(async (newLicense) => {
+            const prevPriceResult = await directusAdmin.request(
+              readItems("price", {
+                fields: [
+                  "*",
+                  "cloud_id.id",
+                  "cloud_id.name",
+                  "cycle_id.id",
+                  "cycle_id.name",
+                  "cycle_id.start_date",
+                  "cycle_id.end_date",
+                  "licenses.id",
+                  "licenses.steward",
+                  "licenses.steward.id",
+                  "licenses.steward.first_name",
+                  "licenses.steward.email",
+                  "licenses.steward.credits",
+                ],
+                filter: {
+                  cloud_id: {
+                    _eq: newLicense.price_id.cloud_id,
+                  },
+                  tier: {
+                    _eq: newLicense.price_id.tier,
+                  },
+                  licenses: {
+                    _some: {},
+                  },
+                  cycle_id: {
+                    renewal_active: {
+                      _eq: true,
+                    }
+                  }
+                },
+                limit: 1,
+              })
+            );
+            const prevPrice = prevPriceResult[0];
+            
+            if (prevPrice && prevPrice.licenses.length !== 0) {
+              const prevSteward = prevPrice.licenses[0].steward;
+              const creditAward = Math.round((newLicense.price_id.amount * 100) / 2);
+              console.log("awarding " + creditAward + " store credits to former steward: " + prevSteward.id)
+
+              const result = await directusAdmin.request(updateUser(prevSteward.id, {
+                credits: prevSteward.credits + creditAward,
+              }));
+
+              // Notify former steward with email
+              try {
+                console.log("notifying former steward via email...");
+                const response = await fetch(BASE_URL + "/api/send-mail", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    email: prevSteward.email,
+                    templateId: import.meta.env.LICENSE_TAKEN_OVER_EMAIL_TEMPLATE,
+                    templateModel: {
+                      "user_name": prevSteward.name,
+                      "license": prevPrice,
+                      "credits_awarded": (creditAward / 100).toFixed(2),
+                      "credit_balance": (result.credits / 100).toFixed(2),
+                    }
+                  }),
+                });
+
+                if (!response.ok) {
+                  throw new Error("Error sending email to former steward");
+                }
+              } catch (e) {
+                console.error("Error sending email to former steward:", e);
+              }
+            }
+          })
+        );
+      } catch (e) {
+        console.error("Error awarding store credits to former steward(s):", e);
+      }
+
+      // Send confirmation email to new steward
       try {
         console.log("sending confirmation email...");
         const response = await fetch(BASE_URL + "/api/send-mail", {

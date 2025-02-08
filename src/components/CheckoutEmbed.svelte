@@ -14,6 +14,7 @@
 
   let stripeLineItems = [];
   let licensesData = [];
+  let discounts = [];
 
   // Function to load or create Stripe prices
   async function loadPrices() {
@@ -53,6 +54,37 @@
     }
   }
 
+  // Apply any store credits the user may have
+  async function applyStoreCredits() {
+    if (currentUser.credits > 0) {
+      try {
+        console.log("Creating Stripe coupon...");
+        const response = await fetch("/api/create-coupon", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            credits: currentUser.credits,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+
+        discounts.push({
+          coupon: data.coupon.id,
+        })
+
+      } catch (error) {
+        console.error("Failed to create coupon:", error);
+      }
+    }
+  }
+
   async function createCheckoutSession() {
     try {
       const response = await fetch("/api/checkout-session", {
@@ -66,6 +98,7 @@
           lang: lang,
           current_user: currentUser,
           license_data: licensesData,
+          discounts: discounts,
         }),
       });
 
@@ -96,6 +129,7 @@
 
   onMount(async () => {
     await loadPrices();
+    await applyStoreCredits();
     await createCheckoutSession();
   });
 </script>
