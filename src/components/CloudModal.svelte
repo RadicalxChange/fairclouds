@@ -159,11 +159,11 @@
             {#each prices as price}
               {#if price.isRenewalPrice}
                 <option value={price.id}>
-                  License {price.tier} - € {(Math.round((price.amount / 2) * 100) / 100).toFixed(2)} Renew your current license
+                  License {price.tier} - € {(Math.round((parseFloat(price.amount) / 2) * 100) / 100).toFixed(2)} Renew your current license
                 </option>
               {:else}
                 <option value={price.id} disabled={price.licenses && price.licenses.length !== 0}>
-                  License {price.tier} - € {price.amount.toFixed(2)} {price.licenses && price.licenses.length !== 0 ? "(Stewarded)" : ""}
+                  License {price.tier} - € {price.amount} {price.licenses && price.licenses.length !== 0 ? "(Stewarded)" : ""}
                 </option>
               {/if}
             {/each}

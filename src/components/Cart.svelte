@@ -50,7 +50,7 @@
                 {#if cartItem.price.isRenewalPrice}
                   <span
                     class="bg-white text-primary text-copy rounded-full pl-[7px] pr-[7px] pt-1 inline-block mr-4"
-                    >€ {(cartItem.price.isRenewalPrice ? Math.round((cartItem.price.amount / 2) * 100) / 100 : cartItem.price.amount).toFixed(2)}</span
+                    >€ {cartItem.price.isRenewalPrice ? (Math.round((parseFloat(cartItem.price.amount) / 2) * 100) / 100).toFixed(2) : cartItem.price.amount}</span
                   >
                   <span
                     class="inline-block"
@@ -59,7 +59,7 @@
                 {:else}
                   <span
                     class="bg-white text-primary text-copy rounded-full pl-[7px] pr-[7px] pt-1 inline-block"
-                    >€ {cartItem.price.amount.toFixed(2)}</span
+                    >€ {cartItem.price.amount}</span
                   >
                 {/if}
                 <div class="mb-2.5 flex flex-wrap gap-2.5 w-full pt-2">

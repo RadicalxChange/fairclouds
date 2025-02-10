@@ -38,7 +38,7 @@ export const POST = async ({ request }) => {
         if (!stripePrice) {
           try {
             stripePrice = await stripe.prices.create({
-              unit_amount: Math.round((price.isRenewalPrice ? price.amount / 2 : price.amount) * 100),
+              unit_amount: Math.round((price.isRenewalPrice ? parseFloat(price.amount) / 2 : parseFloat(price.amount)) * 100),
               currency: "eur",
               product: item.product_id,
               nickname: item.price.cycle_id.name + ', Tier ' + item.price.tier,

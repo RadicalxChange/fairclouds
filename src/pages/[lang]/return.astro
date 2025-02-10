@@ -163,7 +163,7 @@ if (sessionID !== null) {
             
             if (prevPrice && prevPrice.licenses.length !== 0) {
               const prevSteward = prevPrice.licenses[0].steward;
-              const creditAward = Math.round((newLicense.price_id.amount * 100) / 2);
+              const creditAward = Math.round((parseFloat(newLicense.price_id.amount) * 100) / 2);
               console.log("awarding " + creditAward + " store credits to former steward: " + prevSteward.id)
 
               const result = await directusAdmin.request(updateUser(prevSteward.id, {
