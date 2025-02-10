@@ -24,6 +24,9 @@
   let prices;
   let selectedPriceId = null;
 
+  // Current number of stewards
+  let numStewards;
+  
   // Watch cloud changes
   $: if (cloud) {
       handleCloudChange();
@@ -34,7 +37,8 @@
     drawings = cloud.drawings;
     currentIndex = 0;
     startSlideshow();
-    prices = await loadPrices(cloud.product_id);
+    prices = cloud.prices.sort((a, b) => a.tier - b.tier);
+    numStewards = countStewards(prices);
 
     // Preselect price if cloud is already in the cart
     const cartItem = Object.values($cartItems).find((item) => item.id === cloud.id);
@@ -44,6 +48,16 @@
       selectedPriceId = null;
     }
     open.set(true);
+  }
+
+  function countStewards(prices) {
+    return prices.reduce((count, price) => {
+      // Check if the price has a non-empty licenses array.
+      if (price.licenses && price.licenses.length > 0) {
+        return count + 1;
+      }
+      return count;
+    }, 0);
   }
 
   function startSlideshow() {
@@ -73,10 +87,9 @@
     }
     cloud.quantity = 1;
 
-    const priceIndex = prices.findIndex((price) => price.id === selectedPriceId);
-    if (priceIndex !== -1) {
-      cloud.price = prices[priceIndex];
-      cloud.tier = priceIndex + 1;
+    const selectedPrice = prices.find((price) => price.id === selectedPriceId);
+    if (selectedPrice) {
+      cloud.price = selectedPrice;
     } else {
       console.error("Selected price not found in the prices array.");
       return;
@@ -97,32 +110,6 @@
       (license) => license.cloud_id && license.cloud_id.id === cloudId
     ) || null;
   }
-
-  async function loadPrices(productId) {
-    try {
-      console.log("loading prices for this cloud...");
-      const response = await fetch("/api/get-prices", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          product_id: productId,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const data = await response.json();
-      return data.prices.data.sort((a, b) => a.unit_amount - b.unit_amount)
-
-    } catch (error) {
-      console.error("Failed to load prices:", error);
-      // loading = false;
-    }
-  }
 </script>
 
 {#if $open}
@@ -137,7 +124,7 @@
         <h3 class="text-heading">Cloud {cloud.name}</h3>
         <span
           class="bg-white text-primary text-copy rounded-full pl-[14px] pr-[7px] pt-1"
-          >{cloud.licenses.length} steward{cloud.licenses.length !== 1 ? "s" : ""}</span
+          >{numStewards} steward{numStewards !== 1 ? "s" : ""}</span
         >
       </div>
       <p class="mb-[21px]">
@@ -169,10 +156,16 @@
             <option disabled value={null}>
               Current Licenses Available
             </option>
-            {#each prices as price, i}
-              <option value={price.id} disabled={price.metadata.isStewarded === "true"}>
-                License {i + 1} - {price.currency.toUpperCase()} {(price.unit_amount / 100).toFixed(2)} {price.metadata.isStewarded === "true" ? "(Stewarded)" : ""}
-              </option>
+            {#each prices as price}
+              {#if price.isRenewalPrice}
+                <option value={price.id}>
+                  License {price.tier} - € {(Math.round((parseFloat(price.amount) / 2) * 100) / 100).toFixed(2)} Renew your current license
+                </option>
+              {:else}
+                <option value={price.id} disabled={price.licenses && price.licenses.length !== 0}>
+                  License {price.tier} - € {price.amount} {price.licenses && price.licenses.length !== 0 ? "(Stewarded)" : ""}
+                </option>
+              {/if}
             {/each}
           </select>
         </div>      

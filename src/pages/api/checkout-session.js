@@ -7,25 +7,27 @@ const STRIPE_KEY = import.meta.env.STRIPE_KEY;
 
 export const POST = async ({ request }) => {
   try {
-    const { line_items, origin, lang, current_user, license_data } = await request.json();
+    const { line_items, origin, lang, current_user, license_data, discounts } = await request.json();
     const stripe = new Stripe(STRIPE_KEY);
     
     const metadata = {
       user_id: current_user?.id,
+      user_credits: current_user?.credits,
       license_data: JSON.stringify(license_data),
     }
 
     const session = await stripe.checkout.sessions.create({
       ui_mode: "embedded",
-      mode: "subscription",
+      mode: "payment",
       customer_email: current_user?.email,
       line_items: line_items,
       return_url: `${origin}/${lang}/return?session_id={CHECKOUT_SESSION_ID}`,
       automatic_tax: { enabled: true },
+      discounts: discounts,
       custom_text: {
         submit: {
           message:
-            "Price will be adjusted annually.",
+            "Price will be adjusted for each new cycle.",
         },
       },
       metadata,

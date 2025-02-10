@@ -24,16 +24,18 @@ if (authToken) {
           fields: [
             "*",
             "licenses.*",
-            "licenses.cloud_id.id",
-            "licenses.cloud_id.name",
-            "licenses.cloud_id.x",
-            "licenses.cloud_id.y",
-            "licenses.cloud_id.width",
-            "licenses.cloud_id.height",
-            "licenses.cloud_id.drawings.*",
-            "licenses.cycle_id.name",
-            "licenses.cycle_id.start_date",
-            "licenses.cycle_id.end_date",
+            "licenses.price_id.id",
+            "licenses.price_id.amount",
+            "licenses.price_id.cloud_id.id",
+            "licenses.price_id.cloud_id.name",
+            "licenses.price_id.cloud_id.drawings.*",
+            "licenses.price_id.cycle_id.id",
+            "licenses.price_id.cycle_id.name",
+            "licenses.price_id.cycle_id.start_date",
+            "licenses.price_id.cycle_id.end_date",
+            "licenses.price_id.cycle_id.prices_status",
+            "licenses.price_id.cycle_id.renewal_active",
+            "licenses.price_id.tier",
           ],
         })
       )
@@ -63,28 +65,27 @@ const formatDate = (dateString) => {
     {currentUser ? (
       <div class="p-12">
         <h1>Welcome to your account dashboard, {currentUser.first_name}!</h1>
-        <p class="mt-4">You have {currentUser.credits} store credits.</p>
+        <p class="mt-4">You have €{currentUser.credits / 100} in store credits.</p>
 
         <h2 class="mt-8">Your Licenses</h2>
         {currentUser.licenses?.length > 0 ? (
           <ul>
             {currentUser.licenses.map(license => (
               <li class="my-4 flex flex-col gap-2" style="border: 1px solid #ccc; padding: 0.5rem;">
-                <h3>Cloud {license.cloud_id.name}</h3>
-                <h3>License {license.tier}</h3>
-                <p><strong>Active:</strong> {license.active ? "Yes" : "No"}</p>
-                <p><strong>Cycle:</strong> {license.cycle_id.name}</p>
-                <p><strong>Start:</strong> {formatDate(license.cycle_id.start_date)}</p>
-                <p><strong>End:</strong> {formatDate(license.cycle_id.end_date)}</p>
+                <h3>Cloud {license.price_id.cloud_id.name}</h3>
+                <h3>License {license.price_id.tier}</h3>
+                <p><strong>Cycle:</strong> {license.price_id.cycle_id.name}</p>
+                <p><strong>Start:</strong> {formatDate(license.price_id.cycle_id.start_date)}</p>
+                <p><strong>End:</strong> {formatDate(license.price_id.cycle_id.end_date)}</p>
 
-                {license.cloud_id ? (
+                {license.price_id.cloud_id ? (
                   <>
 
-                    {license.cloud_id.drawings?.length > 0 ? (
+                    {license.price_id.cloud_id.drawings?.length > 0 ? (
                       <>
                         <h5 class="my-4">Drawings</h5>
                         <div class="flex flex-wrap gap-1">
-                          {license.cloud_id.drawings.map(drawing => (
+                          {license.price_id.cloud_id.drawings.map(drawing => (
                             <div style="padding: 0.5rem;">
                               <img 
                                 src={`${DIRECTUS_URL}/assets/${drawing.image}`} 
@@ -95,7 +96,7 @@ const formatDate = (dateString) => {
                           ))}
                         </div>
                         <div class="my-4">
-                          <DownloadButton cloudId={license.cloud_id.id} client:load />
+                          <DownloadButton cloudId={license.price_id.cloud_id.id} client:load />
                         </div>
                       </>
                     ) : (

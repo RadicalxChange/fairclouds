@@ -139,13 +139,164 @@
     });
   });
 
-  function handleCloudClick(cloud) {
+  async function getActivePrices(cloud) {
+    const prices = cloud.prices;
+    const activePrices = prices.filter(price => price.cycle_id.prices_status === "active");
+    const earlyAccessPrices = prices.filter(price => price.cycle_id.prices_status === "early_access");
+
+    let newPriceData = []; // Holds data for us to create new prices with if necessary.
+    let newPrices = []; // Holds any new prices we create.
+
+    // Check if all active prices are stewarded. If yes, prepare to create a new price.
+    if (!activePrices.find(price => price.licenses.length === 0)) {
+
+      const basePrice = activePrices.find(price => price.tier === 1);
+
+      let nextTier = activePrices.length + 1;
+      const nextIndex = activePrices.sort((a,b) => a.tier - b.tier).findIndex((x,i) => x.tier !== i+1);
+      
+      if (nextIndex !== -1) {
+        nextTier = nextIndex + 1
+      }
+
+      if (basePrice) {
+        newPriceData.push({
+          base_price: basePrice,
+          tier: nextTier,
+          num_drawings: cloud.drawings.length,
+        });
+      }
+    }
+
+    // If user is not logged in, display standard prices. Otherwise proceed.
+    if (currentUser) {
+
+      const renewableLicenses = currentUser.licenses.filter(license => license.price_id.cloud_id === cloud.id && license.price_id.cycle_id.renewal_active === true);
+
+      // If user has no renewable licenses, display standard prices. Otherwise proceed.
+      if (renewableLicenses.length !== 0) {
+
+        const renewalIsEarlyAccess = renewableLicenses[0].price_id.cycle_id.prices_status === "active";
+
+        // If new prices are not ready, display standard prices. Otherwise proceed.
+        if (!renewalIsEarlyAccess || earlyAccessPrices.length !== 0) {
+
+          // Prepare to display any renewal prices.
+          renewableLicenses.forEach(license => {
+
+            if (renewalIsEarlyAccess) {
+
+              const newPrice = earlyAccessPrices.find(price => price.cloud_id === license.price_id.cloud_id && price.tier === license.price_id.tier);
+
+              if (newPrice) {
+                newPrice.isRenewalPrice = true;
+
+                const index = activePrices.findIndex(activePrice =>
+                  activePrice.cloud_id === newPrice.cloud_id &&
+                  activePrice.tier === newPrice.tier
+                );
+                
+                if (index !== -1) {
+                  // Replace the existing active price with the renewal price.
+                  activePrices[index] = newPrice;
+                } else {
+                  // No matching active price; add the renewal price to the result array.
+                  activePrices.push(newPrice);
+                }
+              }
+            } else {
+              const index = activePrices.findIndex(activePrice =>
+                activePrice.cloud_id === license.price_id.cloud_id &&
+                activePrice.tier === license.price_id.tier
+              );
+                
+              // If the price exists and hasn't already been stewarded, replace the existing active price with the renewal price.
+              if (index !== -1) {
+                if (activePrices[index].licenses.length === 0) {
+                  activePrices[index].isRenewalPrice = true;
+                }
+              // If the price does not exist, prepare to create it.
+              } else {
+                // If we already added this data to newPriceData, mark it as a renewal price.
+                const index = newPriceData.findIndex(data => data.tier === license.price_id.tier);
+                if (index !== -1) {
+                  newPriceData[index].isRenewalPrice = true;
+                  // If we didn't already add this data to newPriceData, add it now.
+                } else {
+                  const basePrice = activePrices.find(price => price.tier === 1);
+
+                  if (basePrice) {
+                    newPriceData.push({
+                      base_price: basePrice,
+                      tier: license.price_id.tier,
+                      num_drawings: cloud.drawings.length,
+                    });
+                  }
+                }
+              }
+            }
+          });
+        }
+      }
+    }
+
+    // Create new renewal prices if necessary.
+    if (newPriceData.length !== 0) {
+      try {
+        console.log("Creating new prices...");
+        const response = await fetch("/api/create-prices", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: newPriceData,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+        newPrices = data.prices;
+
+      } catch (error) {
+        console.error("Failed to create new prices:", error);
+      }
+        
+      // We have to mark renewal prices again. For efficiency, start by building a lookup object from newPriceData.
+      const renewalLookup = newPriceData.reduce((lookup, data) => {
+        if (data.isRenewalPrice) {
+          lookup[data.tier] = true;
+        }
+        return lookup;
+      }, {});
+
+      // Mark any renewal prices that we created as such.
+      newPrices.forEach(price => {
+        if (renewalLookup[price.tier]) {
+          price.isRenewalPrice = true;
+        }
+      });
+
+      // Add the newly created prices to the result array to be displayed in CloudModal.
+      activePrices.push(...newPrices);
+
+      // Add the newly created renewal prices to the top-level prices array for idempotency.
+      cloud.prices.push(...newPrices);
+    }
+    
+    return activePrices;
+  }
+
+  async function handleCloudClick(cloud) {
     selectedCloud = {
       id: cloud.id,
       name: cloud.name,
       product_id: cloud.product_id,
       drawings: cloud.drawings,
-      licenses: cloud.licenses.filter(license => license.active),
+      prices: await getActivePrices(cloud),
     };
   }
 </script>

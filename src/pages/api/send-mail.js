@@ -14,7 +14,7 @@ export const POST = async ({ request }) => {
     const postmarkUrl = 'https://api.postmarkapp.com/email/withTemplate';
 
     const emailData = {
-      From: 'alex@radicalxchange.org',
+      From: 'hola@fairclouds.life',
       To: email,
       TemplateId: templateId,
       TemplateModel: templateModel

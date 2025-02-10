@@ -8,28 +8,85 @@
   export let origin;
   export let currentUser;
   let stripePromise;
-  const cartItemsValue = cartItems.get();
+
+  let cartItemsValue = cartItems.get();
   let loading = true;
 
-  const stripeLineItems = Object.values(cartItemsValue).map((item) => ({
-    price: item.price.id,
-    quantity: item.quantity,
-  }));
-  
-  const licensesData = Object.values(cartItemsValue).map((item) => ({
-    cloud_id: item.id,
-    tier: item.tier,
-    price_id: item.price.id,
-  }));
+  let stripeLineItems = [];
+  let licensesData = [];
+  let discounts = [];
 
-  onMount(async () => {
-    await createCheckoutSession();
-  });
+  // Function to load or create Stripe prices
+  async function loadPrices() {
+    try {
+      console.log("Getting or creating Stripe prices...");
+      const response = await fetch("/api/get-prices", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cart_items: cartItemsValue,
+        }),
+      });
 
-  // Define your createCheckoutSession function here, if needed
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+
+      stripeLineItems = Object.values(data.prices).map((item) => ({
+        price: item.price.price_id,
+        quantity: item.quantity,
+      }));
+      
+      licensesData = Object.values(data.prices).map((item) => ({
+        cloud: item.name,
+        cycle: item.price.cycle_id.name,
+        tier: item.price.tier,
+        stripe_price_id: item.price.price_id,
+        directus_price_id: item.price.id,
+      }));
+
+    } catch (error) {
+      console.error("Failed to load prices:", error);
+    }
+  }
+
+  // Apply any store credits the user may have
+  async function applyStoreCredits() {
+    if (currentUser.credits > 0) {
+      try {
+        console.log("Creating Stripe coupon...");
+        const response = await fetch("/api/create-coupon", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            credits: currentUser.credits,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+
+        discounts.push({
+          coupon: data.coupon.id,
+        })
+
+      } catch (error) {
+        console.error("Failed to create coupon:", error);
+      }
+    }
+  }
+
   async function createCheckoutSession() {
     try {
-      console.log("sending request to api");
       const response = await fetch("/api/checkout-session", {
         method: "POST",
         headers: {
@@ -41,6 +98,7 @@
           lang: lang,
           current_user: currentUser,
           license_data: licensesData,
+          discounts: discounts,
         }),
       });
 
@@ -68,6 +126,12 @@
       loading = false;
     }
   }
+
+  onMount(async () => {
+    await loadPrices();
+    await applyStoreCredits();
+    await createCheckoutSession();
+  });
 </script>
 
 {#if loading}
