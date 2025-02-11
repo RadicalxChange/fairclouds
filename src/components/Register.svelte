@@ -22,7 +22,7 @@
         // Use Directus SDK to register the user
         const result = await directus.request(registerUser(email, password, { first_name: firstName, last_name: lastName }));
 
-        success = "Account created successfully!";
+        success = true;
         console.log("Registration result:", result);
         } catch (err) {
         error = err.message || "Failed to create account.";
@@ -34,7 +34,10 @@
 
 
 {#if success}
-<p>{success}</p>
+<div>
+    <p class="mb-4">Account created successfully!</p>
+    <p>You should receive an email with a link to verify your account.</p>
+</div>
 {:else}
 <form class="space-y-5" on:submit|preventDefault={handleRegister}>
     <div>
