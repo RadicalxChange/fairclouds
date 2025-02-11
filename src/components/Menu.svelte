@@ -18,8 +18,20 @@
   let tab = "about";
 
   let t;
-  onMount(() => {
+  let currentUser;
+  onMount(async () => {
     t = useTranslations(lang);
+
+    // Fetch the current user on component mount.
+    try {
+      const res = await fetch('/api/current-user');
+      if (res.ok) {
+        const data = await res.json();
+        currentUser = data.user;
+      }
+    } catch (err) {
+      console.error("Failed to fetch current user", err);
+    }
   });
 
   // Watch for when $open changes from true to false.
@@ -107,7 +119,7 @@
           <slot name="news" />
         {/if}
         {#if tab === "login"}
-          <Login {lang} bind:reloadOnClose />
+          <Login lang={lang} currentUser={currentUser} bind:reloadOnClose />
         {/if}
       </div>
     </div>

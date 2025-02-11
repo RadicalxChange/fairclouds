@@ -1,14 +1,16 @@
 <script>
+  import { onMount } from 'svelte';
   import Register from "./Register.svelte";
   import ForgotPassword from "./ForgotPassword.svelte";
 
   export let lang;
-  export let reloadOnClose; 
+  export let currentUser;
+  export let reloadOnClose;
 
   let email = "";
   let password = "";
   let error = "";
-  let isLoggedIn = false;
+  let isLoggedIn = !!currentUser;
   // currentForm can be "login", "register", or "reset"
   let currentForm = "login";
 
@@ -28,10 +30,25 @@
 
       isLoggedIn = true;
       reloadOnClose = true;
+      email = "";
+      password = "";
     } catch (err) {
       error = err.message || "An error occurred during login.";
     }
   };
+
+const handleLogout = async () => {
+  error = "";
+  try {
+    const response = await fetch("/api/logout", { method: "POST" });
+    if (!response.ok) {
+      throw new Error("Logout failed.");
+    }
+    isLoggedIn = false;
+  } catch (err) {
+    error = err.message || "Logout failed.";
+  }
+};
 </script>
 
 {#if currentForm === "register"}
@@ -47,8 +64,13 @@
   </button>
 
 {:else if isLoggedIn}
-  <p>You are logged in!</p>
-  <a href="/en/dashboard">Go to dashboard</a>
+  <p class="mb-2">You are logged in!</p>
+  <a href={`/${lang == "en" ? "en" : "es"}/dashboard`} class="button"
+    >{lang === "en" ? "Dashboard" : "Panel de control"}</a
+  >
+  <button class="button secondary mt-2" on:click={handleLogout}>
+    {lang === "en" ? "Logout" : "Cerrar sesión"}
+  </button>
 
 {:else}
   <form class="space-y-5" on:submit|preventDefault={handleLogin}>
