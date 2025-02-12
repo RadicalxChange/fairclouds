@@ -36,15 +36,15 @@
 {#if $open}
   <div {...$portalled} use:portalled>
     <div
-      class="fixed flex flex-col rounded-default bottom-20 right-4 z-50 max-h-[calc(100vh-175px)] w-full max-w-[610px] bg-primary shadow-cloud p-5 focus:outline-none"
+      class="modal bottom-[65px] sm:bottom-20"
       {...$content}
       use:content
     >
       {#if Object.values($cartItems).length}
-        <h3 class="mb-2.5">You currently have {Object.values($cartItems).length} cloud{Object.values($cartItems).length !== 1 ? "s" : ""} in your shopping basket.</h3>
-        <ul class="mb-2.5 my-4">
+        <h3 class="mb-2 sm:mb-2.5">You currently have {Object.values($cartItems).length} cloud{Object.values($cartItems).length !== 1 ? "s" : ""} in your shopping basket.</h3>
+        <ul class="sm:my-4 overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
           {#each Object.values($cartItems) as cartItem}
-            <li class="flex flex-row justify-between my-4">
+            <li class="flex flex-row justify-between my-3 sm:my-4">
               <div>
                 <h3 class="inline-block mr-4">Cloud {cartItem.name} - License {cartItem.price.tier}</h3>
                 {#if cartItem.price.isRenewalPrice}
@@ -76,10 +76,10 @@
                 </div>
               </div>
               <button 
-                class="text-red-500 hover:text-red-700 focus:outline-none mb-auto ml-2" 
+                class="hover:opacity-75 focus:outline-none mb-auto ml-2" 
                 on:click={() => removeCartItem(cartItem.id)}
               >
-                Delete
+                <img src="/icons/delete.svg" alt="Delete Icon" class="h-12 w-auto" />
               </button>
             </li>
           {/each}

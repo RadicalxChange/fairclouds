@@ -24,7 +24,7 @@
     };
   </script>
   
-  <h2 class="text-2xl font-semibold mb-4">Reset Password</h2>
+  <h2 class="text-sm sm:text-2xl font-semibold mb-4">Reset Password</h2>
   
   {#if success}
     <div>
@@ -34,7 +34,7 @@
   {:else}
     <form class="space-y-5" on:submit|preventDefault={handleRequestReset}>
       <div>
-        <label for="email" class="">Email</label>
+        <label for="email" class="text-xs">Email</label>
         <input
           type="email"
           id="email"
@@ -47,8 +47,8 @@
       {#if error}
         <p class="error">{error}</p>
       {/if}
-      <button type="submit" class="button" style="font-size: 1.5rem;">
-        Send Password Reset Email
+      <button type="submit" class="button">
+        Reset Password
       </button>
     </form>
   {/if}  

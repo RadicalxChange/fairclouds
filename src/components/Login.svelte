@@ -53,13 +53,13 @@ const handleLogout = async () => {
 
 {#if currentForm === "register"}
   <Register />
-  <button class="link mt-4" on:click={() => (currentForm = "login")}>
+  <button class="link mt-4 text-xs sm:text-[2.125rem]" on:click={() => (currentForm = "login")}>
     {lang === "en" ? "Back to Login" : "Volver al inicio de sesión"}
   </button>
 
 {:else if currentForm === "reset"}
   <ForgotPassword />
-  <button class="link mt-4" on:click={() => (currentForm = "login")}>
+  <button class="link mt-4 text-xs sm:text-[2.125rem]" on:click={() => (currentForm = "login")}>
     {lang === "en" ? "Back to Login" : "Volver al inicio de sesión"}
   </button>
 
@@ -73,7 +73,7 @@ const handleLogout = async () => {
   </button>
 
 {:else}
-  <form class="space-y-5" on:submit|preventDefault={handleLogin}>
+  <form class="space-y-2 sm:space-y-5" on:submit|preventDefault={handleLogin}>
     <input
       type="email"
       bind:value={email}
@@ -93,7 +93,7 @@ const handleLogout = async () => {
     {/if}
 
     <!-- Link to trigger reset password view -->
-    <button type="button" class="link block" on:click={() => (currentForm = "reset")}>
+    <button type="button" class="block text-left text-xs sm:text-[2.125rem]" on:click={() => (currentForm = "reset")}>
       {lang === "en" ? "Forgot your password?" : "Olvidaste tu contraseña?"}
     </button>
 
@@ -103,7 +103,7 @@ const handleLogout = async () => {
   </form>
 
   <!-- Sign Up button -->
-  <button class="button secondary mt-4" on:click={() => (currentForm = "register")}>
+  <button class="button secondary mt-2 sm:mt-4" on:click={() => (currentForm = "register")}>
     {lang === "en" ? "Sign Up" : "Regístrate"}
   </button>
 {/if}

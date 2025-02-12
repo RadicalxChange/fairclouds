@@ -42,10 +42,9 @@
 	h1,
 	h2,
 	h3 {
-		font-size: 1.125rem;
-		line-height: 22px;
-		letter-spacing: -0.07em;
-		line-height: auto;
+		@apply
+			text-xs sm:text-[1.125rem]
+			tracking-[-0.07em];
 	}
 
 	.text-heading {
@@ -54,11 +53,15 @@
 		letter-spacing: -0.07em;
 	}
 
-	p,
+	p, cite {
+		@apply font-sans;
+	}
+	p, cite,
 	.text-copy {
-		font-size: 1.125rem;
-		line-height: 22px;
-		letter-spacing: 0em;
+		@apply
+			text-xs sm:text-[1.125rem]
+			leading-4 sm:leading-[22px]
+			tracking-normal;
 	}
 
 	.text-small {
@@ -66,8 +69,9 @@
 	}
 
 	.text-menu-languages {
-		font-size: 1.625rem;
-		letter-spacing: -0.07em;
+		@apply
+			text-xs sm:text-[1.625rem]
+			tracking-[-0.07em];
 	}
 
 	.logo {
@@ -77,17 +81,20 @@
 	.prose h1,
 	.prose h2,
 	.prose h3 {
-		font-size: 2.125rem;
+		@apply
+			text-sm sm:text-[2.125rem]
+			leading-5 sm:leading-[38px];
 		margin-bottom: 28px;
 	}
 	.button {
-		@apply bg-primary;
+		@apply
+			bg-primary
+			text-xs sm:text-[2.125rem]
+			pt-[5px] pb-[3px] sm:pb-0 px-[15px];
 		display: inline-block;
-		padding: 5px 15px 0px 15px;
 		gap: 10px;
 		box-shadow: inset 0px 0px 10px 3px #ffffff;
 		border-radius: 5px;
-		font-size: 2.125rem;
 		transition: 0.5s ease;
 		line-height: 1;
 	}
@@ -168,12 +175,13 @@
 	}
 
 	input, select {
+		@apply
+			text-sm sm:text-[1.625rem];
 		background: #72aee9;
 		box-shadow: inset 0px 0px 6.8px 3px #ffffff;
 		border-radius: 100px;
 		width: 100%;
 		padding: 10px 20px;
-		font-size: 1.625rem;
 		letter-spacing: -0.07em;
 	}
 
@@ -287,17 +295,37 @@
 	}
 
 	.prose ul, .prose ol {
-		padding-left: 25px;
+		@apply
+			font-sans
+			text-xs sm:text-[1.125rem]
+			leading-4 sm:leading-[22px]
+			pl-2 sm:pl-[15px]
+			space-y-3;
+	}
+
+	.prose ul li,
+	.prose ol li {
+		position: relative;
+		/* Add left padding equal to the bullet’s width plus any desired spacing.
+		   In this case, 21px (icon width) */
+		padding-left: 30px;
+	}
+
+	
+	@media only screen and (max-width: 640px) {
+		.prose ul, .prose ol {
+			margin-top: 1rem !important;
+		}
 	}
 
 	.prose ul li::before, .prose ol li::before {
-    content: url('/icons/list.svg');
-    display: inline-block;
-    width: 21px; /* Adjust width as needed */
-    height: 17px; /* Adjust height as needed */
-    margin-right: 3px; /* Adjust spacing between icon and text */
-    position: relative;
-    top: 2.5px; /* Move the icon down by 5 pixels */
+		content: url('/icons/list.svg');
+		display: inline-block;
+		width: 21px; /* Adjust width as needed */
+		height: 17px; /* Adjust height as needed */
+		position: absolute;
+		left: 0;
+		top: 2.5px; /* Move the icon down by 5 pixels */
 	}
 
 	.prose ul ul li::before, .prose ol ol li::before,

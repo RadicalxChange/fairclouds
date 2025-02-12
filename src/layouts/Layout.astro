@@ -1,7 +1,5 @@
 ---
 import { getLangFromUrl } from "../i18n/utils";
-import directus from "../lib/directus";
-import { readSingleton } from "@directus/sdk";
 import Weather from "../components/Weather.astro";
 import LoadingFallback from "../components/LoadingFallback.astro";
 import ModeToggle from "../components/ModeToggle.astro";
@@ -12,6 +10,7 @@ import logoEs from "../images/Fairclouds-Logo_ES.svg";
 import logoEnBlack from "../images/Fairclouds-Logo_EN-black.svg";
 import logoEsBlack from "../images/Fairclouds-Logo_ES-black.svg";
 import "../styles/global.css"; // Import the global CSS file
+import "../styles/modal.css";
 
 interface Props {
 	title: string;

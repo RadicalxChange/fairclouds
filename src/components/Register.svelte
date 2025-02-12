@@ -30,7 +30,7 @@
     };
 </script>
   
-<h2 class="text-2xl font-semibold mb-4">Create an Account</h2>
+<h2 class="text-sm sm:text-2xl font-semibold mb-4">Create an Account</h2>
 
 
 {#if success}
@@ -39,9 +39,9 @@
     <p>You should receive an email with a link to verify your account.</p>
 </div>
 {:else}
-<form class="space-y-5" on:submit|preventDefault={handleRegister}>
+<form class="space-y-3" on:submit|preventDefault={handleRegister}>
     <div>
-    <label for="firstName" class="">First Name</label>
+    <label for="firstName" class="text-xs">First Name</label>
     <input
         type="text"
         id="firstName"
@@ -53,7 +53,7 @@
     </div>
 
     <div>
-    <label for="lastName" class="">Last Name</label>
+    <label for="lastName" class="text-xs">Last Name</label>
     <input
         type="text"
         id="lastName"
@@ -65,7 +65,7 @@
     </div>
 
     <div>
-    <label for="email" class="">Email</label>
+    <label for="email" class="text-xs">Email</label>
     <input
         type="email"
         id="email"
@@ -77,7 +77,7 @@
     </div>
 
     <div>
-    <label for="password" class="">Password</label>
+    <label for="password" class="text-xs">Password</label>
     <input
         type="password"
         id="password"

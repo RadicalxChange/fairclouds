@@ -1,0 +1,20 @@
+.modal {
+    @apply
+        fixed
+        flex
+        flex-col
+        rounded-default
+        md:right-4
+        right-[2vw]
+        z-50
+        max-h-[calc(100vh-130px)]
+        sm:max-h-[calc(100vh-175px)]
+        w-[96vw]
+        max-w-[610px]
+        bg-primary
+        shadow-cloud
+        p-3
+        sm:p-5
+        pt-2
+        focus:outline-none;
+}

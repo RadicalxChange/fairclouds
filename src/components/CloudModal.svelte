@@ -116,22 +116,22 @@
   <!-- Cloud Modal -->
   <div {...$portalled} use:portalled>
     <div
-      class="fixed flex flex-col rounded-default bottom-20 right-4 z-50 max-h-[calc(100vh-175px)] w-full max-w-[610px] bg-primary shadow-cloud p-5 pt-2 focus:outline-none"
+      class="modal bottom-[65px] sm:bottom-20"
       {...$content}
       use:content
     >
-      <div class="flex justify-between items-center mb-[30px]">
-        <h3 class="text-heading">Cloud {cloud.name}</h3>
+      <div class="flex justify-between items-center gap-2 mb-2 sm:mb-[30px]">
+        <h3 class="text-xl sm:text-heading">Cloud {cloud.name}</h3>
         <span
-          class="bg-white text-primary text-copy rounded-full pl-[14px] pr-[7px] pt-1"
+          class="bg-white text-primary text-[8px] sm:text-sm text-center sm:text-copy rounded-full px-[10px] pt-1"
           >{numStewards} steward{numStewards !== 1 ? "s" : ""}</span
         >
       </div>
-      <p class="mb-[21px]">
+      <p class="mb-2 sm:mb-[21px]">
         {currentUser && getLicense(currentUser, cloud.id) ? "You hold License " + getLicense(currentUser, cloud.id).tier : "Become a temporary steward"} of this cloud and the {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
         contains.
       </p>
-      <div class="mb-[21px] flex flex-wrap gap-2.5 w-full">
+      <div class="mb-2 sm:mb-[21px] flex flex-wrap gap-2.5 w-full overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
         {#each cloud.drawings as drawing, index}
           <img
             src={`https://cms.fairclouds.life/assets/` +
@@ -146,10 +146,10 @@
 
       <!-- Dropdown for Prices -->
       {#if prices && prices.length > 0}
-        <div class="mb-[21px]">
+        <div class="mb-2 sm:mb-[21px]">
           <select
             id="license-prices"
-            class="block w-full py-2 px-4 leading-8 bg-white text-[#72AEE9] rounded-md shadow-sm appearance-none focus:ring-primary focus:border-primary"
+            class="block w-full py-1 sm:py-2 px-4 leading-8 bg-white text-[#72AEE9] rounded-md shadow-sm appearance-none focus:ring-primary focus:border-primary"
             style="background-color: #ffffff; background: url('/icons/down-arrow.svg') no-repeat right 1rem center, #ffffff; background-size: 1rem;"
             bind:value={selectedPriceId}
             >
