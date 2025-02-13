@@ -79,8 +79,16 @@ const clouds = await directus.request(
 );
 ---
 
+<style>
+  /* Disable vertical scrolling on the map */
+  #map-container {
+    height: 100vh;
+    overflow-y: hidden;
+  }
+</style>
+
 <Layout fixed={true} logoOnMobile={false} title="Fairclouds">
-  <main>
+  <main id="map-container">
     <div
       class="hint absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50"
     >
