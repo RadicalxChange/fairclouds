@@ -43,7 +43,8 @@
 	h2,
 	h3 {
 		@apply
-			text-xs sm:text-[1.125rem]
+			text-lg sm:text-xl
+			leading-6 sm:leading-[22px]
 			tracking-[-0.07em];
 	}
 
@@ -59,8 +60,8 @@
 	p, cite,
 	.text-copy {
 		@apply
-			text-xs sm:text-[1.125rem]
-			leading-4 sm:leading-[22px]
+			text-lg
+			leading-[22px]
 			tracking-normal;
 	}
 
@@ -70,7 +71,7 @@
 
 	.text-menu-languages {
 		@apply
-			text-xs sm:text-[1.625rem]
+			text-lg sm:text-3xl
 			tracking-[-0.07em];
 	}
 
@@ -82,14 +83,14 @@
 	.prose h2,
 	.prose h3 {
 		@apply
-			text-sm sm:text-[2.125rem]
-			leading-5 sm:leading-[38px];
+			text-2xl sm:text-4xl
+			leading-7 sm:leading-[38px];
 		margin-bottom: 28px;
 	}
 	.button {
 		@apply
 			bg-primary
-			text-xs sm:text-[2.125rem]
+			text-lg sm:text-3xl
 			pt-[5px] pb-[3px] sm:pb-0 px-[15px];
 		display: inline-block;
 		gap: 10px;
@@ -176,7 +177,7 @@
 
 	input, select {
 		@apply
-			text-sm sm:text-[1.625rem];
+			text-lg sm:text-3xl;
 		background: #72aee9;
 		box-shadow: inset 0px 0px 6.8px 3px #ffffff;
 		border-radius: 100px;
@@ -297,8 +298,8 @@
 	.prose ul, .prose ol {
 		@apply
 			font-sans
-			text-xs sm:text-[1.125rem]
-			leading-4 sm:leading-[22px]
+			text-lg
+			leading-[22px]
 			pl-2 sm:pl-[15px]
 			space-y-3;
 	}

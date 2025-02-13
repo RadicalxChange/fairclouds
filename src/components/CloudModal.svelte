@@ -121,9 +121,9 @@
       use:content
     >
       <div class="flex justify-between items-center gap-2 mb-2 sm:mb-[30px]">
-        <h3 class="text-xl sm:text-heading">Cloud {cloud.name}</h3>
+        <h3 class="text-lg sm:text-3xl">Cloud {cloud.name}</h3>
         <span
-          class="bg-white text-primary text-[8px] sm:text-sm text-center sm:text-copy rounded-full px-[10px] pt-1"
+          class="bg-white text-primary text-center text-copy rounded-full px-[10px] pt-1"
           >{numStewards} steward{numStewards !== 1 ? "s" : ""}</span
         >
       </div>
@@ -170,7 +170,7 @@
           </select>
         </div>      
       {:else}
-        <p class="text-sm text-white mb-4">No licenses available at this time.</p>
+        <p class="text-white mb-4">No licenses available at this time.</p>
       {/if}
 
       <!-- Add to cart button -->

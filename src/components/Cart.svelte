@@ -79,7 +79,7 @@
                 class="hover:opacity-75 focus:outline-none mb-auto ml-2" 
                 on:click={() => removeCartItem(cartItem.id)}
               >
-                <img src="/icons/delete.svg" alt="Delete Icon" class="h-12 w-auto" />
+                <img src="/icons/delete.svg" alt="Delete Icon" class="h-7 w-7" />
               </button>
             </li>
           {/each}
