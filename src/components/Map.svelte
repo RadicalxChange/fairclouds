@@ -13,12 +13,72 @@
   });
 
   onMount(() => {
-    const screenScale = window.innerHeight / 982;
-
     const canvases = document.querySelectorAll(".cloud-canvas");
     const parallaxClouds = document.querySelectorAll(".parallax-cloud");
 
     const bgImg = document.getElementById("bgImg");
+
+    function clearFadeTimeout(cloud) {
+      if (cloud.fadeTimeout) {
+        clearTimeout(cloud.fadeTimeout);
+        cloud.fadeTimeout = null;
+      }
+    }
+
+    function handleDrawingReveal(ctx, canvas, clientX, clientY) {
+      const drawingImg = canvas.previousSibling.previousSibling;
+      drawingImg.classList.remove("fade-out");
+
+      const rect = canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const radius = 10;
+
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+      ctx.fill();
+
+      // Check if 10% or more of the canvas has been erased
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let erasedPixels = 0;
+
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        if (imageData.data[i + 3] === 0) {
+          erasedPixels++;
+        }
+      }
+
+      const totalPixels = canvas.width * canvas.height;
+      const erasedPercentage = (erasedPixels / totalPixels) * 100;
+
+      if (erasedPercentage >= 10) {
+        // enable button
+        const button = canvas.closest("button");
+        if (button) button.disabled = false;
+      }
+    }
+
+    function handleFadeOutAndReset(ctx, canvas, cloud) {
+      const drawingImg = canvas.previousSibling.previousSibling;
+
+      drawingImg.classList.add("fade-out");
+
+      cloud.fadeTimeout = setTimeout(() => {
+        ctx.globalCompositeOperation = "source-over";
+
+        const { x: sourceX, y: sourceY, width: sourceWidth, height: sourceHeight } = canvas.dataset;
+
+        ctx.drawImage(bgImg, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+
+        let newIndex = cloud.activeDrawingIndex + 1;
+        cloud.activeDrawingIndex = newIndex >= cloud.drawings.length ? 0 : newIndex;
+
+        // disable button
+        const button = canvas.closest("button");
+        if (button) button.disabled = true;
+      }, 7001);
+    }
 
     canvases.forEach((canvas, index) => {
       const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -48,81 +108,40 @@
         destHeight,
       );
 
+      const cloud = clouds[index];
+
+      // Mouse events.
       canvas.addEventListener("mousemove", (event) => {
-        // ensure drawing img is visible
-        const drawingImg = canvas.previousSibling.previousSibling;
-        drawingImg.classList.remove("fade-out");
-
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        const radius = 10;
-
-        ctx.globalCompositeOperation = "destination-out";
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2, false);
-        ctx.fill();
-
-        // Check if 10% or more of the canvas has been erased
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-        let erasedPixels = 0;
-
-        for (let i = 0; i < data.length; i += 4) {
-          if (data[i + 3] === 0) {
-            // Check if the alpha channel is 0 (erased pixel)
-            erasedPixels++;
-          }
-        }
-
-        const totalPixels = canvas.width * canvas.height;
-        const erasedPercentage = (erasedPixels / totalPixels) * 100;
-
-        if (erasedPercentage >= 10) {
-          // enable button
-          const button = canvas.closest("button");
-          if (button) {
-            button.disabled = false;
-          }
-        }
+        handleDrawingReveal(ctx, canvas, event.clientX, event.clientY);
       });
-
       canvas.addEventListener("mouseleave", () => {
-        const drawingImg = canvas.previousSibling.previousSibling;
-
-        drawingImg.classList.add("fade-out");
-        clouds[index].fadeTimeout = setTimeout(() => {
-          ctx.globalCompositeOperation = "source-over";
-
-          ctx.drawImage(
-            bgImg,
-            sourceX,
-            sourceY,
-            sourceWidth,
-            sourceHeight,
-            destX,
-            destY,
-            destWidth,
-            destHeight,
-          );
-          let newActiveDrawingIndex = clouds[index].activeDrawingIndex + 1;
-          if (newActiveDrawingIndex >= clouds[index].drawings.length) {
-            clouds[index].activeDrawingIndex = 0;
-          } else {
-            clouds[index].activeDrawingIndex = newActiveDrawingIndex;
-          }
-          // disable button
-          const button = canvas.closest("button");
-          if (button) {
-            button.disabled = true;
-          }
-        }, 7001);
+        handleFadeOutAndReset(ctx, canvas, cloud);
+      });
+      canvas.addEventListener("mouseenter", () => {
+        clearFadeTimeout(cloud);
       });
 
-      canvas.addEventListener("mouseenter", () => {
-        if (clouds[index].fadeTimeout) {
-          clearTimeout(clouds[index].fadeTimeout);
-          clouds[index].fadeTimeout = null;
+      // Touch events.
+      canvas.addEventListener("touchstart", (event) => {
+        if (event.touches.length === 1) {
+          clearFadeTimeout(cloud);
+        }
+      });
+      canvas.addEventListener("touchmove", (event) => {
+        if (event.touches.length === 1) {
+          event.preventDefault(); // Prevent one-finger scrolling.
+          const touch = event.touches[0];
+          handleDrawingReveal(ctx, canvas, touch.clientX, touch.clientY);
+        }
+      });
+      canvas.addEventListener("touchend", (event) => {
+        if (event.touches.length === 0) {
+          handleFadeOutAndReset(ctx, canvas, cloud);
+        }
+      });
+      canvas.addEventListener("touchcancel", (event) => {
+        if (event.touches.length === 0) {
+          handleFadeOutAndReset(ctx, canvas, cloud);
         }
       });
     });
