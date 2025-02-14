@@ -20,7 +20,7 @@
 .modal h3 {
     @apply text-xl sm:text-3xl;
 }
-.modal ul {
+.modal .cart-items {
     @apply my-4 space-y-2;
 }
 .cloud-modal {
@@ -36,7 +36,7 @@
     .modal h3 {
         @apply text-xl;
     }
-    .modal ul {
+    .modal .cart-items {
         @apply my-2 space-y-0;
     }
     .modal .button,

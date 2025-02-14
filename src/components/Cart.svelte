@@ -42,7 +42,7 @@
     >
       {#if Object.values($cartItems).length}
         <h4>You currently have {Object.values($cartItems).length} cloud{Object.values($cartItems).length !== 1 ? "s" : ""} in your shopping basket.</h4>
-        <ul class="overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
+        <ul class="cart-items overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
           {#each Object.values($cartItems) as cartItem}
             <li class="flex flex-row justify-between">
               <div>
