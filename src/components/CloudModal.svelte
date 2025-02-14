@@ -116,22 +116,22 @@
   <!-- Cloud Modal -->
   <div {...$portalled} use:portalled>
     <div
-      class="modal bottom-[65px] sm:bottom-20"
+      class="modal cloud-modal bottom-[4rem]"
       {...$content}
       use:content
     >
-      <div class="flex justify-between items-center gap-2 mb-2 sm:mb-[30px]">
-        <h3 class="text-lg sm:text-3xl">Cloud {cloud.name}</h3>
+      <div class="cloud-modal-header">
+        <h3>Cloud {cloud.name}</h3>
         <span
           class="bg-white text-primary text-center text-copy rounded-full px-[10px] pt-1"
           >{numStewards} steward{numStewards !== 1 ? "s" : ""}</span
         >
       </div>
-      <p class="mb-2 sm:mb-[21px]">
+      <p>
         {currentUser && getLicense(currentUser, cloud.id) ? "You hold License " + getLicense(currentUser, cloud.id).tier : "Become a temporary steward"} of this cloud and the {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
         contains.
       </p>
-      <div class="mb-2 sm:mb-[21px] flex flex-wrap gap-2.5 w-full overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
+      <div class="flex flex-wrap gap-2.5 w-full overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
         {#each cloud.drawings as drawing, index}
           <img
             src={`https://cms.fairclouds.life/assets/` +
@@ -146,7 +146,7 @@
 
       <!-- Dropdown for Prices -->
       {#if prices && prices.length > 0}
-        <div class="mb-2 sm:mb-[21px]">
+        <div>
           <select
             id="license-prices"
             class="block w-full py-1 sm:py-2 px-4 leading-8 bg-white text-[#72AEE9] rounded-md shadow-sm appearance-none focus:ring-primary focus:border-primary"
@@ -188,7 +188,7 @@
   </div>
   <!-- Slideshow Modal -->
   <div
-    class="fixed hidden lg:flex flex-col rounded-default bottom-20 left-4 z-50 w-auto h-auto bg-primary shadow-cloud p-2 focus:outline-none"
+    class="fixed hidden lg:flex flex-col rounded-default bottom-[4rem] left-4 z-50 w-auto h-auto bg-primary shadow-cloud p-2 focus:outline-none"
   >
     {#if cloud.drawings.length > 0}
       <img

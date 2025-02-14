@@ -36,17 +36,17 @@
 {#if $open}
   <div {...$portalled} use:portalled>
     <div
-      class="modal bottom-[65px] sm:bottom-20"
+      class="modal bottom-[4rem]"
       {...$content}
       use:content
     >
       {#if Object.values($cartItems).length}
-        <h3 class="mb-2 sm:mb-2.5">You currently have {Object.values($cartItems).length} cloud{Object.values($cartItems).length !== 1 ? "s" : ""} in your shopping basket.</h3>
-        <ul class="sm:my-4 overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
+        <h4>You currently have {Object.values($cartItems).length} cloud{Object.values($cartItems).length !== 1 ? "s" : ""} in your shopping basket.</h4>
+        <ul class="overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
           {#each Object.values($cartItems) as cartItem}
-            <li class="flex flex-row justify-between my-3 sm:my-4">
+            <li class="flex flex-row justify-between">
               <div>
-                <h3 class="inline-block mr-4">Cloud {cartItem.name} - License {cartItem.price.tier}</h3>
+                <h4 class="inline-block mr-4">Cloud {cartItem.name} - License {cartItem.price.tier}</h4>
                 {#if cartItem.price.isRenewalPrice}
                   <span
                     class="bg-white text-primary text-copy rounded-full pl-[7px] pr-[7px] pt-1 inline-block mr-4"

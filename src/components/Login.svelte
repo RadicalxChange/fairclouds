@@ -73,7 +73,7 @@ const handleLogout = async () => {
   </button>
 
 {:else}
-  <h2 class="text-lg sm:text-2xl font-semibold my-4">Login</h2>
+  <h2 class="text-lg sm:text-2xl font-semibold mb-4">Login</h2>
   
   <form class="space-y-2 sm:space-y-5" on:submit|preventDefault={handleLogin}>
     <input
@@ -81,14 +81,12 @@ const handleLogout = async () => {
       bind:value={email}
       placeholder="Email"
       required
-      class="input"
     />
     <input
       type="password"
       bind:value={password}
       placeholder="Password"
       required
-      class="input"
     />
     {#if error}
       <p class="error">{error}</p>

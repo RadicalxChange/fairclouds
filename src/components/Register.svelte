@@ -30,8 +30,7 @@
     };
 </script>
   
-<h2 class="text-lg sm:text-2xl font-semibold my-4">Create an Account</h2>
-
+<h2 class="text-lg sm:text-2xl font-semibold mb-4">Create an Account</h2>
 
 {#if success}
 <div>
@@ -48,7 +47,6 @@
         bind:value={firstName}
         placeholder="Enter your first name"
         required
-        class="input"
     />
     </div>
 
@@ -60,7 +58,6 @@
         bind:value={lastName}
         placeholder="Enter your last name"
         required
-        class="input"
     />
     </div>
 
@@ -72,7 +69,6 @@
         bind:value={email}
         placeholder="Enter your email"
         required
-        class="input"
     />
     </div>
 
@@ -84,7 +80,6 @@
         bind:value={password}
         placeholder="Enter your password"
         required
-        class="input"
     />
     </div>
 

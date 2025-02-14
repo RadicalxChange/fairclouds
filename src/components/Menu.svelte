@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { useTranslations } from "../i18n/utils";
-  import { createDialog, melt } from "@melt-ui/svelte";
-  import Login from "./Login.svelte";
   import { onMount } from "svelte";
+  import { useTranslations } from "../i18n/utils";
+  import { createDialog } from "@melt-ui/svelte";
+  import Login from "./Login.svelte";
 
   export let lang: "en" | "es" = "en";
 
@@ -11,7 +11,7 @@
     states: { open },
   } = createDialog();
 
-  // This boolean will be passed into Login. 
+  // This boolean will be passed into Login.
   // If set to true in the Login component, we know to reload on modal close.
   let reloadOnClose = false;
 
@@ -19,19 +19,38 @@
 
   let t;
   let currentUser;
-  onMount(async () => {
+  let isMobileLandscape = false;
+
+  // Update orientation by comparing width and height.
+  function updateOrientation() {
+    isMobileLandscape = window.innerWidth < 768 && window.innerWidth > window.innerHeight;
+  }
+
+  onMount(() => {
     t = useTranslations(lang);
 
-    // Fetch the current user on component mount.
-    try {
-      const res = await fetch('/api/current-user');
-      if (res.ok) {
-        const data = await res.json();
-        currentUser = data.user;
+    // Handle mobile landscape orientation
+    updateOrientation();
+    window.addEventListener("resize", updateOrientation);
+    window.addEventListener("orientationchange", updateOrientation);
+
+    (async () => {
+      // Fetch the current user on component mount.
+      try {
+        const res = await fetch('/api/current-user');
+        if (res.ok) {
+          const data = await res.json();
+          currentUser = data.user;
+        }
+      } catch (err) {
+        console.error("Failed to fetch current user", err);
       }
-    } catch (err) {
-      console.error("Failed to fetch current user", err);
-    }
+    })();
+
+    return () => {
+      window.removeEventListener("resize", updateOrientation);
+      window.removeEventListener("orientationchange", updateOrientation);
+    };
   });
 
   // Watch for when $open changes from true to false.
@@ -41,8 +60,8 @@
   }
 </script>
 
-<button class="icon-button" {...$trigger} use:trigger
-  ><span class="sr-only">Menu</span>
+<button class="icon-button" {...$trigger} use:trigger>
+  <span class="sr-only">Menu</span>
   <svg
     class="mx-auto"
     width="33"
@@ -61,67 +80,128 @@
 {#if $open}
   <div {...$portalled} use:portalled>
     <div {...$overlay} use:overlay />
-    <div
-      class="modal top-[65px] sm:top-20"
-      {...$content}
-      use:content
-    >
-      <ul class="flex justify-between items-center pb-2 text-menu-languages">
-        <li>
-          <button
-            class="hover-blur"
-            class:active={tab == "about"}
-            on:click={() => (tab = "about")}>{t("about")}</button
-          >
-        </li>
-        <li>
-          <button
-            class="hover-blur"
-            class:active={tab == "info"}
-            on:click={() => (tab = "info")}>{t("info")}</button
-          >
-        </li>
-        <li>
-          <button
-            class="hover-blur"
-            class:active={tab == "news"}
-            on:click={() => (tab = "news")}>{t("news")}</button
-          >
-        </li>
-        <li>
-          <button
-            class="hover-blur"
-            class:active={tab == "login"}
-            on:click={() => (tab = "login")}>{t("login")}</button
-          >
-        </li>
-      </ul>
-      <div class="overflow-auto custom-scrollbar">
-        {#if tab === "about"}
-          <slot name="about" />
-        {/if}
-        {#if tab === "info"}
-          <div class="relative">
-            <div class="mb-6">
-              <slot name="info" />
-            </div>
-            <div class="sticky bottom-0 left-0 z-10 flex gap-2.5">
-              <a class="button" target="_blank" href={`/${lang}/wiki/faq`}
-                >Wiki</a
+    <div class="modal top-[4rem]" {...$content} use:content>
+      {#if isMobileLandscape}
+        <!-- Landscape layout: vertical tabs on the left and content on the right -->
+        <div class="flex space-x-8 overflow-y-scroll">
+          <ul class="flex flex-col space-y-4 text-lg tracking-[-0.07em]">
+            <li>
+              <button
+                class="hover-blur"
+                class:active={tab === "about"}
+                on:click={() => (tab = "about")}
               >
-              <a class="button" target="_blank" href={`/${lang}/wiki/support`}
-                >Support</a
+                {t("about")}
+              </button>
+            </li>
+            <li>
+              <button
+                class="hover-blur"
+                class:active={tab === "info"}
+                on:click={() => (tab = "info")}
               >
-            </div>
+                {t("info")}
+              </button>
+            </li>
+            <li>
+              <button
+                class="hover-blur"
+                class:active={tab === "news"}
+                on:click={() => (tab = "news")}
+              >
+                {t("news")}
+              </button>
+            </li>
+            <li>
+              <button
+                class="hover-blur"
+                class:active={tab === "login"}
+                on:click={() => (tab = "login")}
+              >
+                {t("login")}
+              </button>
+            </li>
+          </ul>
+          <div class="overflow-auto custom-scrollbar pl-4">
+            {#if tab === "about"}
+              <slot name="about" />
+            {:else if tab === "info"}
+              <div class="relative">
+                <div class="mb-6">
+                  <slot name="info" />
+                </div>
+                <div class="sticky bottom-0 left-0 z-10 flex gap-2.5">
+                  <a class="button" target="_blank" href={`/${lang}/wiki/faq`}>Wiki</a>
+                  <a class="button" target="_blank" href={`/${lang}/wiki/support`}>Support</a>
+                </div>
+              </div>
+            {:else if tab === "news"}
+              <slot name="news" />
+            {:else if tab === "login"}
+              <Login lang={lang} currentUser={currentUser} isMobileLandscape={isMobileLandscape} bind:reloadOnClose />
+            {/if}
           </div>
-        {/if}
-        {#if tab === "news"}
-          <slot name="news" />
-        {/if}
-        {#if tab === "login"}
-          <Login lang={lang} currentUser={currentUser} bind:reloadOnClose />
-        {/if}
-      </div>
+        </div>
+      {:else}
+        <!-- Portrait layout: horizontal tabs on top, content below -->
+        <ul class="flex justify-between items-center pb-4 text-menu-languages">
+          <li>
+            <button
+              class="hover-blur"
+              class:active={tab === "about"}
+              on:click={() => (tab = "about")}
+            >
+              {t("about")}
+            </button>
+          </li>
+          <li>
+            <button
+              class="hover-blur"
+              class:active={tab === "info"}
+              on:click={() => (tab = "info")}
+            >
+              {t("info")}
+            </button>
+          </li>
+          <li>
+            <button
+              class="hover-blur"
+              class:active={tab === "news"}
+              on:click={() => (tab = "news")}
+            >
+              {t("news")}
+            </button>
+          </li>
+          <li>
+            <button
+              class="hover-blur"
+              class:active={tab === "login"}
+              on:click={() => (tab = "login")}
+            >
+              {t("login")}
+            </button>
+          </li>
+        </ul>
+        <div class="overflow-auto custom-scrollbar">
+          {#if tab === "about"}
+            <slot name="about" />
+          {:else if tab === "info"}
+            <div class="relative">
+              <div class="mb-6">
+                <slot name="info" />
+              </div>
+              <div class="sticky bottom-0 left-0 z-10 flex gap-2.5">
+                <a class="button" target="_blank" href={`/${lang}/wiki/faq`}>Wiki</a>
+                <a class="button" target="_blank" href={`/${lang}/wiki/support`}>Support</a>
+              </div>
+            </div>
+          {:else if tab === "news"}
+            <slot name="news" />
+          {:else if tab === "login"}
+            <Login lang={lang} currentUser={currentUser} isMobileLandscape={isMobileLandscape} bind:reloadOnClose />
+          {/if}
+        </div>
+      {/if}
     </div>
   </div>
 {/if}

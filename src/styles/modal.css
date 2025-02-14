@@ -7,8 +7,7 @@
         md:right-4
         right-[2vw]
         z-50
-        max-h-[calc(100vh-130px)]
-        sm:max-h-[calc(100vh-175px)]
+        max-h-[calc(100vh-8rem)]
         w-[96vw]
         max-w-[610px]
         bg-primary
@@ -17,4 +16,38 @@
         sm:p-5
         pt-2
         focus:outline-none;
+}
+.modal h3 {
+    @apply text-xl sm:text-3xl;
+}
+.modal ul {
+    @apply my-4 space-y-2;
+}
+.cloud-modal {
+    @apply space-y-5;
+}
+.cloud-modal-header {
+    @apply flex justify-between items-center gap-2 sm:mb-[9px];
+}
+@media (max-width: 767px) and (orientation: landscape) {
+    .modal {
+        @apply max-w-[96vw];
+    }
+    .modal h3 {
+        @apply text-xl;
+    }
+    .modal ul {
+        @apply my-2 space-y-0;
+    }
+    .modal .button,
+    .modal input,
+    .modal select {
+        @apply text-base;
+    }
+    .cloud-modal {
+        @apply space-y-2;
+    }
+    .cloud-modal-header {
+        @apply mb-0;
+    }
 }
