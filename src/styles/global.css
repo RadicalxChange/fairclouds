@@ -177,7 +177,7 @@
 		@apply
 			text-lg sm:text-3xl;
 		background: #72aee9;
-		box-shadow: inset 0px 0px 6.8px 3px #ffffff;
+		box-shadow: inset 0px 0px 7px 3px #ffffff;
 		border-radius: 100px;
 		width: 100%;
 		padding: 10px 20px;
