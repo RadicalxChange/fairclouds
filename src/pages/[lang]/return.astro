@@ -5,7 +5,7 @@ export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
 import Stripe from "stripe";
 import { directusAdmin } from "../../lib/directus";
-import { readItems, createItem, updateUser } from '@directus/sdk';
+import { readItems, createItem, updateItem, updateUser } from '@directus/sdk';
 
 const stripe = new Stripe(import.meta.env.STRIPE_KEY);
 const BASE_URL = import.meta.env.PUBLIC_BASE_URL
@@ -119,7 +119,7 @@ if (sessionID !== null) {
         }
       }
 
-      // If a license was taken over from another steward, award the former steward store credits equal to 50% of new license price.
+      // Handle license renewal / takeover (claim).
       try {
         await Promise.all(
           resultLicenses.map(async (newLicense) => {
@@ -162,39 +162,62 @@ if (sessionID !== null) {
             const prevPrice = prevPriceResult[0];
             
             if (prevPrice && prevPrice.licenses.length !== 0) {
-              const prevSteward = prevPrice.licenses[0].steward;
-              const creditAward = Math.round((parseFloat(newLicense.price_id.amount) * 100) / 2);
-              console.log("awarding " + creditAward + " store credits to former steward: " + prevSteward.id)
-
-              const result = await directusAdmin.request(updateUser(prevSteward.id, {
-                credits: prevSteward.credits + creditAward,
-              }));
-
-              // Notify former steward with email
-              try {
-                console.log("notifying former steward via email...");
-                const response = await fetch(BASE_URL + "/api/send-mail", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    email: prevSteward.email,
-                    templateId: import.meta.env.LICENSE_TAKEN_OVER_EMAIL_TEMPLATE,
-                    templateModel: {
-                      "user_name": prevSteward.name,
-                      "license": prevPrice,
-                      "credits_awarded": (creditAward / 100).toFixed(2),
-                      "credit_balance": (result.credits / 100).toFixed(2),
-                    }
-                  }),
-                });
-
-                if (!response.ok) {
-                  throw new Error("Error sending email to former steward");
+              const prevLicense = prevPrice.licenses[0]
+              const prevSteward = prevLicense.steward;
+              // Check if license was claimed or renewed
+              if (prevSteward.id !== user_id) {
+                // Mark license as claimed
+                try {
+                  await directusAdmin.request(updateItem('licenses', prevLicense.id, {
+                    claimed: true,
+                  }));
+                } catch (e) {
+                  console.error("Error marking previous license as claimed:", e);
                 }
-              } catch (e) {
-                console.error("Error sending email to former steward:", e);
+
+                // Award the former steward store credits equal to 50% of new license price.
+                const creditAward = Math.round((parseFloat(newLicense.price_id.amount) * 100) / 2);
+                console.log("awarding " + creditAward + " store credits to former steward: " + prevSteward.id)
+
+                const result = await directusAdmin.request(updateUser(prevSteward.id, {
+                  credits: prevSteward.credits + creditAward,
+                }));
+
+                // Notify former steward with email
+                try {
+                  console.log("notifying former steward via email...");
+                  const response = await fetch(BASE_URL + "/api/send-mail", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      email: prevSteward.email,
+                      templateId: import.meta.env.LICENSE_TAKEN_OVER_EMAIL_TEMPLATE,
+                      templateModel: {
+                        "user_name": prevSteward.name,
+                        "license": prevPrice,
+                        "credits_awarded": (creditAward / 100).toFixed(2),
+                        "credit_balance": (result.credits / 100).toFixed(2),
+                      }
+                    }),
+                  });
+
+                  if (!response.ok) {
+                    throw new Error("Error sending email to former steward");
+                  }
+                } catch (e) {
+                  console.error("Error sending email to former steward:", e);
+                }
+              } else {
+                // Mark license as renewed
+                try {
+                  await directusAdmin.request(updateItem('licenses', prevLicense.id, {
+                    renewed: true,
+                  }));
+                } catch (e) {
+                  console.error("Error marking previous license as renewed:", e);
+                }
               }
             }
           })
