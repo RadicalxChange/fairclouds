@@ -11,7 +11,7 @@ export const GET = async ({ request }) => {
   const authToken = cookies.auth_token;
 
   if (!authToken) {
-    return new Response(JSON.stringify({ user: null }), { status: 401 });
+    return new Response(JSON.stringify({ user: null }), { status: 200 });
   }
 
   try {
