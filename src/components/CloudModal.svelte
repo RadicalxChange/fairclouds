@@ -124,11 +124,11 @@
         <h3>Cloud {cloud.name}</h3>
         <span
           class="bg-white text-primary text-center text-copy rounded-full px-[10px] pt-1"
-          >{numStewards} steward{numStewards !== 1 ? "s" : ""}</span
+          >{numStewards} Cloudkeeper{numStewards !== 1 ? "s" : ""}</span
         >
       </div>
       <p>
-        {currentUser && getLicense(currentUser, cloud.id) ? "You hold License " + getLicense(currentUser, cloud.id).tier : "Become a temporary steward"} of this cloud and the {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
+        {currentUser && getLicense(currentUser, cloud.id) ? "You hold License " + getLicense(currentUser, cloud.id).tier : "Become a keeper"} of this cloud and the {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
         contains.
       </p>
       <div class="flex flex-wrap gap-2.5 w-full overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
@@ -163,7 +163,7 @@
                 </option>
               {:else}
                 <option value={price.id} disabled={price.licenses && price.licenses.length !== 0}>
-                  License {price.tier} - € {price.amount} {price.licenses && price.licenses.length !== 0 ? "(Stewarded)" : ""}
+                  License {price.tier} - € {price.amount} {price.licenses && price.licenses.length !== 0 ? "(Claimed)" : ""}
                 </option>
               {/if}
             {/each}
@@ -173,17 +173,21 @@
         <p class="text-white mb-4">No licenses available at this time.</p>
       {/if}
 
-      <!-- Add to cart button -->
-      {#if isCloudInCart}
-        <button disabled class="button group w-fit cursor-not-allowed">
-          In your cart
-        </button>
-      {:else}
-        <button on:click={handleAddToCart} class="button group w-full max-w-[450px]">
-          <span class="group-hover:hidden">Steward this cloud</span>
-          <span class="hidden group-hover:block">Add to cart</span>
-        </button>
-      {/if}
+      <div class="cloud-modal-header">
+        <!-- Add to cart button -->
+        {#if isCloudInCart}
+          <button disabled class="button group w-fit cursor-not-allowed">
+            In your cart
+          </button>
+        {:else}
+          <button on:click={handleAddToCart} class="button group max-w-[450px]">
+            <span>Keep this cloud</span>
+          </button>
+        {/if}
+        <a class="icon-button" target="_blank" href={`/${lang}/wiki/faq`}>
+          <span class="text-xl sm:text-3xl pt-[4px]">i</span>
+        </a>
+      </div>
     </div>
   </div>
   <!-- Slideshow Modal -->
