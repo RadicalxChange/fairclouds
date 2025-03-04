@@ -29,6 +29,12 @@
   onMount(() => {
     t = useTranslations(lang);
 
+    // Auto-open the first time the user visits the map during this session.
+    if (window.location.pathname === `/${lang}/map` && !sessionStorage.getItem('mapMenuOpened')) {
+      open.set(true);
+      sessionStorage.setItem('mapMenuOpened', 'true');
+    }
+
     // Handle mobile landscape orientation
     updateOrientation();
     window.addEventListener("resize", updateOrientation);
