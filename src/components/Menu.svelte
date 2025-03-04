@@ -15,7 +15,7 @@
   // If set to true in the Login component, we know to reload on modal close.
   let reloadOnClose = false;
 
-  let tab = "about";
+  let tab = "info";
 
   let t;
   let currentUser;
@@ -88,19 +88,19 @@
             <li>
               <button
                 class="hover-blur"
-                class:active={tab === "about"}
-                on:click={() => (tab = "about")}
+                class:active={tab === "info"}
+                on:click={() => (tab = "info")}
               >
-                {t("about")}
+                {t("info")}
               </button>
             </li>
             <li>
               <button
                 class="hover-blur"
-                class:active={tab === "info"}
-                on:click={() => (tab = "info")}
+                class:active={tab === "about"}
+                on:click={() => (tab = "about")}
               >
-                {t("info")}
+                {t("about")}
               </button>
             </li>
             <li>
@@ -123,9 +123,7 @@
             </li>
           </ul>
           <div class="overflow-auto custom-scrollbar pl-4">
-            {#if tab === "about"}
-              <slot name="about" />
-            {:else if tab === "info"}
+            {#if tab === "info"}
               <div class="relative">
                 <div class="mb-6">
                   <slot name="info" />
@@ -135,10 +133,12 @@
                   <a class="button" target="_blank" href={`/${lang}/wiki/support`}>Support</a>
                 </div>
               </div>
+            {:else if tab === "about"}
+              <slot name="about" />
             {:else if tab === "news"}
               <slot name="news" />
             {:else if tab === "login"}
-              <Login lang={lang} currentUser={currentUser} isMobileLandscape={isMobileLandscape} bind:reloadOnClose />
+              <Login lang={lang} currentUser={currentUser} bind:reloadOnClose />
             {/if}
           </div>
         </div>
@@ -148,19 +148,19 @@
           <li>
             <button
               class="hover-blur"
-              class:active={tab === "about"}
-              on:click={() => (tab = "about")}
+              class:active={tab === "info"}
+              on:click={() => (tab = "info")}
             >
-              {t("about")}
+              {t("info")}
             </button>
           </li>
           <li>
             <button
               class="hover-blur"
-              class:active={tab === "info"}
-              on:click={() => (tab = "info")}
+              class:active={tab === "about"}
+              on:click={() => (tab = "about")}
             >
-              {t("info")}
+              {t("about")}
             </button>
           </li>
           <li>
@@ -183,9 +183,7 @@
           </li>
         </ul>
         <div class="overflow-auto custom-scrollbar">
-          {#if tab === "about"}
-            <slot name="about" />
-          {:else if tab === "info"}
+          {#if tab === "info"}
             <div class="relative">
               <div class="mb-6">
                 <slot name="info" />
@@ -195,10 +193,12 @@
                 <a class="button" target="_blank" href={`/${lang}/wiki/support`}>Support</a>
               </div>
             </div>
+          {:else if tab === "about"}
+            <slot name="about" />
           {:else if tab === "news"}
             <slot name="news" />
           {:else if tab === "login"}
-            <Login lang={lang} currentUser={currentUser} isMobileLandscape={isMobileLandscape} bind:reloadOnClose />
+            <Login lang={lang} currentUser={currentUser} bind:reloadOnClose />
           {/if}
         </div>
       {/if}
