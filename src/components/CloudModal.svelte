@@ -180,14 +180,16 @@
 
       <div class="cloud-modal-header">
         <!-- Add to cart button -->
-        {#if isCloudInCart}
-          <button on:click={handleOpenCart} class="button group w-fit">
-            View your cart
-          </button>
-        {:else}
-          <button on:click={handleAddToCart} class="button group max-w-[450px]">
-            <span>Keep this cloud</span>
-          </button>
+        {#if prices && prices.length > 0}
+          {#if isCloudInCart}
+            <button on:click={handleOpenCart} class="button group w-fit">
+              View your cart
+            </button>
+          {:else}
+            <button on:click={handleAddToCart} class="button group max-w-[450px]">
+              <span>Keep this cloud</span>
+            </button>
+          {/if}
         {/if}
         <a class="icon-button" target="_blank" href={`/${lang}/wiki/faq`}>
           <span class="text-xl sm:text-3xl pt-[4px]">i</span>
