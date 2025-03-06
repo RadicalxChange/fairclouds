@@ -332,7 +332,7 @@
     <!-- clouds layer -->
     {#each clouds as cloud, index (cloud.id)}
       <button
-        class="absolute cloud-button"
+        class="absolute cloud-button eraser-tool"
         style="left: {(cloud.x / height) * 100}vh; top: {(cloud.y / height) *
           100}vh; width: {(cloud.width / height) *
           100}vh; height: {(cloud.height / height) * 100}vh;"

@@ -342,10 +342,14 @@
 		content: url('/icons/inner-list-black.svg');
 	}
 
-
 	/* to do: make this transition work with reduced motion */
 	.fade-out {
-    opacity: 0;
-    transition: opacity 2s ease-out;
-    transition-delay: 5s;
-  }
+		opacity: 0;
+		transition: opacity 2s ease-out;
+		transition-delay: 5s;
+	}
+
+	.eraser-tool {
+		cursor: url('/icons/cursor-eraser.png') 14 14, auto !important;
+	}
+  
