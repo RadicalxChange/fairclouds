@@ -2,7 +2,7 @@
   import { useTranslations } from "../i18n/utils";
   import { createDialog, melt } from "@melt-ui/svelte";
   import { onMount } from "svelte";
-  import { addCartItem, cartItems } from "../cartStore";
+  import { addCartItem, cartItems, isCartOpen } from "../cartStore";
 
   export let lang: "en" | "es" = "en";
   export let cloud;
@@ -101,6 +101,11 @@
     (item) => cloud ? item.id === cloud.id && item.price.id === selectedPriceId : false
   );
 
+  function handleOpenCart() {
+    open.set(false);
+    isCartOpen.set(true);
+  }
+
   function getLicense(currentUser, cloudId) {
     if (!currentUser || !currentUser.licenses || !Array.isArray(currentUser.licenses)) {
       return null;
@@ -176,8 +181,8 @@
       <div class="cloud-modal-header">
         <!-- Add to cart button -->
         {#if isCloudInCart}
-          <button disabled class="button group w-fit cursor-not-allowed">
-            In your cart
+          <button on:click={handleOpenCart} class="button group w-fit">
+            View your cart
           </button>
         {:else}
           <button on:click={handleAddToCart} class="button group max-w-[450px]">

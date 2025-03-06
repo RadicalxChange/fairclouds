@@ -1,17 +1,27 @@
 <script>
   import { isCartOpen, cartItems, removeCartItem } from "../cartStore";
   import { createDialog, melt } from "@melt-ui/svelte";
+  import { onMount } from "svelte";
 
   const {
     elements: { trigger, portalled, overlay, content },
     states: { open },
   } = createDialog();
 
-  $: (() => {
-    // open dialog programmatically
-    open;
-    console.log("open", open);
-  })();
+  // Subscribe to the shared cart open state: when it's set to true, open the dialog.
+  onMount(() => {
+    const unsubscribe = isCartOpen.listen((value) => {
+      if (value) {
+        open.set(true);
+      }
+    });
+    return () => unsubscribe();
+  });
+
+  // When the dialog is closed (open becomes false), update isCartOpen to false.
+  $: if (!$open && $isCartOpen) {
+    isCartOpen.set(false);
+  }
 </script>
 
 <div class="has-hint relative">
