@@ -106,10 +106,10 @@ if (sessionID !== null) {
     }
 
     if (!checkoutIsProcessed) {
-      // If the new steward used store credits, update their credit balance in the Directus db.
+      // If the new steward used Cloudkeeper Credits, update their credit balance in the Directus db.
       if (session.total_details.amount_discount && session.total_details.amount_discount !== 0) {
         try {
-          console.log("Steward " + user_id + " redeemed " + session.total_details.amount_discount + " store credits. Updating Directus db...")
+          console.log("Steward " + user_id + " redeemed " + session.total_details.amount_discount + " Cloudkeeper Credits. Updating Directus db...")
 
           const result = await directusAdmin.request(updateUser(user_id, {
             credits: Math.max(user_credits - session.total_details.amount_discount, 0),
@@ -175,9 +175,9 @@ if (sessionID !== null) {
                   console.error("Error marking previous license as claimed:", e);
                 }
 
-                // Award the former steward store credits equal to 50% of new license price.
+                // Award the former steward Cloudkeeper Credits equal to 50% of new license price.
                 const creditAward = Math.round((parseFloat(newLicense.price_id.amount) * 100) / 2);
-                console.log("awarding " + creditAward + " store credits to former steward: " + prevSteward.id)
+                console.log("awarding " + creditAward + " Cloudkeeper Credits to former steward: " + prevSteward.id)
 
                 const result = await directusAdmin.request(updateUser(prevSteward.id, {
                   credits: prevSteward.credits + creditAward,
@@ -223,7 +223,7 @@ if (sessionID !== null) {
           })
         );
       } catch (e) {
-        console.error("Error awarding store credits to former steward(s):", e);
+        console.error("Error awarding Cloudkeeper Credits to former steward(s):", e);
       }
 
       // Send confirmation email to new steward

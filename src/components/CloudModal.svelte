@@ -112,7 +112,7 @@
     }
 
     return currentUser.licenses.find(
-      (license) => license.cloud_id && license.cloud_id.id === cloudId
+      (license) => license.price_id.cloud_id === cloudId && license.price_id.cycle_id.prices_status === "active"
     ) || null;
   }
 </script>
@@ -133,7 +133,7 @@
         >
       </div>
       <p>
-        {currentUser && getLicense(currentUser, cloud.id) ? "You hold License " + getLicense(currentUser, cloud.id).tier : "Become a keeper"} of this cloud and the {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
+        {currentUser && getLicense(currentUser, cloud.id) ? "You are Cloudkeeper " + getLicense(currentUser, cloud.id).price_id.tier : "Become a keeper"} of this cloud and the {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
         contains.
       </p>
       <div class="flex flex-wrap gap-2.5 w-full overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
@@ -164,11 +164,11 @@
             {#each prices as price}
               {#if price.isRenewalPrice}
                 <option value={price.id}>
-                  License {price.tier} - € {(Math.round((parseFloat(price.amount) / 2) * 100) / 100).toFixed(2)} Renew your current license
+                  Cloudkeeper {price.tier} - € {(Math.round((parseFloat(price.amount) / 2) * 100) / 100).toFixed(2)} Renew your current license
                 </option>
               {:else}
                 <option value={price.id} disabled={price.licenses && price.licenses.length !== 0}>
-                  License {price.tier} - € {price.amount} {price.licenses && price.licenses.length !== 0 ? "(Claimed)" : ""}
+                  Cloudkeeper {price.tier} - € {price.amount}
                 </option>
               {/if}
             {/each}
