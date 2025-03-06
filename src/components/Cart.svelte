@@ -39,7 +39,7 @@
   </button>
 
   <div role="tooltip" class="hint top-[0%] -mt-7 right-0 w-max">
-    Cart
+    Cart / Checkout
   </div>
 </div>
 
