@@ -29,31 +29,65 @@ export const POST = async ({ request }) => {
     
     const zip = new JSZip();
 
-    // Create an array of promises for each image fetch
-    const imagePromises = drawings.map(drawing => {
-      const imageUrl = `${DIRECTUS_URL}/assets/${drawing.image}`;
-      return fetch(imageUrl)
-        .then(res => {
-          if (!res.ok) throw new Error(`Failed to fetch image ${drawing.image}`);
-          return res.arrayBuffer();
-        })
-        .then(buffer => ({
-          title: drawing.title,
-          buffer: buffer
-        }))
-        .catch(err => {
-          console.error('Error downloading image:', err);
-          return null; // Continue with other images even if this one fails
-        });
+    // Create an array of promises for each asset (image and svg)
+    const assetPromises = drawings.flatMap(drawing => {
+      const promises = [];
+      
+      if (drawing.image) {
+        const imageUrl = `${DIRECTUS_URL}/assets/${drawing.image}`;
+        promises.push(
+          fetch(imageUrl)
+            .then(res => {
+              if (!res.ok) throw new Error(`Failed to fetch image ${drawing.image}`);
+              return res.arrayBuffer();
+            })
+            .then(buffer => ({
+              title: drawing.title,
+              content: buffer,
+              extension: 'png'
+            }))
+            .catch(err => {
+              console.error('Error downloading image:', err);
+              return null;
+            })
+        );
+      }
+
+      if (drawing.svg) {
+        const svgUrl = `${DIRECTUS_URL}/assets/${drawing.svg}`;
+        promises.push(
+          fetch(svgUrl)
+            .then(res => {
+              if (!res.ok) throw new Error(`Failed to fetch SVG ${drawing.svg}`);
+              return res.text();
+            })
+            .then(text => ({
+              title: drawing.title,
+              content: text,
+              extension: 'svg'
+            }))
+            .catch(err => {
+              console.error('Error downloading SVG:', err);
+              return null;
+            })
+        );
+      }
+      return promises;
     });
 
     // Wait for all fetch operations to complete
-    const images = await Promise.all(imagePromises);
+    const assets = await Promise.all(assetPromises);
 
-    // Add each image to the zip if the fetch was successful
-    images.forEach(image => {
-      if (image) { // Check if the image was successfully fetched
-        zip.file(`${image.title}.png`, image.buffer, {binary: true});
+    // Add each successfully fetched asset to the zip file
+    assets.forEach(asset => {
+      if (asset) {
+        // Use the drawing title and appropriate extension
+        const filename = `${asset.title}.${asset.extension}`;
+        if (asset.extension === 'svg') {
+          zip.file(filename, asset.content); // SVG as text
+        } else {
+          zip.file(filename, asset.content, { binary: true });
+        }
       }
     });
 
