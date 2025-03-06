@@ -118,3 +118,34 @@ const clouds = await directus.request(
     </div>
   </main>
 </Layout>
+
+<script>
+  window.addEventListener("load", () => {
+    const container = document.getElementById("map-container");
+    if (!container) {
+      console.error("Element with id 'map-container' not found.");
+      return;
+    }
+    
+    let lastTime = performance.now();
+    const speed = 0.008; // pixels per millisecond
+    let accumulator = 0; // holds fractional pixels
+
+    function autoPan(currentTime) {
+      const delta = currentTime - lastTime;
+      accumulator += delta * speed;
+      
+      // Only scroll when we have at least 1 full pixel accumulated.
+      if (accumulator >= 1) {
+        const scrollPixels = Math.floor(accumulator);
+        container.scrollBy(scrollPixels, 0);
+        accumulator -= scrollPixels;
+      }
+      
+      lastTime = currentTime;
+      requestAnimationFrame(autoPan);
+    }
+    
+    requestAnimationFrame(autoPan);
+  });
+</script>
