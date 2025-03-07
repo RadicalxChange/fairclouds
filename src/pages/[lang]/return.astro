@@ -24,7 +24,6 @@ let session,
     checkoutIsProcessed;
 
 if (sessionID !== null) {
-
   // Process checkout session
   try {
     session = await stripe.checkout.sessions.retrieve(sessionID);
@@ -136,6 +135,8 @@ if (sessionID !== null) {
                   "cycle_id.name",
                   "cycle_id.start_date",
                   "cycle_id.end_date",
+                  "cycle_id.prices_status",
+                  "cycle_id.renewal_active",
                   "licenses.id",
                   "licenses.steward",
                   "licenses.steward.id",
@@ -161,21 +162,20 @@ if (sessionID !== null) {
             );
 
             // Distribute Cloudkeeper Credits to higher-tier stewards.
-            console.log(typeof(newLicense.price_id.tier))
             try {
               if (newLicense.price_id.tier > 1) {
-                const higherTierPrices = relatedPricesResult.filter((price) => {
+                const higherTierPrices = relatedPricesResult.filter((price) => 
                   price.cycle_id.prices_status === "active" &&
-                  price.tier < newLicense.price_id.tier
-                });
+                    price.tier < newLicense.price_id.tier
+                );
 
                 const basePrice = higherTierPrices.find((price) => price.tier === 1);
+                const creditAward = Math.round(((parseFloat(newLicense.price_id.amount) - parseFloat(basePrice.amount)) * 100) / higherTierPrices.length);
                 await Promise.all(
                   higherTierPrices.map(async (price) => {
                     if (price.licenses.length !== 0) {
                       // Award the higher-tier steward Cloudkeeper Credits.
                       const higherTierSteward = price.licenses[0].steward;
-                      const creditAward = (parseFloat(newLicense.price_id.amount) - parseFloat(basePrice.amount)) * 100;
                       console.log("awarding " + creditAward + " Cloudkeeper Credits to higher-tier steward: " + higherTierSteward.id)
 
                       try {
@@ -211,23 +211,26 @@ if (sessionID !== null) {
                 } catch (e) {
                   console.error("Error marking previous license as claimed:", e);
                 }
-
                 // Award the former steward Cloudkeeper Credits equal to 50% of new license price.
-                const creditAward = Math.round((parseFloat(newLicense.price_id.amount) * 100) / 2);
-                console.log("awarding " + creditAward + " Cloudkeeper Credits to former steward: " + prevSteward.id)
+                try {
+                  const creditAward = Math.round((parseFloat(newLicense.price_id.amount) * 100) / 2);
+                  console.log("awarding " + creditAward + " Cloudkeeper Credits to former steward: " + prevSteward.id)
 
-                const result = await directusAdmin.request(updateUser(prevSteward.id, {
-                  credits: prevSteward.credits + creditAward,
-                }));
+                  const result = await directusAdmin.request(updateUser(prevSteward.id, {
+                    credits: prevSteward.credits + creditAward,
+                  }));
 
-                // Notify former steward with email
-                const emailData = {
-                  "user_name": prevSteward.name,
-                  "license": prevPrice,
-                  "credits_awarded": (creditAward / 100).toFixed(2),
-                  "credit_balance": (result.credits / 100).toFixed(2),
-                };
-                await sendMail(email, LICENSE_TAKEN_OVER_EMAIL_TEMPLATE, emailData)
+                  // Notify former steward with email
+                  const emailData = {
+                    "user_name": prevSteward.name,
+                    "license": prevPrice,
+                    "credits_awarded": (creditAward / 100).toFixed(2),
+                    "credit_balance": (result.credits / 100).toFixed(2),
+                  };
+                  await sendMail(email, LICENSE_TAKEN_OVER_EMAIL_TEMPLATE, emailData)
+                } catch (e) {
+                  console.error("Error awarding credits to former steward:", e);
+                }
               } else {
                 // Mark license as renewed
                 try {
@@ -242,7 +245,7 @@ if (sessionID !== null) {
           })
         );
       } catch (e) {
-        console.error("Error awarding Cloudkeeper Credits to former steward(s):", e);
+        console.error("Error in license post-processing:", e);
       }
 
       // Send confirmation email to new steward
