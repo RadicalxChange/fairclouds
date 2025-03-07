@@ -19,7 +19,7 @@ export const POST = async ({ request }) => {
       TemplateId: templateId,
       TemplateModel: templateModel
     };
-    console.log("email data:", emailData)
+    console.log("Sending email:", emailData)
 
     const postmarkResponse = await fetch(postmarkUrl, {
       method: 'POST',
@@ -32,14 +32,14 @@ export const POST = async ({ request }) => {
     });
 
     if (!postmarkResponse.ok) {
-      const errorResponse = await postmarkResponse.json(); // Read and parse the JSON response body
-      console.log(errorResponse); // Now you're logging the actual error response from Postmark
-      return new Response(JSON.stringify({ message: "Error sending email" }), { status: postmarkResponse.status });
+      const errorResponse = await postmarkResponse.json();
+      console.error("Postmark error:", errorResponse)
+      return new Response(JSON.stringify({ message: "Postmark Error" }), { status: postmarkResponse.status });
     }
 
     return new Response(JSON.stringify({ message: "Email sent" }), { status: 200 });
-  } catch (error) {
-    console.error('Error:', error);
+  } catch (e) {
+    console.error("Error sending email:", e);
     return new Response(JSON.stringify({ message: "Internal Server Error" }), { status: 500 });
   }
 };

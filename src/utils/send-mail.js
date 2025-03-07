@@ -14,11 +14,10 @@ export async function sendMail(email, templateId, templateModel) {
             }),
         });
 
-        const responseBody = response.json();
-        console.log(responseBody);
+        const responseBody = await response.json();
 
         if (!response.ok) {
-            throw new Error(`Error code ${responseBody.ErrorCode}: ${responseBody.Message}`);
+            return { ok: false, error: responseBody.message };
         }
         return { ok: true };
     } catch (e) {
