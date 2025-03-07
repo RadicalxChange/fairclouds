@@ -119,11 +119,11 @@ if (sessionID !== null) {
         }
       }
 
-      // Handle license renewal / takeover (claim).
+      // Handle license post-processing (i.e. renewals, takeovers, credit distributions).
       try {
         await Promise.all(
           resultLicenses.map(async (newLicense) => {
-            const prevPriceResult = await directusAdmin.request(
+            const relatedPricesResult = await directusAdmin.request(
               readItems("price", {
                 fields: [
                   "*",
@@ -144,25 +144,59 @@ if (sessionID !== null) {
                   cloud_id: {
                     _eq: newLicense.price_id.cloud_id,
                   },
-                  tier: {
-                    _eq: newLicense.price_id.tier,
-                  },
                   licenses: {
                     _some: {},
                   },
                   cycle_id: {
-                    renewal_active: {
-                      _eq: true,
-                    }
+                    _or: [
+                      { renewal_active: { _eq: true } },
+                      { prices_status: { _eq: "active" } },
+                    ]
                   }
                 },
-                limit: 1,
               })
             );
-            const prevPrice = prevPriceResult[0];
+
+            // Distribute Cloudkeeper Credits to higher-tier stewards.
+            console.log(typeof(newLicense.price_id.tier))
+            try {
+              if (newLicense.price_id.tier > 1) {
+                const higherTierPrices = relatedPricesResult.filter((price) => {
+                  price.cycle_id.prices_status === "active" &&
+                  price.tier < newLicense.price_id.tier
+                });
+
+                const basePrice = higherTierPrices.find((price) => price.tier === 1);
+                await Promise.all(
+                  higherTierPrices.map(async (price) => {
+                    if (price.licenses.length !== 0) {
+                      // Award the higher-tier steward Cloudkeeper Credits.
+                      const higherTierSteward = price.licenses[0].steward;
+                      const creditAward = (parseFloat(newLicense.price_id.amount) - parseFloat(basePrice.amount)) * 100;
+                      console.log("awarding " + creditAward + " Cloudkeeper Credits to higher-tier steward: " + higherTierSteward.id)
+
+                      try {
+                        const result = await directusAdmin.request(updateUser(higherTierSteward.id, {
+                          credits: higherTierSteward.credits + creditAward,
+                        }));
+                      } catch (e) {
+                        console.error(`Error awarding Cloudkeeper Credits to higher-tier steward ${higherTierSteward.id}:`, e);
+                      }
+                    }
+                  })
+                );
+              }
+            } catch (e) {
+              console.error(`Error awarding Cloudkeeper Credits to higher-tier stewards:`, e);
+            }
+
+            // Handle license renewal / takeover (claim).
+            const prevPrice = relatedPricesResult.find((price) => {
+              price.cycle_id.renewal_active && price.tier === newLicense.price_id.tier
+            });
             
             if (prevPrice && prevPrice.licenses.length !== 0) {
-              const prevLicense = prevPrice.licenses[0]
+              const prevLicense = prevPrice.licenses[0];
               const prevSteward = prevLicense.steward;
               // Check if license was claimed or renewed
               if (prevSteward.id !== user_id) {
