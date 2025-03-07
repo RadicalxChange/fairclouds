@@ -1,14 +1,14 @@
 // dont prerender as this page will be unique.
 export const prerender = false;
 
+import { sendMail } from "../../utils/send-mail"
 import { directusAdmin } from "../../lib/directus";
 import { readItems, createItem, updateItem } from '@directus/sdk';
 
 const {
   LICENSE_EXPIRED_EMAIL_TEMPLATE,
   AUCTION_RENEWAL_REMINDER_EMAIL_TEMPLATE,
-  EARLY_RENEWAL_REMINDER_EMAIL_TEMPLATE,
-  PUBLIC_BASE_URL
+  EARLY_RENEWAL_REMINDER_EMAIL_TEMPLATE
 } = import.meta.env;
 
 export const POST = async ({ request }) => {
@@ -217,7 +217,15 @@ async function sendEmails(templateId, cycle, licenseCondition) {
 	// Now send one email per steward with the relevant license data.
   const results = [];
 	for (const stewardId in stewards) {
-		const response = await sendEmail(templateId, stewards[stewardId], cycle);
+    const stewardData = stewards[stewardId];
+    const emailData = {
+      "user_name": stewardData.first_name,
+      "credits": stewardData.credits,
+      "licenses": stewardData.licenses,
+      "cycle_transition_start_date": formatDateTime(cycle.transition_start_date),
+      "cycle_end_date": formatDateTime(cycle.end_date),
+    }
+		const response = await sendMail(stewardData.email, templateId, emailData);
     results.push(response);
 	}
   return results.some(response => response.ok);
@@ -243,39 +251,6 @@ function formatDateTime(dateStr) {
     timeZoneName: 'short'
 	});
   }
-
-// Helper for sending emails.
-async function sendEmail(templateId, data, cycle) {
-  console.log(`Sending email [${templateId}] to steward:`, data);
-  try {
-    console.log("sending notification email...");
-    const response = await fetch(PUBLIC_BASE_URL + "/api/send-mail", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: data.email,
-        templateId: templateId,
-        templateModel: {
-          "user_name": data.first_name,
-          "credits": data.credits,
-          "licenses": data.licenses,
-          "cycle_transition_start_date": formatDateTime(cycle.transition_start_date),
-          "cycle_end_date": formatDateTime(cycle.end_date),
-        }
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Error sending notification email");
-    }
-    return { ok: true };
-  } catch (e) {
-    console.error("Error sending notification email:", e);
-    return { ok: false, error: e.toString() };
-  }
-}
 
 // Helper to update a cycle.
 async function updateCycle(cycleId, updateData) {

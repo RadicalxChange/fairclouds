@@ -4,12 +4,15 @@ export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
 import Stripe from "stripe";
+import { sendMail } from "../../utils/send-mail"
 import { directusAdmin } from "../../lib/directus";
 import { readItems, createItem, updateItem, updateUser } from '@directus/sdk';
 
 const stripe = new Stripe(import.meta.env.STRIPE_KEY);
-const BASE_URL = import.meta.env.PUBLIC_BASE_URL
 const sessionID = Astro.url.searchParams.get("session_id");
+
+const LICENSE_TAKEN_OVER_EMAIL_TEMPLATE = import.meta.env.LICENSE_TAKEN_OVER_EMAIL_TEMPLATE;
+const PURCHASE_CONFIRM_EMAIL_TEMPLATE = import.meta.env.PURCHASE_CONFIRM_EMAIL_TEMPLATE;
 
 let name, email, errorMessage = "";
 let session,
@@ -218,31 +221,13 @@ if (sessionID !== null) {
                 }));
 
                 // Notify former steward with email
-                try {
-                  console.log("notifying former steward via email...");
-                  const response = await fetch(BASE_URL + "/api/send-mail", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      email: prevSteward.email,
-                      templateId: import.meta.env.LICENSE_TAKEN_OVER_EMAIL_TEMPLATE,
-                      templateModel: {
-                        "user_name": prevSteward.name,
-                        "license": prevPrice,
-                        "credits_awarded": (creditAward / 100).toFixed(2),
-                        "credit_balance": (result.credits / 100).toFixed(2),
-                      }
-                    }),
-                  });
-
-                  if (!response.ok) {
-                    throw new Error("Error sending email to former steward");
-                  }
-                } catch (e) {
-                  console.error("Error sending email to former steward:", e);
-                }
+                const emailData = {
+                  "user_name": prevSteward.name,
+                  "license": prevPrice,
+                  "credits_awarded": (creditAward / 100).toFixed(2),
+                  "credit_balance": (result.credits / 100).toFixed(2),
+                };
+                await sendMail(email, LICENSE_TAKEN_OVER_EMAIL_TEMPLATE, emailData)
               } else {
                 // Mark license as renewed
                 try {
@@ -261,29 +246,11 @@ if (sessionID !== null) {
       }
 
       // Send confirmation email to new steward
-      try {
-        console.log("sending confirmation email...");
-        const response = await fetch(BASE_URL + "/api/send-mail", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: email,
-            templateId: import.meta.env.PURCHASE_CONFIRM_EMAIL_TEMPLATE,
-            templateModel: {
-              "user_name": name,
-              "licenses": parsedLicenseData,
-            }
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Error sending confirmation email");
-        }
-      } catch (e) {
-        console.error("Error sending confirmation email:", e);
-      }
+      const emailData = {
+        "user_name": name,
+        "licenses": parsedLicenseData,
+      };
+      await sendMail(email, PURCHASE_CONFIRM_EMAIL_TEMPLATE, emailData);
     }
   }
 
