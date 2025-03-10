@@ -1,6 +1,8 @@
 <script>
   import { onMount } from "svelte";
   import CloudModal from "./CloudModal.svelte";
+  import CloudButton from "./CloudButton.svelte";
+
   export let clouds;
   export let currentUser;
   const height = 982;
@@ -13,141 +15,7 @@
   });
 
   onMount(() => {
-    const canvases = document.querySelectorAll(".cloud-canvas");
     const parallaxClouds = document.querySelectorAll(".parallax-cloud");
-
-    const bgImg = document.getElementById("bgImg");
-
-    function clearFadeTimeout(cloud) {
-      if (cloud.fadeTimeout) {
-        clearTimeout(cloud.fadeTimeout);
-        cloud.fadeTimeout = null;
-      }
-    }
-
-    function handleDrawingReveal(ctx, canvas, clientX, clientY) {
-      const drawingImg = canvas.previousSibling.previousSibling;
-      drawingImg.classList.remove("fade-out");
-
-      const rect = canvas.getBoundingClientRect();
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
-      const radius = 10;
-
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2, false);
-      ctx.fill();
-
-      // Check if 10% or more of the canvas has been erased
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      let erasedPixels = 0;
-
-      for (let i = 0; i < imageData.data.length; i += 4) {
-        if (imageData.data[i + 3] === 0) {
-          erasedPixels++;
-        }
-      }
-
-      const totalPixels = canvas.width * canvas.height;
-      const erasedPercentage = (erasedPixels / totalPixels) * 100;
-
-      if (erasedPercentage >= 10) {
-        // enable button
-        const button = canvas.closest("button");
-        if (button) button.disabled = false;
-      }
-    }
-
-    function handleFadeOutAndReset(ctx, canvas, cloud) {
-      const drawingImg = canvas.previousSibling.previousSibling;
-
-      drawingImg.classList.add("fade-out");
-
-      cloud.fadeTimeout = setTimeout(() => {
-        ctx.globalCompositeOperation = "source-over";
-
-        const { x: sourceX, y: sourceY, width: sourceWidth, height: sourceHeight } = canvas.dataset;
-
-        ctx.drawImage(bgImg, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
-
-        let newIndex = cloud.activeDrawingIndex + 1;
-        cloud.activeDrawingIndex = newIndex >= cloud.drawings.length ? 0 : newIndex;
-
-        // disable button
-        const button = canvas.closest("button");
-        if (button) button.disabled = true;
-      }, 7001);
-    }
-
-    canvases.forEach((canvas, index) => {
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-
-      // Set canvas size
-      canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientHeight;
-
-      const sourceX = canvas.dataset.x;
-      const sourceY = canvas.dataset.y;
-      const sourceWidth = canvas.dataset.width;
-      const sourceHeight = canvas.dataset.height;
-      const destX = 0;
-      const destY = 0;
-      const destWidth = canvas.width;
-      const destHeight = canvas.height;
-
-      ctx.drawImage(
-        bgImg,
-        sourceX,
-        sourceY,
-        sourceWidth,
-        sourceHeight,
-        destX,
-        destY,
-        destWidth,
-        destHeight,
-      );
-      // Render hidden drawing once canvas is prepared. (this prevents drawings from flashing on load).
-      const drawing = canvas.parentElement.querySelector(".cloud-drawing");
-      drawing.classList.remove("hidden");
-
-      const cloud = clouds[index];
-
-      // Mouse events.
-      canvas.addEventListener("mousemove", (event) => {
-        handleDrawingReveal(ctx, canvas, event.clientX, event.clientY);
-      });
-      canvas.addEventListener("mouseleave", () => {
-        handleFadeOutAndReset(ctx, canvas, cloud);
-      });
-      canvas.addEventListener("mouseenter", () => {
-        clearFadeTimeout(cloud);
-      });
-
-      // Touch events.
-      canvas.addEventListener("touchstart", (event) => {
-        if (event.touches.length === 1) {
-          clearFadeTimeout(cloud);
-        }
-      });
-      canvas.addEventListener("touchmove", (event) => {
-        if (event.touches.length === 1) {
-          event.preventDefault(); // Prevent one-finger scrolling.
-          const touch = event.touches[0];
-          handleDrawingReveal(ctx, canvas, touch.clientX, touch.clientY);
-        }
-      });
-      canvas.addEventListener("touchend", (event) => {
-        if (event.touches.length === 0) {
-          handleFadeOutAndReset(ctx, canvas, cloud);
-        }
-      });
-      canvas.addEventListener("touchcancel", (event) => {
-        if (event.touches.length === 0) {
-          handleFadeOutAndReset(ctx, canvas, cloud);
-        }
-      });
-    });
 
     // requestAnimationFrame(redraw);
 
@@ -334,31 +202,12 @@
   <div class="absolute w-full h-full top-0 left-0 z-10">
     <!-- clouds layer -->
     {#each clouds as cloud, index (cloud.id)}
-      <button
-        class="absolute cloud-button eraser-tool"
-        style="left: {(cloud.x / height) * 100}vh; top: {(cloud.y / height) *
-          100}vh; width: {(cloud.width / height) *
-          100}vh; height: {(cloud.height / height) * 100}vh;"
-        disabled
-        on:click={() => handleCloudClick(cloud)}
-      >
-        <div class="relative w-full h-full">
-          <img
-            src={`https://cms.fairclouds.life/assets/` +
-              cloud.drawings[cloud.activeDrawingIndex].map_drawing}
-            alt=""
-            class="absolute top-0 w-full h-full cloud-drawing hidden"
-          />
-          <canvas
-            data-id={cloud.id}
-            data-x={cloud.x * scaleFactor}
-            data-y={cloud.y * scaleFactor}
-            data-width={cloud.width * scaleFactor}
-            data-height={cloud.height * scaleFactor}
-            class="absolute top-0 left-0 z-10 cloud-canvas w-full h-full"
-          />
-        </div>
-      </button>
+      <CloudButton
+        {cloud}
+        {height}
+        {scaleFactor}
+        {handleCloudClick}
+      />
     {/each}
 
     <!-- Parallax clouds -->
