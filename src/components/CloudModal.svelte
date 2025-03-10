@@ -133,7 +133,7 @@
         >
       </div>
       <p>
-        {currentUser && getLicense(currentUser, cloud.id) ? "You are Cloudkeeper " + getLicense(currentUser, cloud.id).price_id.tier : "Become a keeper"} of this cloud and the {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
+        {currentUser && getLicense(currentUser, cloud.id) ? "You are Cloudkeeper " + getLicense(currentUser, cloud.id).price_id.tier : "Become a Keeper"} of this cloud and all {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
         contains.
       </p>
       <div class="flex flex-wrap gap-2.5 w-full overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
