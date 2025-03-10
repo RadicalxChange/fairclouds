@@ -9,11 +9,6 @@
   const scaleFactor = 1.32;
   let selectedCloud;
 
-  // set active drawing index to 0
-  clouds.forEach((cloud) => {
-    cloud.activeDrawingIndex = 0;
-  });
-
   onMount(() => {
     const parallaxClouds = document.querySelectorAll(".parallax-cloud");
 

@@ -4,6 +4,8 @@
     export let height;
     export let scaleFactor;
     export let handleCloudClick;
+
+    cloud.activeDrawingIndex = Math.floor(Math.random() * cloud.drawings.length);
   
     // Create a reactive image source that updates when cloud.activeDrawingIndex changes.
     $: mapDrawingSrc = `https://cms.fairclouds.life/assets/${cloud.drawings[cloud.activeDrawingIndex].map_drawing}`;
@@ -141,7 +143,12 @@
 >
     <div class="relative w-full h-full">
         <!-- Reactive image: updates when cloud.activeDrawingIndex changes -->
-        <img bind:this={drawingImgElement} src={mapDrawingSrc} alt="" class="absolute top-0 w-full h-full cloud-drawing hidden" />
+        <img
+            bind:this={drawingImgElement}
+            src={mapDrawingSrc}
+            alt=""
+            class="absolute top-0 w-full h-full cloud-drawing hidden"
+        />
         <!-- Bind the canvas element for drawing -->
         <canvas
             bind:this={canvasElement}
