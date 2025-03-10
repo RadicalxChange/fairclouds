@@ -10,6 +10,7 @@ import { withToken, readMe } from '@directus/sdk';
 import { parse } from "cookie";
 
 import CheckoutEmbed from "../../components/CheckoutEmbed.svelte";
+import LoginListener from "../../components/LoginListener.svelte";
 
 let currentUser = null;
 
@@ -58,7 +59,11 @@ const lang = getLangFromUrl(Astro.url);
         client:load
       />
     ) : (
-      <p class="mt-8">You must be logged in to check out. Return to the map and click the 3 dots in the top right corner to log in.</p>
+      <p class="my-8">You must be logged in to check out.</p>
+      <div class="w-full max-w-[610px] rounded-default bg-primary text-white shadow-cloud p-3 sm:p-5">
+        {/* Listens for successful login event and reloads the page. */}
+         <LoginListener lang={lang} currentUser={currentUser} client:load />
+      </div>
     )}
   </div>
 </Layout>

@@ -11,8 +11,6 @@
     states: { open },
   } = createDialog();
 
-  // This boolean will be passed into Login.
-  // If set to true in the Login component, we know to reload on modal close.
   let reloadOnClose = false;
 
   let tab = "info";
@@ -144,7 +142,7 @@
             {:else if tab === "news"}
               <slot name="news" />
             {:else if tab === "login"}
-              <Login lang={lang} currentUser={currentUser} bind:reloadOnClose />
+              <Login lang={lang} currentUser={currentUser} on:loginSuccess={() => reloadOnClose = true} />
             {/if}
           </div>
         </div>

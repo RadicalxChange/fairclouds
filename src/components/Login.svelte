@@ -1,18 +1,18 @@
-<script>
-  import { onMount } from 'svelte';
+<script lang="ts">
   import Register from "./Register.svelte";
   import ForgotPassword from "./ForgotPassword.svelte";
+  import { createEventDispatcher } from 'svelte';
+
+  const dispatch = createEventDispatcher<{ loginSuccess: void }>();
 
   export let lang;
   export let currentUser;
-  export let reloadOnClose;
 
   let email = "";
   let password = "";
   let error = "";
   let isLoggedIn = !!currentUser;
-  // currentForm can be "login", "register", or "reset"
-  let currentForm = "login";
+  let currentForm = "login"; // "login" | "register" | "reset"
 
   const handleLogin = async () => {
     error = "";
@@ -29,7 +29,7 @@
       }
 
       isLoggedIn = true;
-      reloadOnClose = true;
+      dispatch('loginSuccess'); // Dispatch an event to signal successful login to parent component.
       email = "";
       password = "";
     } catch (err) {
