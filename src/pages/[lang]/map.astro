@@ -128,7 +128,7 @@ const clouds = await directus.request(
     }
     
     let lastTime = performance.now();
-    const speed = 0.008; // pixels per millisecond
+    const speed = 0.0025; // pixels per millisecond
     let accumulator = 0; // holds fractional pixels
 
     function autoPan(currentTime) {
