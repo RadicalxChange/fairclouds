@@ -107,6 +107,9 @@
         destWidth,
         destHeight,
       );
+      // Render hidden drawing once canvas is prepared. (this prevents drawings from flashing on load).
+      const drawing = canvas.parentElement.querySelector(".cloud-drawing");
+      drawing.classList.remove("hidden");
 
       const cloud = clouds[index];
 
@@ -344,7 +347,7 @@
             src={`https://cms.fairclouds.life/assets/` +
               cloud.drawings[cloud.activeDrawingIndex].map_drawing}
             alt=""
-            class="absolute top-0 w-full h-full cloud-drawing"
+            class="absolute top-0 w-full h-full cloud-drawing hidden"
           />
           <canvas
             data-id={cloud.id}
