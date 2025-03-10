@@ -3,6 +3,8 @@
   import { createDialog, melt } from "@melt-ui/svelte";
   import { onMount } from "svelte";
 
+  export let currentUser;
+
   const {
     elements: { trigger, portalled, overlay, content },
     states: { open },
@@ -94,7 +96,11 @@
             </li>
           {/each}
         </ul>
-        <a href="/en/checkout" class="button">Checkout</a>
+        {#if !currentUser}
+          <p>You must be logged in to checkout.</p>
+        {:else}
+          <a href="/en/checkout" class="button">Checkout</a>
+        {/if}
       {:else}
         <p>Your cart is empty!</p>
       {/if}

@@ -113,7 +113,7 @@ const clouds = await directus.request(
           </div>
         </div>
 
-        <Cart client:load />
+        <Cart currentUser={currentUser} client:load />
       </div>
     </div>
   </main>

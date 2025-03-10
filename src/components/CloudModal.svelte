@@ -186,9 +186,13 @@
               View your cart
             </button>
           {:else}
-            <button on:click={handleAddToCart} class="button group max-w-[450px]">
-              <span>Keep this cloud</span>
-            </button>
+            {#if !currentUser}
+              <p>You must be logged in to keep this cloud.</p>
+            {:else}
+              <button on:click={handleAddToCart} class="button group max-w-[450px]">
+                <span>Keep this cloud</span>
+              </button>
+            {/if}
           {/if}
         {/if}
         <a class="icon-button" target="_blank" href={`/${lang}/wiki/faq`}>
