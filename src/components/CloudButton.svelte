@@ -56,19 +56,23 @@
 
     // Fade out the drawing and reset the canvas.
     function handleFadeOutAndReset() {
-        drawingImgElement.classList.add("fade-out");
-
         cloud.fadeTimeout = setTimeout(() => {
-            ctx.globalCompositeOperation = "source-over";
-            const { x: sourceX, y: sourceY, width: sourceWidth, height: sourceHeight } = canvasElement.dataset;
-            // Use the global background image (assumed to have id "bgImg")
-            const bgImg = document.getElementById("bgImg");
-            ctx.drawImage(bgImg, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvasElement.width, canvasElement.height);
+            // begin fade-out animation after a delay.
+            drawingImgElement.classList.add("fade-out");
 
-            let newIndex = cloud.activeDrawingIndex + 1;
-            cloud.activeDrawingIndex = newIndex >= cloud.drawings.length ? 0 : newIndex;
-            buttonDisabled = true; // Disable the button again.
-        }, 7001);
+            // after fade-out, reset the canvas.
+            setTimeout(() => {
+                ctx.globalCompositeOperation = "source-over";
+                const { x: sourceX, y: sourceY, width: sourceWidth, height: sourceHeight } = canvasElement.dataset;
+                // Use the global background image (assumed to have id "bgImg")
+                const bgImg = document.getElementById("bgImg");
+                ctx.drawImage(bgImg, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvasElement.width, canvasElement.height);
+
+                let newIndex = cloud.activeDrawingIndex + 1;
+                cloud.activeDrawingIndex = newIndex >= cloud.drawings.length ? 0 : newIndex;
+                buttonDisabled = true; // Disable the button again.
+            }, 7001);
+        }, 15000);
     }
   
     onMount(() => {
