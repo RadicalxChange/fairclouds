@@ -8,11 +8,24 @@ import { readItems, createItem, updateItem } from '@directus/sdk';
 const {
   LICENSE_EXPIRED_EMAIL_TEMPLATE,
   AUCTION_RENEWAL_REMINDER_EMAIL_TEMPLATE,
-  EARLY_RENEWAL_REMINDER_EMAIL_TEMPLATE
+  EARLY_RENEWAL_REMINDER_EMAIL_TEMPLATE,
+  API_SECRET_KEY
 } = import.meta.env;
 
 export const POST = async ({ request }) => {
   try {
+    // Check for valid authorization.
+    const authHeader = request.headers.get("Authorization") || "";
+    if (authHeader !== `Bearer ${API_SECRET_KEY}`) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     // Query cycles where prices_status is "active" or "early_access", or renewal_active is true.
     const cycles = await directusAdmin.request(
       readItems("cycles", {
