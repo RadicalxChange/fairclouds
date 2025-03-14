@@ -27,7 +27,7 @@
     @apply space-y-5;
 }
 .cloud-modal-header {
-    @apply flex justify-between items-center gap-2 sm:mb-[9px];
+    @apply flex justify-between gap-4 sm:mb-[9px];
 }
 @media (max-width: 767px) and (orientation: landscape) {
     .modal {

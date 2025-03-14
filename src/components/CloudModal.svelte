@@ -125,17 +125,15 @@
       {...$content}
       use:content
     >
-      <div class="cloud-modal-header">
-        <h3>Cloud {cloud.name}</h3>
-        <span
-          class="bg-white text-primary text-center text-copy rounded-full px-[10px] pt-1"
-          >{numStewards} Cloudkeeper{numStewards !== 1 ? "s" : ""}</span
-        >
+      <div class="cloud-modal-header items-start">
+        <p>
+          {currentUser && getLicense(currentUser, cloud.id) ? "You are Cloudkeeper " + getLicense(currentUser, cloud.id).price_id.tier : "Become a Keeper"} of this cloud and all {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
+          contains.
+        </p>
+        <div class="bg-white text-primary text-center text-copy whitespace-nowrap rounded-full px-[10px] pt-1">
+          <span>{numStewards} Cloudkeeper{numStewards !== 1 ? "s" : ""}</span>
+        </div>
       </div>
-      <p>
-        {currentUser && getLicense(currentUser, cloud.id) ? "You are Cloudkeeper " + getLicense(currentUser, cloud.id).price_id.tier : "Become a Keeper"} of this cloud and all {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
-        contains.
-      </p>
       <div class="flex flex-wrap gap-2.5 w-full overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
         {#each cloud.drawings as drawing, index}
           <img
@@ -178,7 +176,7 @@
         <p class="text-white mb-4">No licenses available at this time.</p>
       {/if}
 
-      <div class="cloud-modal-header">
+      <div class="cloud-modal-header items-center">
         <!-- Add to cart button -->
         {#if prices && prices.length > 0}
           {#if isCloudInCart}
@@ -215,6 +213,13 @@
           width: auto;
           max-width: calc(100vw - 610px - 64px);"
       />
+      <p class="whitespace-nowrap text-white text-xs mt-2">
+        Drawn by {cloud.drawings[currentIndex].author ?
+          cloud.drawings[currentIndex].author :
+          (cloud.drawings[currentIndex].first_name || cloud.drawings[currentIndex].last_name ?
+            cloud.drawings[currentIndex].first_name + " " + cloud.drawings[currentIndex].last_name :
+            "anon")}{cloud.drawings[currentIndex].location ? ", " + cloud.drawings[currentIndex].location : ""}
+      </p>
     {:else}
       <p>No drawings available.</p>
     {/if}
