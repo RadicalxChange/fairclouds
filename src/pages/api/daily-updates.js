@@ -1,7 +1,7 @@
 // dont prerender as this page will be unique.
 export const prerender = false;
 
-import { sendMail } from "../../utils/send-mail"
+import { sendMail } from "../../utils/send-mail";
 import { directusAdmin } from "../../lib/directus";
 import { readItems, createItem, updateItem } from '@directus/sdk';
 
@@ -9,10 +9,15 @@ const {
   LICENSE_EXPIRED_EMAIL_TEMPLATE,
   AUCTION_RENEWAL_REMINDER_EMAIL_TEMPLATE,
   EARLY_RENEWAL_REMINDER_EMAIL_TEMPLATE,
+  TECH_SUPPORT_EMAIL_TEMPLATE,
+  TECH_SUPPORT_EMAIL_ADDRESS,
   API_SECRET_KEY
 } = import.meta.env;
 
 export const POST = async ({ request }) => {
+  // This array collects error messages from throughout processing.
+  const errorLogs = [];
+
   try {
     // Check for valid authorization.
     const authHeader = request.headers.get("Authorization") || "";
@@ -63,7 +68,13 @@ export const POST = async ({ request }) => {
     );
 
     // Process each cycle according to our business rules.
-    await processCycles(cycles);
+    await processCycles(cycles, errorLogs);
+
+    // If there are any errors, notify tech support.
+    if (errorLogs.length > 0) {
+      const techEmailBody = errorLogs.join("\n");
+      await sendMail(TECH_SUPPORT_EMAIL_ADDRESS, TECH_SUPPORT_EMAIL_TEMPLATE, { errorLogs: techEmailBody });
+    }
 
     // Return the session's client secret to the client
     return new Response("ok", {
@@ -83,113 +94,119 @@ export const POST = async ({ request }) => {
   }
 }
 
-async function processCycles(cycles) {
+async function processCycles(cycles, errorLogs) {
 	const now = new Date();
 	const activeCycles = cycles.filter(cycle => cycle.prices_status === "active");
 
 	for (const cycle of activeCycles) {
-		// Handle case where current cycle has ended.
-		if (cycle.end_date && new Date(cycle.end_date) < now) {
-			console.log(cycle.name + " has concluded.")
+    try {
+      // Handle case where current cycle has ended.
+      if (cycle.end_date && new Date(cycle.end_date) < now) {
+        console.log(cycle.name + " has concluded.");
 
-			// Notify stewards about any expired licenses.
-			await sendEmails(LICENSE_EXPIRED_EMAIL_TEMPLATE, cycle, license => !license.renewed);
-			
-			// Then update the cycle to inactive and disable renewal.
-			await updateCycle(cycle.id, { prices_status: "inactive", renewal_active: false });
-		}
-		// Handle case where current cycle is in transition.
-		else if (cycle.transition_start_date && new Date(cycle.transition_start_date) < now) {
-			console.log(cycle.name + " is in transition.")
+        // Notify stewards about any expired licenses.
+        await sendEmails(LICENSE_EXPIRED_EMAIL_TEMPLATE, cycle, license => !license.renewed, errorLogs);
+        
+        // Then update the cycle to inactive and disable renewal.
+        await updateCycle(cycle.id, { prices_status: "inactive", renewal_active: false }, errorLogs);
+      }
+      // Handle case where current cycle is in transition.
+      else if (cycle.transition_start_date && new Date(cycle.transition_start_date) < now) {
+        console.log(cycle.name + " is in transition.");
 
-			// Find the next cycle.
-			const nextCycle = cycles
-				.filter(c => c.prices_status === "early_access" && new Date(c.start_date) > now)
-				.sort((a, b) => new Date(a.start_date) - new Date(b.start_date))[0];
+        // Find the next cycle.
+        const nextCycle = cycles
+          .filter(c => c.prices_status === "early_access" && new Date(c.start_date) > now)
+          .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))[0];
 
-      let updateSuccessful = false;
-			if (nextCycle) {
-				// Update cycle status.
-				const result1 = await updateCycle(cycle.id, { prices_status: "inactive", renewal_active: true });
-				const result2 = await updateCycle(nextCycle.id, { prices_status: "active" });
-        updateSuccessful = result1 && result2;
-			}
-
-			// Periodically send reminders to stewards about any licenses that are renewable.
-			if (shouldSendEmailReminder(cycle, now) && updateSuccessful) {
-				const emailsSent = await sendEmails(AUCTION_RENEWAL_REMINDER_EMAIL_TEMPLATE, cycle, license => !license.renewed && !license.claimed);
-
-        // If reminders were sent successfully, record the time of notification in the db.
-        if (emailsSent) {
-          await updateCycle(cycle.id, { renewal_reminder_sent: now })
-        }
-			}
-		}
-		// Handle case where current cycle is in early renewal.
-		else if (cycle.renewal_start_date && new Date(cycle.renewal_start_date) < now) {
-			console.log(cycle.name + " is in early renewal.")
-
-      let updateResults = [];
-
-			// Find the next cycle.
-			let nextCycle = cycles
-				.filter(c => c.prices_status === 'early_access' && new Date(c.start_date) > now)
-				.sort((a, b) => new Date(a.start_date) - new Date(b.start_date))[0];
-			
-			// If the next cycle doesn't exist yet, create it.
-			if (!nextCycle) {
-				const currentStart = new Date(cycle.start_date);
-				const currentEnd = new Date(cycle.end_date);
-				const cycle_length = currentEnd.getTime() - currentStart.getTime();
-
-				const newCycleData = {
-					name: "Cycle " + (Number(cycle.id) + 1),
-					start_date: cycle.end_date,
-					renewal_start_date: new Date((new Date(cycle.renewal_start_date)).getTime() + cycle_length),
-					transition_start_date: new Date((new Date(cycle.transition_start_date)).getTime() + cycle_length),
-					end_date: new Date((new Date(cycle.end_date)).getTime() + cycle_length),
-					prices_status: "early_access",
-					renewal_active: false,
-				};
-				nextCycle = await createCycle(newCycleData);
-        updateResults.push(nextCycle);
-
+        let updateSuccessful = false;
         if (nextCycle) {
-          // For each price in the current cycle, create a corresponding price in the new cycle.
-          let newPricesData = [];
-          for (const price of cycle.prices) {
-            const amount = Number(price.amount);
-            newPricesData.push({
-              amount: Math.round((amount + (amount * (Number(cycle.next_price_markup) / 100))) * 100) / 100, // assuming integer representing percent markup
-              cloud_id: price.cloud_id,
-              cycle_id: nextCycle.id,
-              tier: price.tier,
-            });
+          // Update cycle status.
+          const result1 = await updateCycle(cycle.id, { prices_status: "inactive", renewal_active: true }, errorLogs);
+          const result2 = await updateCycle(nextCycle.id, { prices_status: "active" }, errorLogs);
+          updateSuccessful = result1 && result2;
+        }
+
+        // Periodically send reminders to stewards about any licenses that are renewable.
+        if (shouldSendEmailReminder(cycle, now) && updateSuccessful) {
+          const emailsSent = await sendEmails(AUCTION_RENEWAL_REMINDER_EMAIL_TEMPLATE, cycle, license => !license.renewed && !license.claimed, errorLogs);
+
+          // If reminders were sent successfully, record the time of notification in the db.
+          if (emailsSent) {
+            await updateCycle(cycle.id, { renewal_reminder_sent: now }, errorLogs);
           }
-          const newPrices = await createPrices(newPricesData);
-          updateResults.push(newPrices);
         }
-			}
+      }
+      // Handle case where current cycle is in early renewal.
+      else if (cycle.renewal_start_date && new Date(cycle.renewal_start_date) < now) {
+        console.log(cycle.name + " is in early renewal.");
 
-			if (!cycle.renewal_active) {
-				// Mark the current cycle as having renewal active.
-				const cycleUpdate = await updateCycle(cycle.id, { renewal_active: true });
-        updateResults.push(cycleUpdate);
-			}
+        let updateResults = [];
 
-      const updateSuccessful = updateResults.every(Boolean);
+        // Find the next cycle.
+        let nextCycle = cycles
+          .filter(c => c.prices_status === 'early_access' && new Date(c.start_date) > now)
+          .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))[0];
+        
+        // If the next cycle doesn't exist yet, create it.
+        if (!nextCycle) {
+          const currentStart = new Date(cycle.start_date);
+          const currentEnd = new Date(cycle.end_date);
+          const cycle_length = currentEnd.getTime() - currentStart.getTime();
 
-			// Periodically remind stewards about any licenses that are renewable.
-			if (shouldSendEmailReminder(cycle, now) && updateSuccessful) {
-				const emailsSent = await sendEmails(EARLY_RENEWAL_REMINDER_EMAIL_TEMPLATE, cycle, license => !license.renewed);
+          const newCycleData = {
+            name: "Cycle " + (Number(cycle.id) + 1),
+            start_date: cycle.end_date,
+            renewal_start_date: new Date((new Date(cycle.renewal_start_date)).getTime() + cycle_length),
+            transition_start_date: new Date((new Date(cycle.transition_start_date)).getTime() + cycle_length),
+            end_date: new Date((new Date(cycle.end_date)).getTime() + cycle_length),
+            prices_status: "early_access",
+            renewal_active: false,
+          };
+          nextCycle = await createCycle(newCycleData, errorLogs);
+          updateResults.push(nextCycle);
 
-        // If reminders were sent successfully, record the time of notification in the db.
-        if (emailsSent) {
-          await updateCycle(cycle.id, { renewal_reminder_sent: now })
+          if (nextCycle) {
+            // For each price in the current cycle, create a corresponding price in the new cycle.
+            let newPricesData = [];
+            for (const price of cycle.prices) {
+              const amount = Number(price.amount);
+              newPricesData.push({
+                amount: Math.round((amount + (amount * (Number(cycle.next_price_markup) / 100))) * 100) / 100, // assuming integer representing percent markup
+                cloud_id: price.cloud_id,
+                cycle_id: nextCycle.id,
+                tier: price.tier,
+              });
+            }
+            const newPrices = await createPrices(newPricesData, errorLogs);
+            updateResults.push(newPrices);
+          }
         }
-			}
-		} else {
-      console.log("Magikarp used Splash! But nothing happened...")
+
+        if (!cycle.renewal_active) {
+          // Mark the current cycle as having renewal active.
+          const cycleUpdate = await updateCycle(cycle.id, { renewal_active: true }, errorLogs);
+          updateResults.push(cycleUpdate);
+        }
+
+        const updateSuccessful = updateResults.every(Boolean);
+
+        // Periodically remind stewards about any licenses that are renewable.
+        if (shouldSendEmailReminder(cycle, now) && updateSuccessful) {
+          const emailsSent = await sendEmails(EARLY_RENEWAL_REMINDER_EMAIL_TEMPLATE, cycle, license => !license.renewed, errorLogs);
+
+          // If reminders were sent successfully, record the time of notification in the db.
+          if (emailsSent) {
+            await updateCycle(cycle.id, { renewal_reminder_sent: now }, errorLogs);
+          }
+        }
+      } else {
+        console.log("No updates required for cycle:", cycle.name);
+      }
+    } catch (err) {
+      const msg = `Error processing cycle ${cycle.name}: ${err.toString()}`;
+      console.error(msg);
+      errorLogs.push(msg);
     }
 	}
 }
@@ -199,8 +216,9 @@ async function processCycles(cycles) {
  * @param {string} templateId - The email template id.
  * @param {object} cycle - The cycle object containing prices and licenses.
  * @param {function} licenseCondition - A callback function that receives a license and returns true if it should be included.
+ * @param {Array} errorLogs - Array to push error messages.
  */
-async function sendEmails(templateId, cycle, licenseCondition) {
+async function sendEmails(templateId, cycle, licenseCondition, errorLogs) {
 	const stewards = {};
 
 	// Iterate over each price and its licenses.
@@ -238,8 +256,14 @@ async function sendEmails(templateId, cycle, licenseCondition) {
       "cycle_transition_start_date": formatDateTime(cycle.transition_start_date),
       "cycle_end_date": formatDateTime(cycle.end_date),
     }
-		const response = await sendMail(stewardData.email, templateId, emailData);
-    results.push(response);
+    try {
+      const response = await sendMail(stewardData.email, templateId, emailData);
+      results.push(response);
+    } catch (err) {
+      const msg = `Error sending email to ${stewardData.email}: ${err.toString()}`;
+      errorLogs.push(msg);
+      results.push({ ok: false });
+    }
 	}
   return results.some(response => response.ok);
 }
@@ -263,22 +287,24 @@ function formatDateTime(dateStr) {
 		hour12: true,
     timeZoneName: 'short'
 	});
-  }
+}
 
 // Helper to update a cycle.
-async function updateCycle(cycleId, updateData) {
+async function updateCycle(cycleId, updateData, errorLogs) {
   console.log(`Updating cycle ${cycleId} with`, updateData);
   let result;
   try {
     result = await directusAdmin.request(updateItem('cycles', cycleId, updateData));
   } catch (err) {
-    console.error(`Error updating cycle ${cycleId}:`, err);
+    const msg = `Error updating cycle ${cycleId} with data ${JSON.stringify(updateData)}: ${err.toString()}`;
+    console.error(msg);
+    if (errorLogs) errorLogs.push(msg);
   }
   return result;
 }
 
 // Helper to create a new cycle.
-async function createCycle(newCycleData) {
+async function createCycle(newCycleData, errorLogs) {
   console.log(`Creating new cycle with data`, newCycleData);
   let result;
   try {
@@ -288,13 +314,15 @@ async function createCycle(newCycleData) {
       ]
     }));
   } catch (err) {
-    console.error("Error creating cycle:", err);
+    const msg = `Error creating cycle with data ${JSON.stringify(newCycleData)}: ${err.toString()}`;
+    console.error(msg);
+    if (errorLogs) errorLogs.push(msg);
   }
   return result;
 }
 
 // Helper to create new prices.
-async function createPrices(newPriceData) {
+async function createPrices(newPriceData, errorLogs) {
   console.log(`Creating new prices with data`, newPriceData);
   let result;
   try {
@@ -304,7 +332,9 @@ async function createPrices(newPriceData) {
       ]
     }));
   } catch (err) {
-    console.error("Error creating prices:", err);
+    const msg = `Error creating prices with data ${JSON.stringify(newPriceData)}: ${err.toString()}`;
+    console.error(msg);
+    if (errorLogs) errorLogs.push(msg);
   }
   return result;
 }
