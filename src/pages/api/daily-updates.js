@@ -99,9 +99,8 @@ export const POST = async ({ request }) => {
 
 async function processCycles(cycles, errorLogs) {
 	const now = new Date();
-	const activeCycles = cycles.filter(cycle => cycle.prices_status === "active");
 
-	for (const cycle of activeCycles) {
+	for (const cycle of cycles) {
     try {
       // Handle case where current cycle has ended.
       if (cycle.end_date && new Date(cycle.end_date) < now) {

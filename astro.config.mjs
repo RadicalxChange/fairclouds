@@ -31,6 +31,11 @@ export default defineConfig({
       'process.env.POSTMARK_API_TOKEN': JSON.stringify(process.env.POSTMARK_API_TOKEN),
       'process.env.PURCHASE_CONFIRM_EMAIL_TEMPLATE': JSON.stringify(process.env.PURCHASE_CONFIRM_EMAIL_TEMPLATE),
       'process.env.LICENSE_TAKEN_OVER_EMAIL_TEMPLATE': JSON.stringify(process.env.LICENSE_TAKEN_OVER_EMAIL_TEMPLATE),
+      'process.env.EARLY_RENEWAL_REMINDER_EMAIL_TEMPLATE': JSON.stringify(process.env.EARLY_RENEWAL_REMINDER_EMAIL_TEMPLATE),
+      'process.env.AUCTION_RENEWAL_REMINDER_EMAIL_TEMPLATE': JSON.stringify(process.env.AUCTION_RENEWAL_REMINDER_EMAIL_TEMPLATE),
+      'process.env.LICENSE_EXPIRED_EMAIL_TEMPLATE': JSON.stringify(process.env.LICENSE_EXPIRED_EMAIL_TEMPLATE),
+      'process.env.TECH_SUPPORT_EMAIL_TEMPLATE': JSON.stringify(process.env.TECH_SUPPORT_EMAIL_TEMPLATE),
+      'process.env.TECH_SUPPORT_EMAIL_ADDRESS': JSON.stringify(process.env.TECH_SUPPORT_EMAIL_ADDRESS),
       'process.env.API_SECRET_KEY': JSON.stringify(process.env.API_SECRET_KEY)
     }
   },
