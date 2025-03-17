@@ -23,6 +23,7 @@ export const POST = async ({ request }) => {
     const authHeader = request.headers.get("Authorization") || "";
     console.log(authHeader)
     console.log(`Bearer ${API_SECRET_KEY}`)
+    console.log(`${LICENSE_EXPIRED_EMAIL_TEMPLATE}, ${AUCTION_RENEWAL_REMINDER_EMAIL_TEMPLATE}, ${EARLY_RENEWAL_REMINDER_EMAIL_TEMPLATE}, ${TECH_SUPPORT_EMAIL_TEMPLATE}, ${TECH_SUPPORT_EMAIL_ADDRESS}`)
     if (authHeader !== `Bearer ${API_SECRET_KEY}`) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
