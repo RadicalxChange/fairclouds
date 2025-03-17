@@ -21,6 +21,8 @@ export const POST = async ({ request }) => {
   try {
     // Check for valid authorization.
     const authHeader = request.headers.get("Authorization") || "";
+    console.log(authHeader)
+    console.log(`Bearer ${API_SECRET_KEY}`)
     if (authHeader !== `Bearer ${API_SECRET_KEY}`) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
