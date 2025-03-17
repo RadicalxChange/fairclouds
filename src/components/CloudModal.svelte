@@ -201,19 +201,19 @@
   </div>
   <!-- Slideshow Modal -->
   <div
-    class="fixed hidden lg:flex flex-col rounded-default bottom-[4rem] left-4 z-50 w-auto h-auto bg-primary shadow-cloud p-2 focus:outline-none"
+    class="fixed hidden lg:flex flex-col rounded-default bottom-[4rem] left-4 z-50 w-auto h-auto bg-primary shadow-cloud px-1 pt-1 focus:outline-none"
   >
     {#if cloud.drawings.length > 0}
       <img
         src={`https://cms.fairclouds.life/assets/` + cloud.drawings[currentIndex].image}
         alt={cloud.drawings[currentIndex].title}
-        class="object-contain"
+        class="object-contain rounded-default"
         style="
           max-height: 65vh;
           width: auto;
           max-width: calc(100vw - 610px - 64px);"
       />
-      <p class="whitespace-nowrap text-white text-xs mt-2">
+      <p class="whitespace-nowrap text-white text-xs m-2">
         Drawn by {cloud.drawings[currentIndex].author ?
           cloud.drawings[currentIndex].author :
           (cloud.drawings[currentIndex].first_name || cloud.drawings[currentIndex].last_name ?

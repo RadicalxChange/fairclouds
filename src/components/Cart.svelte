@@ -88,7 +88,7 @@
                 </div>
               </div>
               <button 
-                class="hover:opacity-75 focus:outline-none mb-auto ml-2" 
+                class="hover:opacity-75 focus:outline-none mb-auto ml-2 hover:shadow-none" 
                 on:click={() => removeCartItem(cartItem.id)}
               >
                 <img src="/icons/delete.svg" alt="Delete Icon" class="h-7 w-7" />

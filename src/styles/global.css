@@ -44,7 +44,7 @@
 	h3 {
 		@apply
 			text-lg sm:text-xl
-			leading-6 sm:leading-[22px]
+			leading-[23px]
 			tracking-[-0.07em];
 	}
 
@@ -61,7 +61,7 @@
 	.text-copy {
 		@apply
 			text-lg
-			leading-[22px]
+			leading-[23px]
 			tracking-normal;
 	}
 
@@ -84,31 +84,36 @@
 	.prose h3 {
 		@apply
 			text-2xl sm:text-4xl
-			leading-7 sm:leading-[38px];
+			leading-[23px];
 		margin-bottom: 28px;
 	}
 	.button {
 		@apply
 			bg-primary
 			text-lg sm:text-3xl
-			pt-[5px] pb-[3px] sm:pb-0 px-[15px];
+			pt-[5px] pb-[3px] sm:pb-0 px-[15px]
+			shadow-cloud;
 		display: inline-block;
 		gap: 10px;
-		box-shadow: inset 0px 0px 10px 3px #ffffff;
 		border-radius: 5px;
 		transition: 0.5s ease;
 		line-height: 1;
 	}
 
 	button:hover,
-	a:hover,
+	a:hover {
+		@apply shadow-focus;
+		transition: 0.75s ease;
+	}
+
 	.hover-blur:hover {
+		@apply shadow-none;
 		filter: blur(2px);
 		transition: 0.75s ease;
 	}
 
 	.cloud-button:hover {
-		filter: blur(0);
+		@apply shadow-none;
 	}
 
 	.hover-blur {
@@ -133,7 +138,6 @@
 	}
 
 	.has-hint:hover .hint {
-		filter: blur(0) !important;
 	}
 	
 	.has-hint:hover .hint, .has-hint:focus-within .hint {
@@ -177,8 +181,8 @@
 		@apply
 			text-lg sm:text-3xl;
 		background: #72aee9;
-		box-shadow: inset 0px 0px 7px 3px #ffffff;
-		-webkit-box-shadow: inset 0 0 7px 3px #fff;
+		box-shadow: inset 0px 0px 7px 1px #ffffff;
+		-webkit-box-shadow: inset 0 0 7px 1px #fff;
 		border-radius: 100px;
 		width: 100%;
 		padding: 10px 20px;
@@ -298,7 +302,7 @@
 		@apply
 			font-sans
 			text-lg
-			leading-[22px]
+			leading-[23px]
 			pl-2 sm:pl-[15px]
 			space-y-3;
 	}
