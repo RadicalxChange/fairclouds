@@ -21,9 +21,6 @@ export const POST = async ({ request }) => {
   try {
     // Check for valid authorization.
     const authHeader = request.headers.get("Authorization") || "";
-    console.log(authHeader)
-    console.log(`Bearer ${API_SECRET_KEY}`)
-    console.log(`${LICENSE_EXPIRED_EMAIL_TEMPLATE}, ${AUCTION_RENEWAL_REMINDER_EMAIL_TEMPLATE}, ${EARLY_RENEWAL_REMINDER_EMAIL_TEMPLATE}, ${TECH_SUPPORT_EMAIL_TEMPLATE}, ${TECH_SUPPORT_EMAIL_ADDRESS}`)
     if (authHeader !== `Bearer ${API_SECRET_KEY}`) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
@@ -121,16 +118,14 @@ async function processCycles(cycles, errorLogs) {
           .filter(c => c.prices_status === "early_access" && new Date(c.start_date) > now)
           .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))[0];
 
-        let updateSuccessful = false;
         if (nextCycle) {
           // Update cycle status.
-          const result1 = await updateCycle(cycle.id, { prices_status: "inactive", renewal_active: true }, errorLogs);
-          const result2 = await updateCycle(nextCycle.id, { prices_status: "active" }, errorLogs);
-          updateSuccessful = result1 && result2;
+          await updateCycle(cycle.id, { prices_status: "inactive", renewal_active: true }, errorLogs);
+          await updateCycle(nextCycle.id, { prices_status: "active" }, errorLogs);
         }
 
         // Periodically send reminders to stewards about any licenses that are renewable.
-        if (shouldSendEmailReminder(cycle, now) && updateSuccessful) {
+        if (shouldSendEmailReminder(cycle, now)) {
           const emailsSent = await sendEmails(AUCTION_RENEWAL_REMINDER_EMAIL_TEMPLATE, cycle, license => !license.renewed && !license.claimed, errorLogs);
 
           // If reminders were sent successfully, record the time of notification in the db.
