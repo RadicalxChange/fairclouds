@@ -29,7 +29,8 @@ export default defineConfig({
       'process.env.WEATHER_KEY': JSON.stringify(process.env.WEATHER_KEY),
       'process.env.DIRECTUS_API_TOKEN': JSON.stringify(process.env.DIRECTUS_API_TOKEN),
       'process.env.POSTMARK_API_TOKEN': JSON.stringify(process.env.POSTMARK_API_TOKEN),
-      'process.env.PURCHASE_CONFIRM_EMAIL_TEMPLATE': JSON.stringify(process.env.PURCHASE_CONFIRM_EMAIL_TEMPLATE)
+      'process.env.PURCHASE_CONFIRM_EMAIL_TEMPLATE': JSON.stringify(process.env.PURCHASE_CONFIRM_EMAIL_TEMPLATE),
+      'process.env.PURCHASE_CONFIRM_EMAIL_TEMPLATE': JSON.stringify(process.env.LICENSE_TAKEN_OVER_EMAIL_TEMPLATE)
     }
   },
   security: {
