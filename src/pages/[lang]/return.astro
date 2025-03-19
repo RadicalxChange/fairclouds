@@ -108,10 +108,10 @@ if (sessionID !== null) {
     }
 
     if (!checkoutIsProcessed) {
-      // If the new steward used Cloudkeeper Credits, update their credit balance in the Directus db.
+      // If the new steward used Cloudsteward Credits, update their credit balance in the Directus db.
       if (session.total_details.amount_discount && session.total_details.amount_discount !== 0) {
         try {
-          console.log("Steward " + user_id + " redeemed " + session.total_details.amount_discount + " Cloudkeeper Credits. Updating Directus db...")
+          console.log("Steward " + user_id + " redeemed " + session.total_details.amount_discount + " Cloudsteward Credits. Updating Directus db...")
 
           const result = await directusAdmin.request(updateUser(user_id, {
             credits: Math.max(user_credits - session.total_details.amount_discount, 0),
@@ -161,7 +161,7 @@ if (sessionID !== null) {
               })
             );
 
-            // Distribute Cloudkeeper Credits to higher-tier stewards.
+            // Distribute Cloudsteward Credits to higher-tier stewards.
             try {
               if (newLicense.price_id.tier > 1) {
                 const higherTierPrices = relatedPricesResult.filter((price) => 
@@ -174,23 +174,23 @@ if (sessionID !== null) {
                 await Promise.all(
                   higherTierPrices.map(async (price) => {
                     if (price.licenses.length !== 0) {
-                      // Award the higher-tier steward Cloudkeeper Credits.
+                      // Award the higher-tier steward Cloudsteward Credits.
                       const higherTierSteward = price.licenses[0].steward;
-                      console.log("awarding " + creditAward + " Cloudkeeper Credits to higher-tier steward: " + higherTierSteward.id)
+                      console.log("awarding " + creditAward + " Cloudsteward Credits to higher-tier steward: " + higherTierSteward.id)
 
                       try {
                         const result = await directusAdmin.request(updateUser(higherTierSteward.id, {
                           credits: higherTierSteward.credits + creditAward,
                         }));
                       } catch (e) {
-                        console.error(`Error awarding Cloudkeeper Credits to higher-tier steward ${higherTierSteward.id}:`, e);
+                        console.error(`Error awarding Cloudsteward Credits to higher-tier steward ${higherTierSteward.id}:`, e);
                       }
                     }
                   })
                 );
               }
             } catch (e) {
-              console.error(`Error awarding Cloudkeeper Credits to higher-tier stewards:`, e);
+              console.error(`Error awarding Cloudsteward Credits to higher-tier stewards:`, e);
             }
 
             // Handle license renewal / takeover (claim).
@@ -211,10 +211,10 @@ if (sessionID !== null) {
                 } catch (e) {
                   console.error("Error marking previous license as claimed:", e);
                 }
-                // Award the former steward Cloudkeeper Credits equal to 50% of new license price.
+                // Award the former steward Cloudsteward Credits equal to 50% of new license price.
                 try {
                   const creditAward = Math.round((parseFloat(newLicense.price_id.amount) * 100) / 2);
-                  console.log("awarding " + creditAward + " Cloudkeeper Credits to former steward: " + prevSteward.id)
+                  console.log("awarding " + creditAward + " Cloudsteward Credits to former steward: " + prevSteward.id)
 
                   const result = await directusAdmin.request(updateUser(prevSteward.id, {
                     credits: prevSteward.credits + creditAward,

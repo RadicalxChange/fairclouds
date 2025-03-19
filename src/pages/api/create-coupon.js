@@ -12,7 +12,7 @@ export const POST = async ({ request }) => {
     const stripe = new Stripe(STRIPE_KEY);
 
     const coupon = await stripe.coupons.create({
-      name: "Cloudkeeper Credits",
+      name: "Cloudsteward Credits",
       duration: "once",
       amount_off: credits,
       currency: "eur",

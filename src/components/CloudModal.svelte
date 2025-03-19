@@ -127,11 +127,11 @@
     >
       <div class="cloud-modal-header items-start">
         <p>
-          {currentUser && getLicense(currentUser, cloud.id) ? "You are Cloudkeeper " + getLicense(currentUser, cloud.id).price_id.tier : "Become a Keeper"} of this cloud and all {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
+          {currentUser && getLicense(currentUser, cloud.id) ? "You are Cloudsteward " + getLicense(currentUser, cloud.id).price_id.tier : "Become a steward"} of this cloud and all {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
           contains.
         </p>
         <div class="bg-white text-primary text-center text-copy whitespace-nowrap rounded-full px-[10px] pt-1">
-          <span>{numStewards} Cloudkeeper{numStewards !== 1 ? "s" : ""}</span>
+          <span>{numStewards} Cloudsteward{numStewards !== 1 ? "s" : ""}</span>
         </div>
       </div>
       <div class="flex flex-wrap gap-2.5 w-full overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
@@ -162,11 +162,11 @@
             {#each prices as price}
               {#if price.isRenewalPrice}
                 <option value={price.id}>
-                  Cloudkeeper {price.tier} - € {(Math.round((parseFloat(price.amount) / 2) * 100) / 100).toFixed(2)} Renew your current license
+                  Cloudsteward {price.tier} - € {(Math.round((parseFloat(price.amount) / 2) * 100) / 100).toFixed(2)} Renew your current license
                 </option>
               {:else}
                 <option value={price.id} disabled={price.licenses && price.licenses.length !== 0}>
-                  Cloudkeeper {price.tier} - € {price.amount}
+                  Cloudsteward {price.tier} - € {price.amount}
                 </option>
               {/if}
             {/each}
@@ -185,10 +185,10 @@
             </button>
           {:else}
             {#if !currentUser}
-              <p>You must be logged in to keep this cloud.</p>
+              <p>You must be logged in to steward this cloud.</p>
             {:else}
               <button on:click={handleAddToCart} class="button group max-w-[450px]">
-                <span>Keep this cloud</span>
+                <span>Steward this cloud</span>
               </button>
             {/if}
           {/if}

@@ -54,7 +54,7 @@
     }
   }
 
-  // Apply any Cloudkeeper Credits the user may have
+  // Apply any Cloudsteward Credits the user may have
   async function applyStoreCredits() {
     if (currentUser.credits > 0) {
       try {
