@@ -193,7 +193,7 @@
             {/if}
           {/if}
         {/if}
-        <a class="icon-button" target="_blank" href={`/${lang}/wiki/faq`}>
+        <a class="icon-button" target="_blank" href={`/${lang}/wiki/becoming-a-cloudsteward`}>
           <span class="text-xl sm:text-3xl pt-[4px]">i</span>
         </a>
       </div>
