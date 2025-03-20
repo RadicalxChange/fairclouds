@@ -64,7 +64,11 @@ const handleLogout = async () => {
   </button>
 
 {:else if isLoggedIn}
-  <p class="mb-2">Hi, {currentUser.first_name}</p>
+  {#if currentUser}
+    <p class="mb-2">{lang === "en" ? "Hi" : "Hola"}, {currentUser.first_name}</p>
+  {:else}
+    <p class="mb-2">You are logged in!</p>
+  {/if}
   <a href={`/${lang == "en" ? "en" : "es"}/dashboard`} class="button"
     >{lang === "en" ? "Dashboard" : "Panel de control"}</a
   >
