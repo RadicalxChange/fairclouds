@@ -13,8 +13,11 @@ export const POST = async ({ request }) => {
     const metadata = {
       user_id: current_user?.id,
       user_credits: current_user?.credits,
-      license_data: JSON.stringify(license_data),
     }
+
+    license_data.forEach((license, index) => {
+      metadata[`license_${index}`] = JSON.stringify(license);
+    });
 
     const session = await stripe.checkout.sessions.create({
       ui_mode: "embedded",

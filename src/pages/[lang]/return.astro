@@ -18,7 +18,7 @@ let name, email, errorMessage = "";
 let session,
     user_id,
     user_credits,
-    license_data,
+    otherMetadata,
     parsedLicenseData,
     resultLicenses,
     checkoutIsProcessed;
@@ -29,8 +29,21 @@ if (sessionID !== null) {
     session = await stripe.checkout.sessions.retrieve(sessionID);
     if (session.customer_details !== null) {
       ({ name, email } = session.customer_details);
-      ({ user_id, user_credits, license_data } = session.metadata || {});
-      parsedLicenseData = license_data ? JSON.parse(license_data) : [];
+      ({ user_id, user_credits, ...otherMetadata } = session.metadata || {});
+      
+      const licenseMetadata = Object.entries(otherMetadata)
+        .filter(([key]) => key.startsWith('license_'))
+        .map(([, value]) => {
+          try {
+            return JSON.parse(value as string);
+          } catch (error) {
+            console.error(`Error parsing license data: ${error}`);
+            return null;
+          }
+        })
+        .filter(license => license !== null);
+
+      parsedLicenseData = licenseMetadata || [];
     } else {
       // Handle the case where customer_details is null
       console.error("customer_details is null");
