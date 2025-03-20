@@ -10,7 +10,7 @@ export const POST = async ({ request }) => {
 
     const pricesData = data.map(data => {
 
-      const scaling_coefficient = 40;
+      const scaling_coefficient = 10;
       const scale = data.num_drawings / scaling_coefficient;
 
       const roundToTwo = (num) => Math.round(num * 100) / 100;
