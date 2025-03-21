@@ -58,7 +58,7 @@
           {#each Object.values($cartItems) as cartItem}
             <li class="flex flex-row justify-between">
               <div>
-                <h4 class="inline-block mr-4">{cartItem.name} - License {cartItem.price.tier}</h4>
+                <h4 class="inline-block mr-4">{cartItem.name} - Cloudsteward {cartItem.price.tier}</h4>
                 {#if cartItem.price.isRenewalPrice}
                   <span
                     class="bg-white text-primary text-copy rounded-full pl-[7px] pr-[7px] pt-1 inline-block mr-4"
