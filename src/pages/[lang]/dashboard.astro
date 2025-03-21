@@ -72,7 +72,7 @@ const formatDate = (dateString) => {
           <ul>
             {currentUser.licenses.map(license => (
               <li class="my-4 flex flex-col gap-2" style="border: 1px solid #ccc; padding: 0.5rem;">
-                <h3>Cloud {license.price_id.cloud_id.name}</h3>
+                <h3>{license.price_id.cloud_id.name}</h3>
                 <h3>License {license.price_id.tier}</h3>
                 <p><strong>Cycle:</strong> {license.price_id.cycle_id.name}</p>
                 <p><strong>Start:</strong> {formatDate(license.price_id.cycle_id.start_date)}</p>
