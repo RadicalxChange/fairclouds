@@ -35,7 +35,7 @@
   async function handleCloudChange() {
     // Fetch info for the selected cloud
     drawings = cloud.drawings;
-    currentIndex = 0;
+    currentIndex = cloud.activeDrawingIndex;
     startSlideshow();
     prices = cloud.prices.sort((a, b) => a.tier - b.tier);
     numStewards = countStewards(prices);
