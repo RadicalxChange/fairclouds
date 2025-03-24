@@ -3,7 +3,7 @@ import directus from "../../../lib/directus";
 import { readItems } from "@directus/sdk";
 import { getLangFromUrl } from "../../../i18n/utils";
 import Layout from "../../../layouts/Layout.astro";
-import WikiSidebar from "../../../components/WikiSidebar.astro";
+import FAQSidebar from "../../../components/FAQSidebar.astro";
 
 export async function getStaticPaths() {
   return [{ params: { lang: "en" } }, { params: { lang: "es" } }];
@@ -32,6 +32,6 @@ const pages = await directus.request(
 
 <Layout title="Fairclouds" theme="white">
   <div class="flex gap-28 justify-between px-4 py-2.5">
-    <WikiSidebar pages={pages} lang={lang} />
+    <FAQSidebar pages={pages} lang={lang} />
   </div>
 </Layout>

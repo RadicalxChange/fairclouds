@@ -2,7 +2,7 @@
 import directus from "../../../lib/directus";
 import { readItems } from "@directus/sdk";
 import Layout from "../../../layouts/Layout.astro";
-import WikiSidebar from "../../../components/WikiSidebar.astro";
+import FAQSidebar from "../../../components/FAQSidebar.astro";
 import Blocks from "../../../components/Blocks.astro";
 
 export async function getStaticPaths() {
@@ -54,7 +54,7 @@ const pages = await directus.request(
 
 <Layout title="Fairclouds" theme="white">
   <div class="flex gap-28 justify-between px-4 py-2.5">
-    <WikiSidebar pages={pages} lang={lang} />
+    <FAQSidebar pages={pages} lang={lang} />
     <main class="grow">
       <h1>{page.translation.title}</h1>
       {

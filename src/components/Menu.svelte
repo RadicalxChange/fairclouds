@@ -135,8 +135,8 @@
                   <slot name="info" />
                 </div>
                 <div class="sticky bottom-0 left-0 z-10 flex gap-2.5">
-                  <a class="button" target="_blank" href={`/${lang}/wiki/faq`}>Wiki</a>
-                  <a class="button" target="_blank" href={`/${lang}/wiki/support`}>Support</a>
+                  <a class="button" target="_blank" href={`/${lang}/faq/intro`}>FAQ</a>
+                  <a class="button" target="_blank" href={`/${lang}/faq/support`}>Support</a>
                 </div>
               </div>
             {:else if tab === "about"}
@@ -195,8 +195,8 @@
                 <slot name="info" />
               </div>
               <div class="sticky bottom-0 left-0 z-10 flex gap-2.5">
-                <a class="button" target="_blank" href={`/${lang}/wiki/faq`}>Wiki</a>
-                <a class="button" target="_blank" href={`/${lang}/wiki/support`}>Support</a>
+                <a class="button" target="_blank" href={`/${lang}/faq/intro`}>FAQ</a>
+                <a class="button" target="_blank" href={`/${lang}/faq/support`}>Support</a>
               </div>
             </div>
           {:else if tab === "about"}
