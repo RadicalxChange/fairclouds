@@ -229,7 +229,7 @@ async function sendEmails(templateId, cycle, licenseCondition, errorLogs) {
 						first_name: license.steward.first_name,
 						last_name: license.steward.last_name,
             email: license.steward.email,
-						credits: license.steward.credits > 0 ? license.steward.credits.toFixed(2) + " €" : "",
+						credits: license.steward.credits > 0 ? (license.steward.credits / 100).toFixed(2) + " €" : "",
 						licenses: [], // An array to hold licenses meeting the condition.
 					};
 				}
