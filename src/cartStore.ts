@@ -33,7 +33,9 @@ export function addCartItem({ id, name, product_id, quantity, price, drawings }:
 export function removeCartItem(itemId: string) {
   const cart = cartItems.get();
   if (cart[itemId]) {
-    cartItems.setKey(itemId, undefined); // Remove the item by setting it to `undefined`
+    const newCart = { ...cart };
+    delete newCart[itemId];
+    cartItems.set(newCart);
   }
 }
 

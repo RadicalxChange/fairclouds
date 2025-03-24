@@ -28,6 +28,8 @@
   }
 </script>
 
-<button on:click={handleDownload} disabled={loading} class="button">
-  {!loading ? "Download All Drawings" : "Downloading drawings..."}
-</button>
+<div class="my-4">
+  <button on:click={handleDownload} disabled={loading} class="button">
+    {!loading ? "Download All Drawings" : "Downloading drawings..."}
+  </button>
+</div>

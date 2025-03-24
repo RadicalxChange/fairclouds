@@ -3,14 +3,13 @@
 export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
-import DownloadButton from '../../components/DownloadButton.svelte';
-import directus from "../../lib/directus";
-import { withToken, readMe } from '@directus/sdk';
+import DashboardComponent from "../../components/DashboardComponent.svelte";
+import directus, { directusAdmin } from "../../lib/directus";
+import { withToken, readMe, readItems } from '@directus/sdk';
 import { parse } from "cookie";
 
-const DIRECTUS_URL = "https://cms.fairclouds.life";
-
 let currentUser = null;
+let renewalPrices = [];
 
 // Read cookies from the incoming request
 const cookies = parse(Astro.request.headers.get("cookie") || "");
@@ -27,6 +26,7 @@ if (authToken) {
             "licenses.price_id.id",
             "licenses.price_id.amount",
             "licenses.price_id.cloud_id.id",
+            "licenses.price_id.cloud_id.product_id",
             "licenses.price_id.cloud_id.name",
             "licenses.price_id.cloud_id.drawings.*",
             "licenses.price_id.cycle_id.id",
@@ -43,78 +43,60 @@ if (authToken) {
   } catch (error) {
     console.error("Failed to fetch user or validate token:", error);
   }
+
+  // Load renewal prices.
+  if (currentUser && currentUser.licenses) {
+    await Promise.all(
+      currentUser.licenses.map(async (license) => {
+        if (license.price_id.cycle_id.renewal_active) {
+          // Get the renewal price.
+          try {
+            // If the current license is for an active cycle, the renewal price will be early access. Otherwise it will be active.
+            const pricesStatus = license.price_id.cycle_id.prices_status === "active" ? "early_access" : "active";
+
+            const renewalPriceResult = await directusAdmin.request(
+              readItems("price", {
+                fields: [
+                  "*",
+                  "cloud_id.id",
+                  "cloud_id.name",
+                  "cycle_id.id",
+                  "cycle_id.name",
+                  "cycle_id.start_date",
+                  "cycle_id.end_date",
+                  "cycle_id.prices_status",
+                  "cycle_id.renewal_active",
+                  "licenses.id",
+                  "licenses.steward",
+                  "licenses.steward.id",
+                  "licenses.steward.first_name",
+                  "licenses.steward.email",
+                  "licenses.steward.credits",
+                ],
+                filter: {
+                  id: { _neq: license.price_id.id },
+                  cloud_id: { _eq: license.price_id.cloud_id.id },
+                  tier: { _eq: license.price_id.tier },
+                  cycle_id: {
+                    prices_status: { _eq: pricesStatus }
+                  }
+                },
+                limit: 1,
+              })
+            );
+            let renewalPrice = renewalPriceResult.find(price => price.licenses.length === 0);
+            renewalPrice.isRenewalPrice = true;
+            renewalPrices.push(renewalPrice);
+          } catch (error) {
+            console.error(`Failed to load renewal price for license ${license.id}:`, error);
+          }
+        }
+      })
+    );
+  }
 }
-
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-    timeZoneName: "short",
-  }).format(date);
-};
-
 ---
 
 <Layout title="Dashboard">
-  <main>
-    {currentUser ? (
-      <div class="p-12">
-        <h1>Welcome to your account dashboard, {currentUser.first_name}!</h1>
-        <p class="mt-4">You have €{currentUser.credits / 100} in Cloudsteward Credits.</p>
-
-        <h2 class="mt-8">Your Licenses</h2>
-        {currentUser.licenses?.length > 0 ? (
-          <ul>
-            {currentUser.licenses.map(license => (
-              <li class="my-4 flex flex-col gap-2" style="border: 1px solid #ccc; padding: 0.5rem;">
-                <h3>{license.price_id.cloud_id.name}</h3>
-                <h3>Cloudsteward {license.price_id.tier}</h3>
-                <p><strong>Cycle:</strong> {license.price_id.cycle_id.name}</p>
-                <p><strong>Start:</strong> {formatDate(license.price_id.cycle_id.start_date)}</p>
-                <p><strong>End:</strong> {formatDate(license.price_id.cycle_id.end_date)}</p>
-
-                {license.price_id.cloud_id ? (
-                  <>
-
-                    {license.price_id.cloud_id.drawings?.length > 0 ? (
-                      <>
-                        <h5 class="my-4">Drawings</h5>
-                        <div class="flex flex-wrap gap-1">
-                          {license.price_id.cloud_id.drawings.map(drawing => (
-                            <div style="padding: 0.5rem;">
-                              <img 
-                                src={`${DIRECTUS_URL}/assets/${drawing.image}`} 
-                                alt={`Drawing ${drawing.id}`} 
-                                style="max-width: 150px; max-height: 150px;" 
-                              />
-                            </div>
-                          ))}
-                        </div>
-                        <div class="my-4">
-                          <DownloadButton cloudId={license.price_id.cloud_id.id} client:load />
-                        </div>
-                      </>
-                    ) : (
-                      <p>No drawings available for this cloud.</p>
-                    )}
-                  </>
-                ) : (
-                  <p>No associated cloud information for this license.</p>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>You have no licenses.</p>
-        )}
-      </div>
-    ) : (
-      <h1>You are not logged in.</h1>
-    )}
-  </main>
+  <DashboardComponent currentUser={currentUser} renewalPrices={renewalPrices} client:load />
 </Layout>
