@@ -85,8 +85,10 @@ if (authToken) {
               })
             );
             let renewalPrice = renewalPriceResult.find(price => price.licenses.length === 0);
-            renewalPrice.isRenewalPrice = true;
-            renewalPrices.push(renewalPrice);
+            if (renewalPrice) {
+              renewalPrice.isRenewalPrice = true;
+              renewalPrices.push(renewalPrice);
+            }
           } catch (error) {
             console.error(`Failed to load renewal price for license ${license.id}:`, error);
           }
