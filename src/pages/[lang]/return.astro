@@ -207,9 +207,9 @@ if (sessionID !== null) {
             }
 
             // Handle license renewal / takeover (claim).
-            const prevPrice = relatedPricesResult.find((price) => {
+            const prevPrice = relatedPricesResult.find((price) => (
               price.cycle_id.renewal_active && price.tier === newLicense.price_id.tier
-            });
+            ));
             
             if (prevPrice && prevPrice.licenses.length !== 0) {
               const prevLicense = prevPrice.licenses[0];
