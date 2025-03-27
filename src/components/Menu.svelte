@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import { useTranslations } from "../i18n/utils";
   import { createDialog } from "@melt-ui/svelte";
-  import Login from "./Login.svelte";
 
   export let lang: "en" | "es" = "en";
 
@@ -11,14 +10,9 @@
     states: { open },
   } = createDialog();
 
-  // This boolean will be passed into Login.
-  // If set to true in the Login component, we know to reload on modal close.
-  let reloadOnClose = false;
-
   let tab = "info";
 
   let t;
-  let currentUser;
   let isMobileLandscape = false;
 
   // Update orientation by comparing width and height.
@@ -40,30 +34,11 @@
     window.addEventListener("resize", updateOrientation);
     window.addEventListener("orientationchange", updateOrientation);
 
-    (async () => {
-      // Fetch the current user on component mount.
-      try {
-        const res = await fetch('/api/current-user');
-        if (res.ok) {
-          const data = await res.json();
-          currentUser = data.user;
-        }
-      } catch (err) {
-        console.error("Failed to fetch current user", err);
-      }
-    })();
-
     return () => {
       window.removeEventListener("resize", updateOrientation);
       window.removeEventListener("orientationchange", updateOrientation);
     };
   });
-
-  // Watch for when $open changes from true to false.
-  // If reloadOnClose was set to true by Login, reload the page.
-  $: if (!$open && reloadOnClose) {
-    window.location.reload();
-  }
 </script>
 
 <button class="icon-button" {...$trigger} use:trigger>
@@ -118,15 +93,6 @@
                 {t("news")}
               </button>
             </li>
-            <li>
-              <button
-                class="hover-blur"
-                class:active={tab === "login"}
-                on:click={() => (tab = "login")}
-              >
-                {t("login")}
-              </button>
-            </li>
           </ul>
           <div class="overflow-auto custom-scrollbar pl-4">
             {#if tab === "info"}
@@ -143,8 +109,6 @@
               <slot name="about" />
             {:else if tab === "news"}
               <slot name="news" />
-            {:else if tab === "login"}
-              <Login lang={lang} currentUser={currentUser} bind:reloadOnClose />
             {/if}
           </div>
         </div>
@@ -178,15 +142,6 @@
               {t("news")}
             </button>
           </li>
-          <li>
-            <button
-              class="hover-blur"
-              class:active={tab === "login"}
-              on:click={() => (tab = "login")}
-            >
-              {t("login")}
-            </button>
-          </li>
         </ul>
         <div class="overflow-auto custom-scrollbar">
           {#if tab === "info"}
@@ -203,8 +158,6 @@
             <slot name="about" />
           {:else if tab === "news"}
             <slot name="news" />
-          {:else if tab === "login"}
-            <Login lang={lang} currentUser={currentUser} bind:reloadOnClose />
           {/if}
         </div>
       {/if}

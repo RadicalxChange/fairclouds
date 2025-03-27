@@ -66,11 +66,14 @@ const handleLogout = async () => {
 {:else if isLoggedIn}
   {#if currentUser}
     <p class="mb-2">{lang === "en" ? "Hi" : "Hola"}, {currentUser.first_name}</p>
+    {#if currentUser.credits !== 0}
+      <p class="mt-4">You have €{currentUser.credits / 100} in Cloudsteward Credits.</p>
+    {/if}
   {:else}
     <p class="mb-2">You are logged in!</p>
   {/if}
-  <a href={`/${lang == "en" ? "en" : "es"}/dashboard`} class="button"
-    >{lang === "en" ? "Dashboard" : "Panel de control"}</a
+  <a href={`/${lang == "en" ? "en" : "es"}/my-clouds`} class="button"
+    >{lang === "en" ? "View My Clouds" : "Ver mis nubes"}</a
   >
   <button class="button secondary mt-2" on:click={handleLogout}>
     {lang === "en" ? "Logout" : "Cerrar sesión"}

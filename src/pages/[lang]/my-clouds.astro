@@ -3,7 +3,7 @@
 export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
-import DashboardComponent from "../../components/DashboardComponent.svelte";
+import MyCloudsComponent from "../../components/MyCloudsComponent.svelte";
 import directus, { directusAdmin } from "../../lib/directus";
 import { withToken, readMe, readItems } from '@directus/sdk';
 import { parse } from "cookie";
@@ -32,6 +32,8 @@ if (authToken) {
             "licenses.price_id.cycle_id.id",
             "licenses.price_id.cycle_id.name",
             "licenses.price_id.cycle_id.start_date",
+            "licenses.price_id.cycle_id.renewal_start_date",
+            "licenses.price_id.cycle_id.transition_start_date",
             "licenses.price_id.cycle_id.end_date",
             "licenses.price_id.cycle_id.prices_status",
             "licenses.price_id.cycle_id.renewal_active",
@@ -72,6 +74,8 @@ if (authToken) {
                   "licenses.steward.first_name",
                   "licenses.steward.email",
                   "licenses.steward.credits",
+                  "licenses.renewed",
+                  "licenses.claimed",
                 ],
                 filter: {
                   id: { _neq: license.price_id.id },
@@ -99,6 +103,6 @@ if (authToken) {
 }
 ---
 
-<Layout title="Dashboard">
-  <DashboardComponent currentUser={currentUser} renewalPrices={renewalPrices} client:load />
+<Layout title="My Clouds">
+  <MyCloudsComponent currentUser={currentUser} renewalPrices={renewalPrices} client:load />
 </Layout>

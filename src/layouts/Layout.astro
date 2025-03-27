@@ -11,6 +11,7 @@ import logoEnBlack from "../images/Fairclouds-Logo_EN-black.svg";
 import logoEsBlack from "../images/Fairclouds-Logo_ES-black.svg";
 import "../styles/global.css"; // Import the global CSS file
 import "../styles/modal.css";
+import Account from "../components/Account.svelte";
 
 interface Props {
 	title: string;
@@ -78,7 +79,10 @@ const lang = getLangFromUrl(Astro.url);
 				theme == "blue" && (
 					<div class="flex gap-4 items-center relative justify-between grow lg:grow-0">
 						<ModeToggle theme={theme} />
-						<MenuContainer theme={theme} />
+						<div class="flex gap-4 items-center relative justify-between grow lg:grow-0">
+							<MenuContainer theme={theme} />
+							<Account client:load />
+						</div>
 					</div>
 				)
 			}
