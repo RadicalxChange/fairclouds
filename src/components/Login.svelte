@@ -73,7 +73,7 @@ const handleLogout = async () => {
     <p class="mb-2">You are logged in!</p>
   {/if}
   <a href={`/${lang == "en" ? "en" : "es"}/my-clouds`} class="button"
-    >{lang === "en" ? "View My Clouds" : "Ver mis nubes"}</a
+    >{lang === "en" ? "View Cloud Panel" : "Ver panel de nubes"}</a
   >
   <button class="button secondary mt-2" on:click={handleLogout}>
     {lang === "en" ? "Logout" : "Cerrar sesión"}
