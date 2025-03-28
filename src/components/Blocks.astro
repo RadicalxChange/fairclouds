@@ -8,6 +8,10 @@ const { content } = Astro.props;
       const elements = [];
       let i = 0;
 
+      if (!content) {
+        return elements;
+      }
+
       while (i < content.length) {
         const block = content[i];
 
