@@ -40,5 +40,8 @@ export function removeCartItem(itemId: string) {
 }
 
 export function clearCart() {
+  // Force hydration by reading the store.
+  cartItems.get();
+  // Then clear the cart.
   cartItems.set({});
 }
