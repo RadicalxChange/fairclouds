@@ -4,8 +4,6 @@ import { readItems } from "@directus/sdk";
 import Layout from "../../../layouts/Layout.astro";
 import Blog from "../../../components/Blog.astro";
 
-const directusBaseURL = import.meta.env.DIRECTUS_CMS_URL;
-
 export async function getStaticPaths() {
   const articles = await directus.request(
     readItems("articles", {

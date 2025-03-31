@@ -5,7 +5,7 @@ import Stripe from "stripe";
 import { directusAdmin } from "../../lib/directus";
 import { updateItem } from '@directus/sdk';
 
-const STRIPE_KEY = import.meta.env.STRIPE_KEY;
+const { STRIPE_KEY } = import.meta.env;
 
 export const POST = async ({ request }) => {
   try {

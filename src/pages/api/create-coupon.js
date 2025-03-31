@@ -3,7 +3,7 @@ export const prerender = false;
 
 import Stripe from "stripe";
 
-const STRIPE_KEY = import.meta.env.STRIPE_KEY;
+const { STRIPE_KEY } = import.meta.env;
 
 export const POST = async ({ request }) => {
   try {

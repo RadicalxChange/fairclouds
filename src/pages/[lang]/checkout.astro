@@ -41,7 +41,7 @@ if (authToken) {
   }
 }
 
-const PUBLIC_STRIPE_KEY = import.meta.env.PUBLIC_STRIPE_KEY;
+const { PUBLIC_STRIPE_KEY } = import.meta.env;
 const { origin } = Astro.url;
 const lang = getLangFromUrl(Astro.url);
 ---

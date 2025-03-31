@@ -1,4 +1,4 @@
-const DIRECTUS_API_TOKEN = import.meta.env.DIRECTUS_API_TOKEN;
+const { DIRECTUS_API_TOKEN } = import.meta.env;
 
 import { createDirectus, rest, staticToken, authentication} from '@directus/sdk';
 

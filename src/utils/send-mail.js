@@ -1,8 +1,8 @@
-const BASE_URL = import.meta.env.PUBLIC_BASE_URL
+const { PUBLIC_BASE_URL } = import.meta.env;
 
 export async function sendMail(email, templateId, templateModel) {
     try {
-        const response = await fetch(BASE_URL + "/api/send-mail", {
+        const response = await fetch(PUBLIC_BASE_URL + "/api/send-mail", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
