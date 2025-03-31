@@ -47,7 +47,6 @@ export const POST = async ({ request }) => {
     }));
     console.log("Created new prices:", prices);
 
-    // Return the session's client secret to the client
     return new Response(JSON.stringify({ prices }), {
       status: 200,
       headers: {

@@ -24,6 +24,39 @@
   $: if (!$open && $isCartOpen) {
     isCartOpen.set(false);
   }
+
+  async function handleCheckout() {
+    try {
+      // Check if any cart items are no longer available.
+      const response = await fetch('/api/cart-check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ data: Object.values($cartItems) })
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const result = await response.json();
+      
+      if (result.claimedItems && result.claimedItems.length > 0) {
+        const cloudNames = result.claimedItems.map(item => item.name).join(', ');
+        result.claimedItems.forEach(item => {
+          removeCartItem(item.id);
+        });
+        alert(`One or more Cloudsteward Licenses you had in your cart are no longer available. You can still steward those clouds if you go back and select a different license. The following clouds will be removed from your cart: ${cloudNames}. Reload the page to make sure the listings are up-to-date.`);
+      } else {
+        // If all items are available, navigate to the checkout page.
+        window.location.href = '/en/checkout';
+      }
+    } catch (error) {
+      console.error("Cart validation failed", error);
+      alert("There was an error validating your cart. Please try again later. If the problem persists, clear your session cache or contact support.");
+    }
+  }
 </script>
 
 <div class="has-hint relative">
@@ -99,7 +132,7 @@
         {#if !currentUser}
           <p>You must be logged in to checkout.</p>
         {:else}
-          <a href="/en/checkout" class="button">Checkout</a>
+          <button on:click={handleCheckout} class="button">Checkout</button>
         {/if}
       {:else}
         <p>Your cart is empty!</p>
