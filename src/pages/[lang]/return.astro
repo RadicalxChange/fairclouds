@@ -166,6 +166,7 @@ if (sessionID !== null) {
                   "licenses.steward.credits",
                 ],
                 filter: {
+                  id: { _neq: newLicense.price_id.id },
                   cloud_id: { _eq: newLicense.price_id.cloud_id },
                   licenses: { _some: {} },
                   cycle_id: {
@@ -244,7 +245,7 @@ if (sessionID !== null) {
                     "credits_awarded": (creditAward / 100).toFixed(2),
                     "credit_balance": (result.credits / 100).toFixed(2),
                   };
-                  await sendMail(email, LICENSE_TAKEN_OVER_EMAIL_TEMPLATE, emailData)
+                  await sendMail(prevSteward.email, LICENSE_TAKEN_OVER_EMAIL_TEMPLATE, emailData);
                 } catch (e) {
                   console.error("Error awarding credits to former steward:", e);
                 }
