@@ -8,11 +8,15 @@ import { sendMail } from "../../utils/send-mail"
 import { directusAdmin } from "../../lib/directus";
 import { readItems, createItem, updateItem, updateUser } from '@directus/sdk';
 
-const stripe = new Stripe(import.meta.env.STRIPE_KEY);
-const sessionID = Astro.url.searchParams.get("session_id");
+const {
+  STRIPE_KEY,
+  LICENSE_TAKEN_OVER_EMAIL_TEMPLATE,
+  PURCHASE_CONFIRM_EMAIL_TEMPLATE,
+  PUBLIC_BASE_URL
+} = import.meta.env;
 
-const LICENSE_TAKEN_OVER_EMAIL_TEMPLATE = import.meta.env.LICENSE_TAKEN_OVER_EMAIL_TEMPLATE;
-const PURCHASE_CONFIRM_EMAIL_TEMPLATE = import.meta.env.PURCHASE_CONFIRM_EMAIL_TEMPLATE;
+const stripe = new Stripe(STRIPE_KEY);
+const sessionID = Astro.url.searchParams.get("session_id");
 
 let name, email, errorMessage = "";
 let session,
@@ -54,16 +58,16 @@ if (sessionID !== null) {
 
     // Customize the error message based on the error type
     if (e.code === "resource_missing") {
-      errorMessage = "Your checkout session could not be found. Please try again.";
+      errorMessage = "Your checkout session could not be found. Please try again. If the issue persists, contact support.";
     } else if (e.code === "validation_error") {
       errorMessage = "There was an issue validating your purchase. Please contact support.";
     } else {
-      errorMessage = "An unexpected error occurred. Please try again later.";
+      errorMessage = "An unexpected error occurred. Please try again later. If the issue persists, contact support.";
     }
   }
 
   if (user_id && parsedLicenseData?.length > 0) {
-    // Mark prices as stewarded in Stripe to take them off the market
+    // Mark prices as stewarded in Stripe.
     try {
       await Promise.all(
         parsedLicenseData.map((data) =>
@@ -135,6 +139,9 @@ if (sessionID !== null) {
       }
 
       // Handle license post-processing (i.e. renewals, takeovers, credit distributions).
+
+      let newPriceData = []; // Holds data for us to create new prices with if necessary.
+
       try {
         await Promise.all(
           resultLicenses.map(async (newLicense) => {
@@ -144,6 +151,7 @@ if (sessionID !== null) {
                   "*",
                   "cloud_id.id",
                   "cloud_id.name",
+                  "cloud_id.drawings",
                   "cycle_id.id",
                   "cycle_id.name",
                   "cycle_id.start_date",
@@ -158,16 +166,12 @@ if (sessionID !== null) {
                   "licenses.steward.credits",
                 ],
                 filter: {
-                  cloud_id: {
-                    _eq: newLicense.price_id.cloud_id,
-                  },
-                  licenses: {
-                    _some: {},
-                  },
+                  cloud_id: { _eq: newLicense.price_id.cloud_id },
+                  licenses: { _some: {} },
                   cycle_id: {
                     _or: [
+                      { id: { _eq: newLicense.price_id.cycle_id.id } },
                       { renewal_active: { _eq: true } },
-                      { prices_status: { _eq: "active" } },
                     ]
                   }
                 },
@@ -178,7 +182,7 @@ if (sessionID !== null) {
             try {
               if (newLicense.price_id.tier > 1) {
                 const higherTierPrices = relatedPricesResult.filter((price) => 
-                  price.cycle_id.prices_status === "active" &&
+                  price.cycle_id.id === newLicense.price_id.cycle_id.id &&
                     price.tier < newLicense.price_id.tier
                 );
 
@@ -189,7 +193,7 @@ if (sessionID !== null) {
                     if (price.licenses.length !== 0) {
                       // Award the higher-tier steward Cloudsteward Credits.
                       const higherTierSteward = price.licenses[0].steward;
-                      console.log("awarding " + creditAward + " Cloudsteward Credits to higher-tier steward: " + higherTierSteward.id)
+                      console.log("Awarding " + creditAward + " Cloudsteward Credits to higher-tier steward: " + higherTierSteward.id)
 
                       try {
                         const result = await directusAdmin.request(updateUser(higherTierSteward.id, {
@@ -255,8 +259,62 @@ if (sessionID !== null) {
                 }
               }
             }
+
+            // If this was the last available active price for this cloud, mint a new license.
+            const thisCycle = newLicense.price_id.cycle_id;
+
+            if (thisCycle.prices_status !== "inactive") {
+              const thisCyclePrices = relatedPricesResult.filter((price) => 
+                  price.cycle_id.id === thisCycle.id
+              );
+
+              if (!thisCyclePrices.find(price => price.licenses.length === 0)) {
+                
+                const basePrice = thisCyclePrices.find(price => price.tier === 1);
+                
+                let nextTier = thisCyclePrices.length + 1;
+                const nextIndex = thisCyclePrices.sort((a,b) => a.tier - b.tier).findIndex((x,i) => x.tier !== i+1);
+                
+                if (nextIndex !== -1) {
+                  nextTier = nextIndex + 1
+                }
+
+                if (basePrice) {
+                  newPriceData.push({
+                    base_price: basePrice,
+                    tier: nextTier,
+                    num_drawings: basePrice.cloud_id.drawings.length,
+                  });
+                }
+              }
+            }
           })
         );
+
+        // Create new renewal prices if necessary.
+        if (newPriceData.length !== 0) {
+          try {
+            const response = await fetch(PUBLIC_BASE_URL + "/api/create-prices", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                data: newPriceData,
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+
+            const data = await response.json();
+            console.log("Created new prices:", data.prices);
+
+          } catch (error) {
+            console.error("Failed to create new prices:", error);
+          }
+        }
       } catch (e) {
         console.error("Error in license post-processing:", e);
       }
