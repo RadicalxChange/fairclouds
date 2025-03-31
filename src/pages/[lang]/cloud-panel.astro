@@ -3,7 +3,7 @@
 export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
-import MyCloudsComponent from "../../components/MyCloudsComponent.svelte";
+import CloudPanelComponent from "../../components/CloudPanelComponent.svelte";
 import directus, { directusAdmin } from "../../lib/directus";
 import { withToken, readMe, readItems } from '@directus/sdk';
 import { parse } from "cookie";
@@ -104,5 +104,5 @@ if (authToken) {
 ---
 
 <Layout title="Cloud Panel">
-  <MyCloudsComponent currentUser={currentUser} renewalPrices={renewalPrices} client:load />
+  <CloudPanelComponent currentUser={currentUser} renewalPrices={renewalPrices} client:load />
 </Layout>

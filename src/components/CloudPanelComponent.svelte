@@ -25,7 +25,7 @@
 <main class="p-12">
     {#if currentUser}
         <div class="pr-12">
-            <h2>Your Clouds</h2>
+            <h2>Cloud Panel</h2>
             {#if currentUser.licenses?.length > 0}
                 <ul>
                     {#each currentUser.licenses as license}
