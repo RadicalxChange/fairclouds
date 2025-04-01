@@ -7,6 +7,7 @@ import Stripe from "stripe";
 import { sendMail } from "../../utils/send-mail"
 import { directusAdmin } from "../../lib/directus";
 import { readItems, createItem, updateItem, updateUser } from '@directus/sdk';
+import { getLangFromUrl } from "../../i18n/utils";
 
 const {
   STRIPE_KEY,
@@ -17,6 +18,8 @@ const {
 
 const stripe = new Stripe(STRIPE_KEY);
 const sessionID = Astro.url.searchParams.get("session_id");
+
+const lang = getLangFromUrl(Astro.url);
 
 let name, email, errorMessage = "";
 let session,
@@ -344,15 +347,18 @@ if (sessionID !== null) {
         <p>{errorMessage}</p>
       </div>
     ) : (
-      <div class="space-y-4">
-        <h1>Thank you for your purchase, {name}!</h1>
-        <p>We've sent a receipt to {email}.</p>
-        <p>View your cloud panel to download drawings!</p>
-        <div class="has-hint">
+      <div class="text-center">
+        <div class="text-center space-y-8">
+          <h1 class="text-3xl">Thank you for your purchase, {name}!</h1>
+          <p>We've sent a receipt to {email}. View your cloud panel to download drawings!</p>
           <a class="button h-full" href="/en/cloud-panel"
             >View Cloud Panel
           </a>
         </div>
+        <img src="/usage_all_white.png" alt="what to do with the drawings" class="mt-24 mx-auto max-w-[1000px]" />
+        <a class="button mt-16" target="_blank" href={`/${lang}/faq/what-to-do-with-the-drawings`}>
+          <span class="text-xl sm:text-3xl pt-[4px]">What to do with the drawings</span>
+        </a>
       </div>
     )}
   </div>

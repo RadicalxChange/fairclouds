@@ -1,8 +1,9 @@
-<script>
+<script lang="ts">
     import DownloadButton from "../components/DownloadButton.svelte";
     import RenewalButton from "../components/RenewalButton.svelte";
     import Cart from "../components/Cart.svelte";
 
+    export let lang: "en" | "es" = "en";
     export let currentUser;
     export let renewalPrices;
 
@@ -49,9 +50,17 @@
                                             </div>
                                         {/each}
                                     </div>
-                                    <DownloadButton
-                                        cloudId={license.price_id.cloud_id.id}
-                                    />
+                                    <div class="flex gap-8 items-center">
+                                        <DownloadButton
+                                            cloudId={license.price_id.cloud_id.id}
+                                        />
+                                        <a class="icon-button has-hint relative" target="_blank" href={`/${lang}/faq/what-to-do-with-the-drawings`}>
+                                            <span class="text-xl sm:text-3xl pt-[4px]">i</span>
+                                            <div role="tooltip" class="hint top-[0%] -mt-7 right-0 w-max">
+                                              What to do with the drawings
+                                            </div>
+                                        </a>
+                                    </div>
                                     <RenewalButton
                                         license={license}
                                         renewalPrices={renewalPrices}

@@ -7,6 +7,7 @@ import CloudPanelComponent from "../../components/CloudPanelComponent.svelte";
 import directus, { directusAdmin } from "../../lib/directus";
 import { withToken, readMe, readItems } from '@directus/sdk';
 import { parse } from "cookie";
+import { getLangFromUrl } from "../../i18n/utils";
 
 let currentUser = null;
 let renewalPrices = [];
@@ -14,6 +15,8 @@ let renewalPrices = [];
 // Read cookies from the incoming request
 const cookies = parse(Astro.request.headers.get("cookie") || "");
 const authToken = cookies.auth_token;
+
+const lang = getLangFromUrl(Astro.url);
 
 if (authToken) {
   try {
@@ -104,5 +107,5 @@ if (authToken) {
 ---
 
 <Layout title="Cloud Panel">
-  <CloudPanelComponent currentUser={currentUser} renewalPrices={renewalPrices} client:load />
+  <CloudPanelComponent lang={lang} currentUser={currentUser} renewalPrices={renewalPrices} client:load />
 </Layout>
