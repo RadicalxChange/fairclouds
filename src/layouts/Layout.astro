@@ -79,7 +79,7 @@ const lang = getLangFromUrl(Astro.url);
 				theme == "blue" && (
 					<div class="flex gap-4 items-center relative justify-between grow lg:grow-0">
 						<ModeToggle theme={theme} />
-						<div class="flex gap-4 items-center relative justify-between grow lg:grow-0">
+						<div class="flex gap-4">
 							<MenuContainer theme={theme} />
 							<Account client:load />
 						</div>
