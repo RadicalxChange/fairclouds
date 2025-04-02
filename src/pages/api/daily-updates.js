@@ -45,7 +45,8 @@ export const POST = async ({ request }) => {
           "*",
           "prices.id",
           "prices.amount",
-          "prices.cloud_id",
+          "prices.cloud_id.id",
+          "prices.cloud_id.name",
           "prices.cycle_id.id",
           "prices.cycle_id.name",
           "prices.cycle_id.start_date",
@@ -170,7 +171,7 @@ async function processCycles(cycles, errorLogs) {
               const amount = Number(price.amount);
               newPricesData.push({
                 amount: Math.round((amount + (amount * (Number(cycle.next_price_markup) / 100))) * 100) / 100, // assuming integer representing percent markup
-                cloud_id: price.cloud_id,
+                cloud_id: price.cloud_id.id,
                 cycle_id: nextCycle.id,
                 tier: price.tier,
               });
@@ -234,7 +235,7 @@ async function sendEmails(templateId, cycle, licenseCondition, errorLogs) {
 					};
 				}
 				stewards[stewardId].licenses.push({
-					cloud_id: price.cloud_id,
+					cloud: price.cloud_id.name,
 					tier: price.tier,
 					cycle_id: price.cycle_id,
 				});

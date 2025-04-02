@@ -19,7 +19,7 @@ export const POST = async ({ request }) => {
       TemplateId: templateId,
       TemplateModel: templateModel
     };
-    console.log("Sending email:", emailData)
+    console.log("Sending email:", JSON.stringify(emailData, null, 4))
 
     const postmarkResponse = await fetch(postmarkUrl, {
       method: 'POST',

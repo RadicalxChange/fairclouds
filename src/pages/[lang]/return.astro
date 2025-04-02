@@ -112,7 +112,8 @@ if (sessionID !== null) {
             "*",
             "price_id.id",
             "price_id.amount",
-            "price_id.cloud_id",
+            "price_id.cloud_id.id",
+            "price_id.cloud_id.name",
             "price_id.tier",
             "price_id.cycle_id.id",
             "price_id.cycle_id.renewal_active",
@@ -170,7 +171,7 @@ if (sessionID !== null) {
                 ],
                 filter: {
                   id: { _neq: newLicense.price_id.id },
-                  cloud_id: { _eq: newLicense.price_id.cloud_id },
+                  cloud_id: { _eq: newLicense.price_id.cloud_id.id },
                   licenses: { _some: {} },
                   cycle_id: {
                     _or: [
@@ -241,10 +242,16 @@ if (sessionID !== null) {
                     credits: prevSteward.credits + creditAward,
                   }));
 
+                  const licenseData = {
+                    cloud: prevPrice.cloud_id.name,
+                    tier: prevPrice.tier,
+                    cycle_id: prevPrice.cycle_id,
+                  }
+
                   // Notify former steward with email
                   const emailData = {
                     "user_name": prevSteward.name,
-                    "license": prevPrice,
+                    "license": licenseData,
                     "credits_awarded": (creditAward / 100).toFixed(2),
                     "credit_balance": (result.credits / 100).toFixed(2),
                   };
@@ -253,11 +260,14 @@ if (sessionID !== null) {
                   console.error("Error awarding credits to former steward:", e);
                 }
               } else {
-                // Mark license as renewed
+                // Mark license as renewed...
                 try {
+                  // ...in the database...
                   await directusAdmin.request(updateItem('licenses', prevLicense.id, {
                     renewed: true,
                   }));
+                  // ...and in the resultLicenses array, for use in the confirmation email.
+                  newLicense.renewed = true;
                 } catch (e) {
                   console.error("Error marking previous license as renewed:", e);
                 }
@@ -292,6 +302,8 @@ if (sessionID !== null) {
                 }
               }
             }
+            // Save any updates to the object in the resultLicenses array.
+            return newLicense;
           })
         );
 
@@ -323,10 +335,19 @@ if (sessionID !== null) {
         console.error("Error in license post-processing:", e);
       }
 
+      const licenseMailData = resultLicenses.map(license => {
+        return {
+          cloud: license.price_id.cloud_id.name,
+          tier: license.price_id.tier,
+          price: license.price_id.amount,
+          renewed: license.renewed,
+        }
+      });
+
       // Send confirmation email to new steward
       const emailData = {
         "user_name": name,
-        "licenses": parsedLicenseData,
+        "licenses": licenseMailData,
       };
       await sendMail(email, PURCHASE_CONFIRM_EMAIL_TEMPLATE, emailData);
     }
