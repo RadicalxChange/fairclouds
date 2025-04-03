@@ -48,7 +48,6 @@ const lang = getLangFromUrl(Astro.url);
 
 <Layout title="Checkout ☁️ Fairclouds" theme="white">
   <div class="p-4">
-    <h1>Checkout</h1>
     {currentUser ? (
       <CheckoutEmbed
         PUBLIC_STRIPE_KEY={PUBLIC_STRIPE_KEY}

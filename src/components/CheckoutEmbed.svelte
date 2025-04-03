@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { loadStripe } from "@stripe/stripe-js";
   import { cartItems } from "../cartStore";
+  import { formatDate } from "../utils/format-date"
 
   export let PUBLIC_STRIPE_KEY;
   export let lang;
@@ -44,6 +45,7 @@
       licensesData = Object.values(data.prices).map((item) => ({
         cloud: item.name,
         cycle: item.price.cycle_id.name,
+        expiry: item.price.cycle_id.end_date,
         tier: item.price.tier,
         stripe_price_id: item.price.price_id,
         directus_price_id: item.price.id,
@@ -127,17 +129,60 @@
     }
   }
 
+  // Helper function: Group licenses by expiry date
+  function groupLicensesByExpiry(licenses) {
+    return licenses.reduce((groups, license) => {
+      const expiry = license.expiry;
+      if (!groups[expiry]) {
+        groups[expiry] = [];
+      }
+      groups[expiry].push(license.cloud);
+      return groups;
+    }, {});
+  }
+
+  // Reactive statement to update grouped licenses when licensesData changes
+  $: groupedLicenses = groupLicensesByExpiry(licensesData);
+
+  function joinCloudNames(items) {
+    if (items.length === 0) return "";
+    if (items.length === 1) return items[0];
+    if (items.length === 2) return items.join(" and ");
+    return items.slice(0, items.length - 1).join(", ") + ", and " + items[items.length - 1];
+  }
+
   onMount(async () => {
     await loadPrices();
     await applyStoreCredits();
     await createCheckoutSession();
   });
 </script>
-
-{#if loading}
-  <p>Loading...</p>
-{/if}
-<div id="checkout"></div>
+<div>
+  <div class="max-w-[888px] mx-auto space-y-4">
+    {#if loading}
+      <p>Loading...</p>
+    {:else}
+      <h1>Checkout</h1>
+      <p>During your stewardship, you will be able to download the digital artworks associated with the clouds listed below and use the artworks within <a class="underline" target="_blank" href={`/${lang}/faq/what-is-a-cloudsteward-licence/`}>these terms</a>.</p>
+      {#if licensesData && licensesData.length > 0}
+        <p>With this purchase:</p>
+        <ul class="pl-4">
+          {#each Object.entries(groupedLicenses) as [expiry, clouds]}
+            <li class="before:pr-4 before:content-['-']">
+              <span class="font-sans">you will be steward of {joinCloudNames(clouds)} until {formatDate(expiry)}</span>
+            </li>
+          {/each}
+        </ul>
+        <p>You will be notified by email when these licenses are eligible to be renewed. Renewal is half-off the listing price.</p>
+      {/if}
+    {/if}
+  </div>
+  <div
+    id="checkout"
+    class="mt-8"
+  >
+  </div>
+</div>
 
 <style>
   /* Your CSS here */
