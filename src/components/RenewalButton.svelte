@@ -1,10 +1,10 @@
 <script>
     import { addCartItem, cartItems, isCartOpen } from "../cartStore";
+    import { formatDate } from "../utils/format-date";
 
     // Props received from the parent component.
     export let license;
     export let renewalPrices = [];
-    export let formatDate;
   
     // Determine if renewal is available for this license.
     $: renewalActive = license.price_id?.cycle_id?.renewal_active;

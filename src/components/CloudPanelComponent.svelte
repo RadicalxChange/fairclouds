@@ -2,25 +2,13 @@
     import DownloadButton from "../components/DownloadButton.svelte";
     import RenewalButton from "../components/RenewalButton.svelte";
     import Cart from "../components/Cart.svelte";
+    import { formatDate } from "../utils/format-date"
 
     export let lang: "en" | "es" = "en";
     export let currentUser;
     export let renewalPrices;
 
     const DIRECTUS_URL = "https://cms.fairclouds.life";
-
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        return new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-        timeZoneName: "short",
-        }).format(date);
-    };
 </script>
   
 <main class="p-12">
@@ -64,7 +52,6 @@
                                     <RenewalButton
                                         license={license}
                                         renewalPrices={renewalPrices}
-                                        formatDate={formatDate}
                                     />
                                 {:else}
                                     <p>No drawings available for this cloud.</p>
