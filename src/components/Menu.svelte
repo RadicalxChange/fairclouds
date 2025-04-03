@@ -64,7 +64,7 @@
 {#if $open}
   <div {...$portalled} use:portalled>
     <div {...$overlay} use:overlay />
-    <div class="modal top-[4rem]" {...$content} use:content>
+    <div class="modal bg-primary top-[4rem]" {...$content} use:content>
       {#if isMobileLandscape}
         <!-- Landscape layout: vertical tabs on the left and content on the right -->
         <div class="flex space-x-8 overflow-y-scroll">

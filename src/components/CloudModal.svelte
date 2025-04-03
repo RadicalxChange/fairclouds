@@ -121,7 +121,7 @@
   <!-- Cloud Modal -->
   <div {...$portalled} use:portalled>
     <div
-      class="modal cloud-modal bottom-[4rem]"
+      class="modal bg-primary cloud-modal bottom-[4rem]"
       {...$content}
       use:content
     >
@@ -152,7 +152,7 @@
         <div>
           <select
             id="license-prices"
-            class="block w-full py-1 sm:py-2 px-4 leading-8 bg-white text-[#72AEE9] rounded-md shadow-sm appearance-none focus:ring-primary focus:border-primary"
+            class="block w-full py-1 sm:py-2 px-4 leading-8 bg-white text-primary rounded-md shadow-sm appearance-none focus:ring-primary focus:border-primary"
             style="background-color: #ffffff; background: url('/icons/down-arrow.svg') no-repeat right 1rem center, #ffffff; background-size: 1rem;"
             bind:value={selectedPriceId}
             >

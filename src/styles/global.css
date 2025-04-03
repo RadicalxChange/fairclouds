@@ -173,8 +173,14 @@
 	html.accessible h3,
 	html.accessible p,
 	html.accessible .text-copy,
-	html.accessible button {
+	html.accessible button,
+	html.accessible input,
+	html.accessible select {
 		letter-spacing: 0em !important;
+	}
+
+	html.accessible .button {
+		padding-bottom: 4px !important;
 	}
 
 	input, select {

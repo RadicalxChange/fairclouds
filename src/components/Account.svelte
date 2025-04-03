@@ -53,7 +53,7 @@
 {#if $open}
   <div {...$portalled} use:portalled>
     <div {...$overlay} use:overlay />
-    <div class="modal top-[4rem]" {...$content} use:content>
+    <div class="modal bg-primary top-[4rem]" {...$content} use:content>
       <div class="overflow-auto custom-scrollbar">
           <Login lang={lang} currentUser={currentUser} bind:reloadOnClose />
       </div>

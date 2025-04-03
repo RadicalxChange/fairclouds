@@ -81,7 +81,7 @@
 {#if $open}
   <div {...$portalled} use:portalled>
     <div
-      class="modal bottom-[4rem]"
+      class="modal bg-primary bottom-[4rem]"
       {...$content}
       use:content
     >
