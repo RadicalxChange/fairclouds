@@ -1,4 +1,4 @@
-<label class="flex items-center cursor-pointer">
+<label class="flex items-center cursor-pointer has-hint">
   <input
     id="themeToggle"
     type="checkbox"
@@ -11,10 +11,9 @@
     <img src="/icons/light.svg" alt="" class="z-10" />
     <img src="/icons/dark.svg" alt="" class="z-10" />
   </div>
-  <span
-    class="sr-only ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"
-    >Accessibility mode toggle me</span
-  >
+  <div role="tooltip" class="hint top-full mt-2 right-0 w-max">
+    Toggle accessibility mode
+  </div>
 </label>
 
 <script is:inline>

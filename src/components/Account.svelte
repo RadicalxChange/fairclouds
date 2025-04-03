@@ -42,9 +42,12 @@
   }
 </script>
 
-<button class="icon-button" {...$trigger} use:trigger>
+<button class="icon-button has-hint" {...$trigger} use:trigger>
   <span class="sr-only">Account</span>
   <img src="/icons/account.png" alt="" />
+  <div role="tooltip" class="hint top-full mt-2 right-0 w-max">
+    Account / Login
+  </div>
 </button>
 
 {#if $open}

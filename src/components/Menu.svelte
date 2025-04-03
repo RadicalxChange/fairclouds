@@ -41,7 +41,7 @@
   });
 </script>
 
-<button class="icon-button" {...$trigger} use:trigger>
+<button class="icon-button has-hint" {...$trigger} use:trigger>
   <span class="sr-only">Menu</span>
   <svg
     class="mx-auto"
@@ -56,6 +56,9 @@
       fill="white"
     />
   </svg>
+  <div role="tooltip" class="hint top-full mt-2 right-0 w-max">
+    Menu
+  </div>
 </button>
 
 {#if $open}
