@@ -4,6 +4,7 @@
 // import { createItem } from '@directus/sdk';
 // import crypto from 'crypto';
 // import { directusAdmin } from '../../lib/directus';
+// console.log("standin commit")
 
 // export const POST = async ({ request }) => {
 //   const data = await request.formData()
