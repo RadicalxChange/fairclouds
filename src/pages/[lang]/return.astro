@@ -172,7 +172,6 @@ if (sessionID !== null) {
                   "licenses.steward.credits",
                 ],
                 filter: {
-                  id: { _neq: newLicense.price_id.id },
                   cloud_id: { _eq: newLicense.price_id.cloud_id.id },
                   licenses: { _some: {} },
                   cycle_id: {
@@ -219,7 +218,9 @@ if (sessionID !== null) {
 
             // Handle license renewal / takeover (claim).
             const prevPrice = relatedPricesResult.find((price) => (
-              price.cycle_id.renewal_active && price.tier === newLicense.price_id.tier
+              price.cycle_id.renewal_active &&
+                price.tier === newLicense.price_id.tier &&
+                price.id !== newLicense.price_id.id
             ));
             
             if (prevPrice && prevPrice.licenses.length !== 0) {
