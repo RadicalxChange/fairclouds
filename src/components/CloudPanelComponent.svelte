@@ -71,6 +71,6 @@
     {/if}
 
     <div class="fixed right-0 bottom-0 gap-4 p-4 z-20">
-        <Cart currentUser={currentUser} />
+        <Cart lang={lang} currentUser={currentUser} />
     </div>
 </main>  

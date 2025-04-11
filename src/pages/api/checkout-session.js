@@ -22,6 +22,7 @@ export const POST = async ({ request }) => {
     const session = await stripe.checkout.sessions.create({
       ui_mode: "embedded",
       mode: "payment",
+      locale: lang,
       customer_email: current_user?.email,
       line_items: line_items,
       return_url: `${origin}/${lang}/return?session_id={CHECKOUT_SESSION_ID}`,

@@ -1,13 +1,15 @@
-<script>
+<script lang="ts">
   import { onMount } from "svelte";
   import { loadStripe } from "@stripe/stripe-js";
   import { cartItems } from "../cartStore";
   import { formatDate } from "../utils/format-date"
+  import { useTranslations } from "../i18n/utils";
 
   export let PUBLIC_STRIPE_KEY;
-  export let lang;
+  export let lang: "en" | "es" = "en";
   export let origin;
   export let currentUser;
+
   let stripePromise;
 
   let cartItemsValue = cartItems.get();
@@ -141,6 +143,8 @@
     }, {});
   }
 
+  $: t = useTranslations(lang);
+
   // Reactive statement to update grouped licenses when licensesData changes
   $: groupedLicenses = groupLicensesByExpiry(licensesData);
 
@@ -160,20 +164,20 @@
 <div>
   <div class="max-w-[888px] mx-auto space-y-4">
     {#if loading}
-      <p>Loading...</p>
+      <p>{t("loading")}...</p>
     {:else}
-      <h1>Checkout</h1>
-      <p>During your stewardship, you will be able to download the digital artworks associated with the clouds listed below and use the artworks within <a class="underline" target="_blank" href={`/${lang}/faq/what-is-a-cloudsteward-licence/`}>these terms</a>.</p>
+      <h1>{t("checkout")}</h1>
+      <p>{t("checkout_description_pt1")} <a class="underline" target="_blank" href={`/${lang}/faq/what-is-a-cloudsteward-licence/`}>{t("checkout_description_link")}</a>.</p>
       {#if licensesData && licensesData.length > 0}
-        <p>With this purchase:</p>
+        <p>{t("with_this_purchase")}:</p>
         <ul class="pl-4">
           {#each Object.entries(groupedLicenses) as [expiry, clouds]}
             <li class="before:pr-4 before:content-['-']">
-              <span class="font-sans">you will be steward of {joinCloudNames(clouds)} until {formatDate(expiry)}</span>
+              <span class="font-sans">{t("you_will_be_steward_of")} {joinCloudNames(clouds)} {t("until")} {formatDate(expiry)}</span>
             </li>
           {/each}
         </ul>
-        <p>You will be notified by email when these licenses are eligible to be renewed. Renewal is half-off the listing price.</p>
+        <p>{t("you_will_be_notified_for_renewal")}</p>
       {/if}
     {/if}
   </div>
@@ -183,7 +187,3 @@
   >
   </div>
 </div>
-
-<style>
-  /* Your CSS here */
-</style>

@@ -1,8 +1,9 @@
-<script>
+<script lang="ts">
   import { isCartOpen, cartItems, removeCartItem } from "../cartStore";
   import { createDialog, melt } from "@melt-ui/svelte";
   import { onMount } from "svelte";
 
+  export let lang: "en" | "es" = "en";
   export let currentUser;
 
   const {
@@ -50,7 +51,7 @@
         alert(`One or more Cloudsteward Licenses you had in your cart are no longer available. You can still steward those clouds if you go back and select a different license. The following clouds will be removed from your cart: ${cloudNames}. Reload the page to make sure the listings are up-to-date.`);
       } else {
         // If all items are available, navigate to the checkout page.
-        window.location.href = '/en/checkout';
+        window.location.href = `/${lang}/checkout`;
       }
     } catch (error) {
       console.error("Cart validation failed", error);
