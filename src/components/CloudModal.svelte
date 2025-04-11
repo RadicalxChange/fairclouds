@@ -1,19 +1,19 @@
 <script lang="ts">
-  import { useTranslations } from "../i18n/utils";
+  import { useTranslations, capitalizeFirstLetter } from "../i18n/utils";
   import { createDialog, melt } from "@melt-ui/svelte";
   import { onMount } from "svelte";
   import { addCartItem, cartItems, isCartOpen } from "../cartStore";
 
-  export let lang: "en" | "es" = "en";
   export let cloud;
   export let currentUser;
+  export let lang: "en" | "es" = "en";
+
+  $: t = useTranslations(lang);
 
   const {
     elements: { trigger, portalled, overlay, content },
     states: { open },
   } = createDialog();
-
-  let t;
 
   // Slideshow variables
   let currentIndex = 0;
@@ -26,8 +26,6 @@
 
   // Current number of stewards
   let numStewards;
-
-  $: t = useTranslations(lang);
   
   // Watch cloud changes
   $: if (cloud) {
@@ -181,10 +179,10 @@
             </button>
           {:else}
             {#if !currentUser}
-              <p>{t("must_be_logged_in")}.</p>
+              <p>{t("must_be_logged_in")} {t("steward_this_cloud")}.</p>
             {:else}
               <button on:click={handleAddToCart} class="button group max-w-[450px]">
-                <span>{t("steward_this_cloud")}</span>
+                <span>{capitalizeFirstLetter(t("steward_this_cloud"))}</span>
               </button>
             {/if}
           {/if}

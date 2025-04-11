@@ -6,9 +6,11 @@
   import { useTranslations } from "../i18n/utils";
 
   export let PUBLIC_STRIPE_KEY;
-  export let lang: "en" | "es" = "en";
   export let origin;
   export let currentUser;
+  export let lang: "en" | "es" = "en";
+  
+  $: t = useTranslations(lang);
 
   let stripePromise;
 
@@ -142,8 +144,6 @@
       return groups;
     }, {});
   }
-
-  $: t = useTranslations(lang);
 
   // Reactive statement to update grouped licenses when licensesData changes
   $: groupedLicenses = groupLicensesByExpiry(licensesData);

@@ -11,3 +11,7 @@ export function useTranslations(lang: keyof typeof ui) {
     return ui[lang][key] || ui[defaultLang][key];
   }
 }
+
+export function capitalizeFirstLetter(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}

@@ -2,9 +2,12 @@
   import { isCartOpen, cartItems, removeCartItem } from "../cartStore";
   import { createDialog, melt } from "@melt-ui/svelte";
   import { onMount } from "svelte";
+  import { useTranslations } from "../i18n/utils";
 
-  export let lang: "en" | "es" = "en";
   export let currentUser;
+  export let lang: "en" | "es" = "en";
+
+  $: t = useTranslations(lang);
 
   const {
     elements: { trigger, portalled, overlay, content },
@@ -48,14 +51,14 @@
         result.claimedItems.forEach(item => {
           removeCartItem(item.id);
         });
-        alert(`One or more Cloudsteward Licenses you had in your cart are no longer available. You can still steward those clouds if you go back and select a different license. The following clouds will be removed from your cart: ${cloudNames}. Reload the page to make sure the listings are up-to-date.`);
+        alert(t("license_not_available_alert_pt1") + cloudNames + t("license_not_available_alert_pt2"));
       } else {
         // If all items are available, navigate to the checkout page.
         window.location.href = `/${lang}/checkout`;
       }
     } catch (error) {
       console.error("Cart validation failed", error);
-      alert("There was an error validating your cart. Please try again later. If the problem persists, clear your session cache or contact support.");
+      alert(t("cart_validation_failed_alert"));
     }
   }
 </script>
@@ -75,7 +78,7 @@
   </button>
 
   <div role="tooltip" class="hint top-[0%] -mt-7 right-0 w-max">
-    Cart / Checkout
+    {t("cart_checkout_tooltip")}
   </div>
 </div>
 
@@ -87,7 +90,7 @@
       use:content
     >
       {#if Object.values($cartItems).length}
-        <h4>You currently have {Object.values($cartItems).length} cloud{Object.values($cartItems).length !== 1 ? "s" : ""} in your cart.</h4>
+        <h4>{t("you_currently_have")} {Object.values($cartItems).length} {t("cloud")}{Object.values($cartItems).length !== 1 ? "s" : ""} {t("in_your_cart")}.</h4>
         <ul class="cart-items overflow-y-auto custom-scrollbar pr-2 sm:pr-0">
           {#each Object.values($cartItems) as cartItem}
             <li class="flex flex-row justify-between">
@@ -100,7 +103,7 @@
                   >
                   <span
                     class="inline-block"
-                    >Renewal Price</span
+                    >{t("renewal_price")}</span
                   >
                 {:else}
                   <span
@@ -131,12 +134,12 @@
           {/each}
         </ul>
         {#if !currentUser}
-          <p>You must be logged in to checkout.</p>
+          <p>{t("must_be_logged_in")} {t("check_out")}.</p>
         {:else}
-          <button on:click={handleCheckout} class="button">Checkout</button>
+          <button on:click={handleCheckout} class="button">{t("checkout")}</button>
         {/if}
       {:else}
-        <p>Your cart is empty!</p>
+        <p>{t("cart_empty")}</p>
       {/if}
     </div>
   </div>

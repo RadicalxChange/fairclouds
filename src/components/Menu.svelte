@@ -4,6 +4,8 @@
   import { createDialog } from "@melt-ui/svelte";
 
   export let lang: "en" | "es" = "en";
+  
+  $: t = useTranslations(lang);
 
   const {
     elements: { trigger, portalled, overlay, content },
@@ -11,8 +13,6 @@
   } = createDialog();
 
   let tab = "info";
-
-  let t;
   let isMobileLandscape = false;
 
   // Update orientation by comparing width and height.
@@ -21,8 +21,6 @@
   }
 
   onMount(() => {
-    t = useTranslations(lang);
-
     // Auto-open the first time the user visits the map during this session.
     if (window.location.pathname === `/${lang}/map` && !sessionStorage.getItem('mapMenuOpened')) {
       open.set(true);
