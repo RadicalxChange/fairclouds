@@ -26,12 +26,17 @@
 
   // Current number of stewards
   let numStewards;
+
+  $: t = useTranslations(lang);
   
   // Watch cloud changes
   $: if (cloud) {
       handleCloudChange();
     }
 
+  $: isCloudInCart = Object.values($cartItems).some(
+    (item) => cloud ? item.id === cloud.id && item.price.id === selectedPriceId : false
+  );
   async function handleCloudChange() {
     // Fetch info for the selected cloud
     drawings = cloud.drawings;
@@ -76,13 +81,9 @@
     startSlideshow();
   }
 
-  onMount(() => {
-    t = useTranslations(lang);
-  });
-
   function handleAddToCart() {
     if (!selectedPriceId) {
-      alert("Please select a license before adding to cart.");
+      alert(t("select_a_license_alert"));
       return;
     }
     cloud.quantity = 1;
@@ -96,10 +97,6 @@
     }
     addCartItem(cloud);
   }
-
-  $: isCloudInCart = Object.values($cartItems).some(
-    (item) => cloud ? item.id === cloud.id && item.price.id === selectedPriceId : false
-  );
 
   function handleOpenCart() {
     open.set(false);
@@ -127,8 +124,7 @@
     >
       <div class="cloud-modal-header items-start">
         <p>
-          {currentUser && getLicense(currentUser, cloud.id) ? "You are Cloudsteward " + getLicense(currentUser, cloud.id).price_id.tier : "Become a steward"} of this cloud and all {cloud.drawings.length} drawing{cloud.drawings.length !== 1 ? "s" : ""} it
-          contains.
+          {currentUser && getLicense(currentUser, cloud.id) ? t("you_are") + " Cloudsteward " + getLicense(currentUser, cloud.id).price_id.tier : t("become_a_steward")} {t("of_this_cloud_and_all")} {cloud.drawings.length} {t("drawing")}{cloud.drawings.length !== 1 ? "s" : ""}{t("it_contains")}
         </p>
         <div class="bg-white text-primary text-center text-copy whitespace-nowrap rounded-full px-[10px] pt-1">
           <span>{numStewards} Cloudsteward{numStewards !== 1 ? "s" : ""}</span>
@@ -157,12 +153,12 @@
             bind:value={selectedPriceId}
             >
             <option disabled value={null}>
-              Current Licenses Available
+              {t("current_licenses_available")}
             </option>
             {#each prices as price}
               {#if price.isRenewalPrice}
                 <option value={price.id}>
-                  Cloudsteward {price.tier} - € {(Math.round((parseFloat(price.amount) / 2) * 100) / 100).toFixed(2)} Renew your current license
+                  Cloudsteward {price.tier} - € {(Math.round((parseFloat(price.amount) / 2) * 100) / 100).toFixed(2)} {t("renew_your_current_license")}
                 </option>
               {:else}
                 <option value={price.id} disabled={price.licenses && price.licenses.length !== 0}>
@@ -173,7 +169,7 @@
           </select>
         </div>      
       {:else}
-        <p class="text-white mb-4">No licenses available at this time.</p>
+        <p class="text-white mb-4">{t("no_licenses_available")}.</p>
       {/if}
 
       <div class="cloud-modal-header items-center">
@@ -181,14 +177,14 @@
         {#if prices && prices.length > 0}
           {#if isCloudInCart}
             <button on:click={handleOpenCart} class="button group w-fit">
-              View your cart
+              {t("view_your_cart")}
             </button>
           {:else}
             {#if !currentUser}
-              <p>You must be logged in to steward this cloud.</p>
+              <p>{t("must_be_logged_in")}.</p>
             {:else}
               <button on:click={handleAddToCart} class="button group max-w-[450px]">
-                <span>Steward this cloud</span>
+                <span>{t("steward_this_cloud")}</span>
               </button>
             {/if}
           {/if}
@@ -214,14 +210,14 @@
           max-width: calc(100vw - 610px - 64px);"
       />
       <p class="whitespace-nowrap text-white text-xs m-2">
-        Drawn by {cloud.drawings[currentIndex].author ?
+        {t("drawn_by")} {cloud.drawings[currentIndex].author ?
           cloud.drawings[currentIndex].author :
           (cloud.drawings[currentIndex].first_name || cloud.drawings[currentIndex].last_name ?
             cloud.drawings[currentIndex].first_name + " " + cloud.drawings[currentIndex].last_name :
             "anon")}{cloud.drawings[currentIndex].location ? ", " + cloud.drawings[currentIndex].location : ""}
       </p>
     {:else}
-      <p>No drawings available.</p>
+      <p>{t("no_drawings")}.</p>
     {/if}
   </div>
 {/if}

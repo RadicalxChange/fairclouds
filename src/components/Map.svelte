@@ -1,8 +1,9 @@
-<script>
+<script lang="ts">
   import { onMount } from "svelte";
   import CloudModal from "./CloudModal.svelte";
   import CloudButton from "./CloudButton.svelte";
 
+  export let lang: "en" | "es" = "en";
   export let clouds;
   export let currentUser;
   const height = 982;
@@ -232,7 +233,7 @@
       alt
     />
 
-    <CloudModal cloud={selectedCloud} currentUser={currentUser} />
+    <CloudModal lang={lang} cloud={selectedCloud} currentUser={currentUser} />
   </div>
 
   <!-- horizon -->
