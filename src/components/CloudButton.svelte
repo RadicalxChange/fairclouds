@@ -15,6 +15,61 @@
     let drawingImgElement;
     let ctx;
     let buttonDisabled = true; // Initially, the button is disabled until the user reveals enough of the canvas.
+
+    function initializeCanvas() {
+        // 1) size it
+        canvasElement.width  = canvasElement.clientWidth;
+        canvasElement.height = canvasElement.clientHeight;
+        // 2) get context
+        ctx = canvasElement.getContext("2d", { willReadFrequently: true });
+        // 3) draw the background slice
+        const bgImg = document.getElementById("bgImg");
+        ctx.drawImage(
+            bgImg,
+            canvasElement.dataset.x,
+            canvasElement.dataset.y,
+            canvasElement.dataset.width,
+            canvasElement.dataset.height,
+            0, 0,
+            canvasElement.width,
+            canvasElement.height
+        );
+        // 4) now we know the canvas is covering the drawing — safe to reveal it
+        drawingImgElement.classList.remove("hidden");
+
+        // 5) Attach event listeners.
+        canvasElement.addEventListener("mousemove", (event) => {
+            handleDrawingReveal(event.clientX, event.clientY);
+        });
+        canvasElement.addEventListener("mouseleave", () => {
+            handleFadeOutAndReset();
+        });
+        canvasElement.addEventListener("mouseenter", () => {
+            clearFadeTimeout();
+        });
+        canvasElement.addEventListener("touchstart", (event) => {
+            if (event.touches.length === 1) {
+                clearFadeTimeout();
+            }
+        });
+        canvasElement.addEventListener("touchmove", (event) => {
+            if (event.touches.length === 1) {
+                event.preventDefault(); // Prevent one-finger scrolling.
+                const touch = event.touches[0];
+                handleDrawingReveal(touch.clientX, touch.clientY);
+            }
+        });
+        canvasElement.addEventListener("touchend", (event) => {
+            if (event.touches.length === 0) {
+                handleFadeOutAndReset();
+            }
+        });
+        canvasElement.addEventListener("touchcancel", (event) => {
+            if (event.touches.length === 0) {
+                handleFadeOutAndReset();
+            }
+        });
+    }
   
     // Clear any fade timeout on this cloud.
     function clearFadeTimeout() {
@@ -76,63 +131,29 @@
     }
   
     onMount(() => {
-        // Get the canvas 2D context.
-        ctx = canvasElement.getContext("2d", { willReadFrequently: true });
-    
-        // Set the canvas size to match its rendered dimensions.
-        canvasElement.width = canvasElement.clientWidth;
-        canvasElement.height = canvasElement.clientHeight;
-    
-        // The canvas element has data attributes for the image region. (They are set via attributes below.)
-        // Draw the initial image from the background image (assumed to be present in the page with id "bgImg").
         const bgImg = document.getElementById("bgImg");
+        const start = () => initializeCanvas();
 
-        ctx.drawImage(
-            bgImg,
-            canvasElement.dataset.x,
-            canvasElement.dataset.y,
-            canvasElement.dataset.width,
-            canvasElement.dataset.height,
-            0,
-            0,
-            canvasElement.width,
-            canvasElement.height
-        );
-        // Render hidden drawing once canvas is prepared. (this prevents drawings from flashing on load).
-        drawingImgElement.classList.remove("hidden");
-  
-        // Attach event listeners.
-        canvasElement.addEventListener("mousemove", (event) => {
-            handleDrawingReveal(event.clientX, event.clientY);
-        });
-        canvasElement.addEventListener("mouseleave", () => {
-            handleFadeOutAndReset();
-        });
-        canvasElement.addEventListener("mouseenter", () => {
-            clearFadeTimeout();
-        });
-        canvasElement.addEventListener("touchstart", (event) => {
-            if (event.touches.length === 1) {
-                clearFadeTimeout();
+        if (typeof bgImg.decode === "function") {
+            // Preferred: wait for full decode
+            bgImg.decode()
+                .then(start)
+                .catch(() => {
+                // decode failed or unsupported → fallback
+                if (bgImg.complete && bgImg.naturalHeight !== 0) {
+                    start();
+                } else {
+                    bgImg.addEventListener("load", start, { once: true });
+                }
+                });
+        } else {
+            // No decode support → use load event or immediate
+            if (bgImg.complete && bgImg.naturalHeight !== 0) {
+                start();
+            } else {
+                bgImg.addEventListener("load", start, { once: true });
             }
-        });
-        canvasElement.addEventListener("touchmove", (event) => {
-            if (event.touches.length === 1) {
-                event.preventDefault(); // Prevent one-finger scrolling.
-                const touch = event.touches[0];
-                handleDrawingReveal(touch.clientX, touch.clientY);
-            }
-        });
-        canvasElement.addEventListener("touchend", (event) => {
-            if (event.touches.length === 0) {
-                handleFadeOutAndReset();
-            }
-        });
-        canvasElement.addEventListener("touchcancel", (event) => {
-            if (event.touches.length === 0) {
-                handleFadeOutAndReset();
-            }
-        });
+        }
     });
 </script>
   
