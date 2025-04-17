@@ -55,7 +55,7 @@
     />
   </svg>
   <div role="tooltip" class="hint top-full mt-2 right-0 w-max">
-    Menu
+    {t("menu")}
   </div>
 </button>
 
@@ -151,8 +151,8 @@
                 <slot name="info" />
               </div>
               <div class="sticky bottom-0 left-0 z-10 flex gap-2.5">
-                <a class="button" target="_blank" href={`/${lang}/faq/intro`}>FAQ</a>
-                <a class="button" target="_blank" href={`/${lang}/faq/support`}>Support</a>
+                <a class="button" target="_blank" href={`/${lang}/faq/intro`}>{t('faq')}</a>
+                <a class="button" target="_blank" href={`/${lang}/faq/support`}>{t('support')}</a>
               </div>
             </div>
           {:else if tab === "about"}

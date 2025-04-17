@@ -4,7 +4,7 @@ export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
 import MapComponent from "../../components/Map.svelte";
-import { getLangFromUrl } from "../../i18n/utils";
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
 import directus from "../../lib/directus";
 import { readItems, withToken, readMe } from "@directus/sdk";
 // import Timeline from "../../components/Timeline.astro";
@@ -45,6 +45,7 @@ if (authToken) {
 }
 
 const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 
 const clouds = await directus.request(
   readItems("clouds", {
@@ -110,10 +111,10 @@ const clouds = await directus.request(
         <!-- <Timeline /> -->
         <div class="has-hint">
           <a class="button h-full items-center justify-center" style="display: inline-flex;" target="_blank" href="https://cloudcities.org/draw"
-            >Draw</a
+            >{t("draw")}</a
           >
           <div role="tooltip" class="hint top-[0%] -mt-7 left-0 w-max">
-            Contribute your own drawing
+            {t("draw_tooltip")}
           </div>
         </div>
 

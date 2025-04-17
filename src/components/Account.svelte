@@ -6,6 +6,8 @@
 
   export let lang: "en" | "es" = "en";
 
+  $: t = useTranslations(lang);
+
   const {
     elements: { trigger, portalled, overlay, content },
     states: { open },
@@ -14,14 +16,9 @@
   // This boolean will be passed into Login.
   // If set to true in the Login component, we know to reload on modal close.
   let reloadOnClose = false;
-
-  let t;
   let currentUser;
 
-  onMount(() => {
-    t = useTranslations(lang);
-
-    (async () => {
+  onMount(async () => {
       // Fetch the current user on component mount.
       try {
         const res = await fetch('/api/current-user');
@@ -32,7 +29,6 @@
       } catch (err) {
         console.error("Failed to fetch current user", err);
       }
-    })();
   });
 
   // Watch for when $open changes from true to false.
@@ -46,7 +42,7 @@
   <span class="sr-only">Account</span>
   <img src="/icons/account.png" alt="" />
   <div role="tooltip" class="hint top-full mt-2 right-0 w-max">
-    Account / Login
+    {t("account-login")}
   </div>
 </button>
 

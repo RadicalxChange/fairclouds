@@ -1,10 +1,14 @@
-<script>
+<script lang="ts">
     import { addCartItem, cartItems, isCartOpen } from "../cartStore";
     import { formatDate } from "../utils/format-date";
+    import { useTranslations } from "../i18n/utils";
 
     // Props received from the parent component.
     export let license;
     export let renewalPrices = [];
+    export let lang: "en" | "es" = "en";
+
+    $: t = useTranslations(lang);
   
     // Determine if renewal is available for this license.
     $: renewalActive = license.price_id?.cycle_id?.renewal_active;
@@ -40,32 +44,32 @@
 <div class="my-4">
     {#if isInCart}
         <button on:click={handleOpenCart} class="button group w-fit">
-            View your cart
+            {t("view_your_cart")}
         </button>
     {:else}
         {#if !enableButton}
             {#if license.renewed}
-                <p>You successfully renewed this stewardship license.</p>
+                <p>{t("successfully_renewed")}</p>
             {:else if license.claimed}
-                <p>Someone else took over stewardship of this cloud.</p>
+                <p>{t("stewardship_passed")}</p>
             {:else if new Date(license.price_id.cycle_id.end_date) < new Date()}
-                <p>This stewardship license has expired.</p>
+                <p>{t("license_expired")}</p>
             {:else}
-                <p>You will be able to renew your stewardship starting on {formatDate(license.price_id.cycle_id.renewal_start_date)}</p>
+                <p>{t("renewal_available_on")} {formatDate(license.price_id.cycle_id.renewal_start_date)}</p>
             {/if}
         {:else}
-            <p>You have until {formatDate(license.price_id.cycle_id.end_date)} to renew your stewardship.</p>
+            <p>{t("you_have")} {t("until")} {formatDate(license.price_id.cycle_id.end_date)} {t("to_renew")}</p>
             {#if license.price_id.cycle_id.prices_status === "active"}
-                <p>You have the right of first refusal until {formatDate(license.price_id.cycle_id.transition_start_date)}, after which stewardship will be first-come-first-serve.</p>
+                <p>{t("right_of_first_refusal_until")} {formatDate(license.price_id.cycle_id.transition_start_date)}, {t("after_which")}</p>
             {:else}
-                <p class="mt-2">Stewardship is first-come-first-serve.</p>
+                <p class="mt-2">{t("first_come_first_serve")}</p>
             {/if}
         {/if}
         <button
             on:click={handleAddToCart(license.price_id.cloud_id, renewalPrice)}
             disabled={!enableButton}
             class="button group max-w-[450px] mt-4 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-cloud">
-            <span>Renew</span>
+            <span>{t("renew")}</span>
         </button>
     {/if}
 </div>

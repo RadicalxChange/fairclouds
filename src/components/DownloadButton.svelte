@@ -1,5 +1,10 @@
-<script>
+<script lang="ts">
+  import { useTranslations } from "../i18n/utils";
+
   export let cloudId;
+  export let lang: "en" | "es" = "en";
+
+  $: t = useTranslations(lang);
 
   let loading = false;
 
@@ -22,7 +27,7 @@
       a.remove();
       window.URL.revokeObjectURL(url);
     } else {
-      alert('Failed to download. Please try again.');
+      alert(t("download_failed"));
     }
     loading = false;
   }
@@ -30,6 +35,6 @@
 
 <div class="my-4">
   <button on:click={handleDownload} disabled={loading} class="button">
-    {!loading ? "Download All Drawings" : "Downloading drawings..."}
+    {!loading ? t("download_drawings") : t("downloading_drawings")}
   </button>
 </div>

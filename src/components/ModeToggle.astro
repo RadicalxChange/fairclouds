@@ -1,3 +1,10 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
 <label class="flex items-center cursor-pointer has-hint">
   <input
     id="themeToggle"
@@ -11,8 +18,8 @@
     <img src="/icons/light.svg" alt="" class="z-10" />
     <img src="/icons/dark.svg" alt="" class="z-10" />
   </div>
-  <div role="tooltip" class="hint top-full mt-2 right-0 w-max">
-    Toggle accessibility mode
+  <div role="tooltip" class="hint top-full mt-2 left-0 w-max">
+    {t("toggle_accessibility_mode")}
   </div>
 </label>
 

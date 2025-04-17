@@ -1,6 +1,10 @@
 <script>
   import { passwordRequest } from '@directus/sdk';
   import directus from "../lib/directus";
+  import { useTranslations } from "../i18n/utils";
+
+  export let lang;
+  $: t = useTranslations(lang);
 
   let email = "";
   let error = "";
@@ -24,22 +28,22 @@
   };
 </script>
 
-<h2 class="text-lg sm:text-2xl font-semibold mb-4">Reset Password</h2>
+<h2 class="text-lg sm:text-2xl font-semibold mb-4">{t("reset_password")}</h2>
 
 {#if success}
   <div>
-    <p class="mb-4">Password reset email sent!</p>
-    <p>Please check your email for instructions to reset your password.</p>
+    <p class="mb-4">{t("reset_email_sent")}</p>
+    <p>{t("check_email_for_instructions")}</p>
   </div>
 {:else}
   <form class="space-y-5" on:submit|preventDefault={handleRequestReset}>
     <div>
-      <label for="email" class="text-sm sm:text-base">Email</label>
+      <label for="email" class="text-sm sm:text-base">{t("email")}</label>
       <input
         type="email"
         id="email"
         bind:value={email}
-        placeholder="Enter your email"
+        placeholder={t("email")}
         required
       />
     </div>
@@ -47,7 +51,7 @@
       <p class="error">{error}</p>
     {/if}
     <button type="submit" class="button">
-      Reset Password
+      {t("reset_password")}
     </button>
   </form>
 {/if}  

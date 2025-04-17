@@ -81,7 +81,7 @@ const lang = getLangFromUrl(Astro.url);
 						<ModeToggle theme={theme} />
 						<div class="flex gap-4">
 							<MenuContainer theme={theme} />
-							<Account client:load />
+							<Account lang={lang} client:load />
 						</div>
 					</div>
 				)

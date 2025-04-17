@@ -1,11 +1,14 @@
 <script>
   import { onMount } from 'svelte';
+  import { useTranslations } from "../i18n/utils";
   import Register from "./Register.svelte";
   import ForgotPassword from "./ForgotPassword.svelte";
 
   export let lang;
   export let currentUser;
   export let reloadOnClose;
+
+  $: t = useTranslations(lang);
 
   let email = "";
   let password = "";
@@ -52,47 +55,47 @@ const handleLogout = async () => {
 </script>
 
 {#if currentForm === "register"}
-  <Register />
+  <Register lang={lang} />
   <button class="link mt-4 text-base sm:text-2xl hover-blur" on:click={() => (currentForm = "login")}>
-    {lang === "en" ? "Back to Login" : "Volver al inicio de sesión"}
+    {t("back_to_login")}
   </button>
 
 {:else if currentForm === "reset"}
-  <ForgotPassword />
+  <ForgotPassword lang={lang} />
   <button class="link mt-4 text-base sm:text-2xl" on:click={() => (currentForm = "login")}>
-    {lang === "en" ? "Back to Login" : "Volver al inicio de sesión"}
+    {t("back_to_login")}
   </button>
 
 {:else if isLoggedIn}
   {#if currentUser}
-    <p class="mb-2">{lang === "en" ? "Hi" : "Hola"}, {currentUser.first_name}</p>
+    <p class="mb-2">{t("hi")}, {currentUser.first_name}</p>
     {#if currentUser.credits !== 0}
-      <p class="mt-4">You have €{currentUser.credits / 100} in Cloudsteward Credits.</p>
+      <p class="mt-4">{t("you_have")} €{currentUser.credits / 100} {t("in")} Cloudsteward Credits.</p>
     {/if}
   {:else}
-    <p class="mb-2">You are logged in!</p>
+    <p class="mb-2">{t("you_are_logged_in")}</p>
   {/if}
-  <a href={`/${lang == "en" ? "en" : "es"}/cloud-panel`} class="button"
-    >{lang === "en" ? "View Cloud Panel" : "Ver panel de nubes"}</a
+  <a href={`/${lang}/cloud-panel`} class="button"
+    >{t("view_cloud_panel")}</a
   >
   <button class="button secondary mt-2" on:click={handleLogout}>
-    {lang === "en" ? "Logout" : "Cerrar sesión"}
+    {t("logout")}
   </button>
 
 {:else}
-  <h2 class="text-lg sm:text-2xl font-semibold mb-4">Login</h2>
+  <h2 class="text-lg sm:text-2xl font-semibold mb-4">{t("login")}</h2>
   
   <form class="space-y-2 sm:space-y-5" on:submit|preventDefault={handleLogin}>
     <input
       type="email"
       bind:value={email}
-      placeholder="Email"
+      placeholder={t("email")}
       required
     />
     <input
       type="password"
       bind:value={password}
-      placeholder="Password"
+      placeholder={t("password")}
       required
     />
     {#if error}
@@ -101,16 +104,16 @@ const handleLogout = async () => {
 
     <!-- Link to trigger reset password view -->
     <button type="button" class="block text-left text-sm sm:text-xl hover-blur" on:click={() => (currentForm = "reset")}>
-      {lang === "en" ? "Forgot your password?" : "Olvidaste tu contraseña?"}
+      {t("forgot_password")}
     </button>
 
     <button class="button" type="submit">
-      {lang === "en" ? "Login" : "Acceso"}
+      {t("login")}
     </button>
   </form>
 
   <!-- Sign Up button -->
   <button class="button secondary mt-2 sm:mt-4" on:click={() => (currentForm = "register")}>
-    {lang === "en" ? "Sign Up" : "Regístrate"}
+    {t("sign_up")}
   </button>
 {/if}

@@ -1,6 +1,10 @@
 <script>
     import { rest, registerUser } from "@directus/sdk";
     import directus from "../lib/directus";
+    import { useTranslations } from "../i18n/utils";
+
+    export let lang;
+    $: t = useTranslations(lang);
 
     let email = "";
     let password = "";
@@ -14,71 +18,71 @@
         success = "";
 
         try {
-        // Validate inputs
-        if (!email || !password || !firstName || !lastName) {
-            throw new Error("All fields are required");
-        }
+            // Validate inputs
+            if (!email || !password || !firstName || !lastName) {
+                throw new Error("All fields are required");
+            }
 
-        // Use Directus SDK to register the user
-        const result = await directus.request(registerUser(email, password, { first_name: firstName, last_name: lastName }));
+            // Use Directus SDK to register the user
+            const result = await directus.request(registerUser(email, password, { first_name: firstName, last_name: lastName }));
 
-        success = true;
-        console.log("Registration result:", result);
+            success = true;
+            console.log("Registration result:", result);
         } catch (err) {
-        error = err.message || "Failed to create account.";
+            error = err.message || "Failed to create account.";
         }
     };
 </script>
   
-<h2 class="text-lg sm:text-2xl font-semibold mb-4">Create an Account</h2>
+<h2 class="text-lg sm:text-2xl font-semibold mb-4">{t("create_account")}</h2>
 
 {#if success}
 <div>
-    <p class="mb-4">Account created successfully!</p>
-    <p>You should receive an email with a link to verify your account.</p>
+    <p class="mb-4">{t("account_created")}</p>
+    <p>{t("verification_email")}</p>
 </div>
 {:else}
 <form class="space-y-3" on:submit|preventDefault={handleRegister}>
     <div>
-    <label for="firstName" class="text-sm sm:text-base">First Name</label>
+    <label for="firstName" class="text-sm sm:text-base">{t("first_name")}</label>
     <input
         type="text"
         id="firstName"
         bind:value={firstName}
-        placeholder="Enter your first name"
+        placeholder={t("first_name")}
         required
     />
     </div>
 
     <div>
-    <label for="lastName" class="text-sm sm:text-base">Last Name</label>
+    <label for="lastName" class="text-sm sm:text-base">{t("last_name")}</label>
     <input
         type="text"
         id="lastName"
         bind:value={lastName}
-        placeholder="Enter your last name"
+        placeholder={t("last_name")}
         required
     />
     </div>
 
     <div>
-    <label for="email" class="text-sm sm:text-base">Email</label>
+    <label for="email" class="text-sm sm:text-base">{t("email")}</label>
     <input
         type="email"
         id="email"
         bind:value={email}
-        placeholder="Enter your email"
+        placeholder={t("email")}
         required
     />
     </div>
 
     <div>
-    <label for="password" class="text-sm sm:text-base">Password</label>
+    <label for="password" class="text-sm sm:text-base">{t("password")}</label>
     <input
         type="password"
         id="password"
         bind:value={password}
-        placeholder="Enter your password"
+        placeholder={t("password")}
         required
     />
     </div>
@@ -91,7 +95,7 @@
     type="submit"
     class="button"
     >
-    Sign Up
+    {t("sign_up")}
     </button>
 </form> 
 {/if}
