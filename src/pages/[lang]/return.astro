@@ -7,7 +7,7 @@ import Stripe from "stripe";
 import { sendMail } from "../../utils/send-mail"
 import { directusAdmin } from "../../lib/directus";
 import { readItems, createItem, updateItem, updateUser } from '@directus/sdk';
-import { getLangFromUrl } from "../../i18n/utils";
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
 
 const {
   STRIPE_KEY,
@@ -22,6 +22,7 @@ const stripe = new Stripe(STRIPE_KEY);
 const sessionID = Astro.url.searchParams.get("session_id");
 
 const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 
 let name, email, errorMessage = "";
 let session,
@@ -56,18 +57,18 @@ if (sessionID !== null) {
     } else {
       // Handle the case where customer_details is null
       console.error("customer_details is null");
-      errorMessage = "We were unable to retrieve your customer details. Please contact support.";
+      errorMessage = t("customer_details_not_found");
     }
   } catch (e) {
     console.error("Error during checkout processing:", e);
 
     // Customize the error message based on the error type
     if (e.code === "resource_missing") {
-      errorMessage = "Your checkout session could not be found. Please try again. If the issue persists, contact support.";
+      errorMessage = t("checkout_session_not_found");
     } else if (e.code === "validation_error") {
-      errorMessage = "There was an issue validating your purchase. Please contact support.";
+      errorMessage = t("error_validating_purchase");
     } else {
-      errorMessage = "An unexpected error occurred. Please try again later. If the issue persists, contact support.";
+      errorMessage = t("unexpected_error");
     }
   }
 
@@ -361,7 +362,7 @@ if (sessionID !== null) {
 // Handle the case where sessionID is null
 } else {
   console.error("sessionID is null");
-  errorMessage = "Invalid session ID. Please try again.";
+  errorMessage = t("invalid_session_id");
 }
 ---
 
@@ -369,21 +370,21 @@ if (sessionID !== null) {
   <div class="p-4">
     {errorMessage ? (
       <div>
-        <h2>Oops!</h2>
+        <h2>{t("sorry")}</h2>
         <p>{errorMessage}</p>
       </div>
     ) : (
       <div class="text-center">
         <div class="text-center space-y-8">
-          <h1 class="text-3xl">Thank you for your purchase, {name}!</h1>
-          <p>We've sent a receipt to {email}. View your cloud panel to download drawings!</p>
-          <a class="button h-full" href="/en/cloud-panel"
-            >View Cloud Panel
+          <h1 class="text-3xl">{t("thanks_for_purchase")}, {name}!</h1>
+          <p>{t("receipt_sent_to")} {email}. {t("view_panel_to_download")}</p>
+          <a class="button h-full" href={`/${lang}/cloud-panel`}
+            >{t("view_cloud_panel")}
           </a>
         </div>
         <img src="/usage_all_white.png" alt="what to do with the drawings" class="mt-24 mx-auto max-w-[1000px]" />
         <a class="button mt-16" target="_blank" href={`/${lang}/faq/what-to-do-with-the-drawings`}>
-          <span class="text-xl sm:text-3xl pt-[4px]">What to do with the drawings</span>
+          <span class="text-xl sm:text-3xl pt-[4px]">{t("what_to_do_with_drawings")}</span>
         </a>
       </div>
     )}
